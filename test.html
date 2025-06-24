@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý công trình</title>
+    <title>Quản lý công trình - Full Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -49,6 +49,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 0.9em;
         }
         th, td {
             border: 1px solid #ddd;
@@ -72,10 +73,13 @@
             color: #1a73e8;
             font-weight: bold;
         }
+        .container {
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Quản lý công trình</h1>
+    <h1>Quản lý công trình - Full Data</h1>
     
     <div class="filter-section">
         <h2>Bộ lọc</h2>
@@ -107,24 +111,15 @@
         </div>
         <button id="filter-btn">Lọc dữ liệu</button>
         <button id="reset-btn">Đặt lại</button>
+        <button id="export-btn">Xuất Excel</button>
     </div>
     
     <div id="loading" class="loading">Đang tải dữ liệu...</div>
     
-    <div id="results">
+    <div class="container">
         <table id="data-table">
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Tên công trình</th>
-                    <th>Địa chỉ</th>
-                    <th>NVKD</th>
-                    <th>Trạng thái</th>
-                    <th>Tiến độ</th>
-                    <th>Ngày bắt đầu</th>
-                    <th>Ngày kết thúc</th>
-                    <th>Ghi chú</th>
-                </tr>
+            <thead id="table-header">
+                <!-- Tiêu đề cột sẽ được thêm tự động -->
             </thead>
             <tbody id="table-body">
                 <!-- Dữ liệu sẽ được thêm vào đây -->
@@ -137,13 +132,16 @@
             const scriptUrl = 'https://script.google.com/macros/s/AKfycbxX6_EaoZHgGDJBLhzk-E5mMTF_Zf967fEDNHMP67Jqg-nIDWk4WvfmGeG4xNXWNX6j/exec';
             const filterBtn = document.getElementById('filter-btn');
             const resetBtn = document.getElementById('reset-btn');
+            const exportBtn = document.getElementById('export-btn');
             const nvkdSelect = document.getElementById('nvkd');
             const trangthaiSelect = document.getElementById('trangthai');
             const tiendoSelect = document.getElementById('tiendo');
+            const tableHeader = document.getElementById('table-header');
             const tableBody = document.getElementById('table-body');
             const loadingDiv = document.getElementById('loading');
             
             let allData = []; // Lưu trữ tất cả dữ liệu từ API
+            let allColumns = []; // Lưu trữ tất cả các cột từ dữ liệu
             
             // Tải dữ liệu ban đầu
             fetchData();
@@ -161,24 +159,87 @@
                 filterData();
             });
             
+            // Sự kiện click nút xuất Excel
+            exportBtn.addEventListener('click', function() {
+                exportToExcel();
+            });
+            
             // Hàm tải dữ liệu từ API
             function fetchData() {
                 loadingDiv.style.display = 'block';
                 tableBody.innerHTML = '';
+                tableHeader.innerHTML = '';
                 
                 fetch(scriptUrl)
                     .then(response => response.json())
                     .then(data => {
                         allData = data;
+                        
+                        // Xác định tất cả các cột có trong dữ liệu
+                        if (data.length > 0) {
+                            allColumns = Object.keys(data[0]);
+                            
+                            // Thêm cột STT vào đầu danh sách
+                            allColumns.unshift('stt');
+                        }
+                        
                         populateNVKDFilter(data);
+                        createTableHeader();
                         displayData(data);
                         loadingDiv.style.display = 'none';
                     })
                     .catch(error => {
                         console.error('Lỗi khi tải dữ liệu:', error);
                         loadingDiv.style.display = 'none';
-                        tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
+                        tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center;">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
                     });
+            }
+            
+            // Hàm tạo tiêu đề bảng tự động từ các cột dữ liệu
+            function createTableHeader() {
+                const headerRow = document.createElement('tr');
+                
+                allColumns.forEach(column => {
+                    const th = document.createElement('th');
+                    
+                    // Đặt tên hiển thị đẹp hơn cho các cột
+                    let displayName = column;
+                    switch(column) {
+                        case 'stt':
+                            displayName = 'STT';
+                            break;
+                        case 'tencongtrinh':
+                            displayName = 'Tên công trình';
+                            break;
+                        case 'diachi':
+                            displayName = 'Địa chỉ';
+                            break;
+                        case 'nvkd':
+                            displayName = 'NVKD';
+                            break;
+                        case 'trangthai':
+                            displayName = 'Trạng thái';
+                            break;
+                        case 'tiendo':
+                            displayName = 'Tiến độ';
+                            break;
+                        case 'ngaybatdau':
+                            displayName = 'Ngày bắt đầu';
+                            break;
+                        case 'ngayketthuc':
+                            displayName = 'Ngày kết thúc';
+                            break;
+                        case 'ghichu':
+                            displayName = 'Ghi chú';
+                            break;
+                        // Thêm các trường hợp khác nếu cần
+                    }
+                    
+                    th.textContent = displayName;
+                    headerRow.appendChild(th);
+                });
+                
+                tableHeader.appendChild(headerRow);
             }
             
             // Hàm điền dữ liệu vào dropdown NVKD
@@ -211,24 +272,25 @@
                 tableBody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Không có dữ liệu phù hợp</td></tr>';
+                    tableBody.innerHTML = `<tr><td colspan="${allColumns.length}" style="text-align: center;">Không có dữ liệu phù hợp</td></tr>`;
                     return;
                 }
                 
                 data.forEach((item, index) => {
                     const row = document.createElement('tr');
                     
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${item.tencongtrinh || ''}</td>
-                        <td>${item.diachi || ''}</td>
-                        <td>${item.nvkd || ''}</td>
-                        <td>${item.trangthai || ''}</td>
-                        <td>${item.tiendo || ''}</td>
-                        <td>${item.ngaybatdau || ''}</td>
-                        <td>${item.ngayketthuc || ''}</td>
-                        <td>${item.ghichu || ''}</td>
-                    `;
+                    // Thêm tất cả các cột vào hàng
+                    allColumns.forEach(column => {
+                        const cell = document.createElement('td');
+                        
+                        if (column === 'stt') {
+                            cell.textContent = index + 1;
+                        } else {
+                            cell.textContent = item[column] || '';
+                        }
+                        
+                        row.appendChild(cell);
+                    });
                     
                     tableBody.appendChild(row);
                 });
@@ -278,6 +340,45 @@
                 });
                 
                 displayData(filteredData);
+            }
+            
+            // Hàm xuất dữ liệu ra Excel
+            function exportToExcel() {
+                // Lấy dữ liệu hiện tại (đã lọc nếu có)
+                const rows = Array.from(tableBody.querySelectorAll('tr'));
+                if (rows.length === 0) {
+                    alert('Không có dữ liệu để xuất');
+                    return;
+                }
+                
+                // Tạo nội dung CSV
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Thêm tiêu đề
+                const headers = Array.from(tableHeader.querySelectorAll('th')).map(th => th.textContent);
+                csvContent += headers.join(",") + "\r\n";
+                
+                // Thêm dữ liệu
+                rows.forEach(row => {
+                    const rowData = Array.from(row.querySelectorAll('td')).map(td => {
+                        // Xử lý dữ liệu để tránh lỗi CSV
+                        let text = td.textContent;
+                        if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+                            text = '"' + text.replace(/"/g, '""') + '"';
+                        }
+                        return text;
+                    });
+                    csvContent += rowData.join(",") + "\r\n";
+                });
+                
+                // Tạo link download
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "du_lieu_cong_trinh.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             }
         });
     </script>
