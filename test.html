@@ -1,0 +1,76 @@
+function doGet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Lấy dữ liệu từ sheet 'Nhập chi phí'
+  var sheetChiPhi = ss.getSheetByName('Nhập chi phí');
+  var dataChiPhi = sheetChiPhi.getRange(2, 1, sheetChiPhi.getLastRow() - 1, 26).getValues(); // cột A–Z
+
+  // Lấy dữ liệu từ sheet 'Nhân sự'
+  var sheetNhanSu = ss.getSheetByName('Nhân sự');
+  var dataNhanSu = sheetNhanSu.getRange(2, 1, sheetNhanSu.getLastRow() - 1, 7).getValues(); // ít nhất đến cột G
+
+  // Tạo map từ idNS => { idNSgoc, teamNS, vitri }
+  var nhanSuMap = {};
+  for (var i = 0; i < dataNhanSu.length; i++) {
+    var idNSgoc = dataNhanSu[i][0];    // Cột A
+    var vitri = dataNhanSu[i][3];      // Cột D
+    var teamNS = dataNhanSu[i][6];     // Cột G
+    nhanSuMap[idNSgoc] = {
+      idNSgoc: idNSgoc,
+      vitri: vitri,
+      teamNS: teamNS
+    };
+  }
+
+  // Tạo kết quả JSON
+  var result = [];
+
+  for (var i = 0; i < dataChiPhi.length; i++) {
+    var rowData = dataChiPhi[i];
+    var idNS = rowData[25]; // Cột Z
+
+    var row = {
+      id: rowData[0],                   // Cột A
+      ten: rowData[1],                  // Cột B
+      ngay: rowData[2],                 // Cột C
+      ca: rowData[3],                   // Cột D
+      page: rowData[4],                 // Cột E
+      tkqc: rowData[5],                 // Cột F
+      viaLog: rowData[6],               // Cột G
+      sanPham: rowData[7],              // Cột H
+      thiTruong: rowData[8],            // Cột I
+      soMessCmt: rowData[9],            // Cột J
+      lapHoaDon: rowData[10],           // Cột K
+      soDon: rowData[11],               // Cột L
+      dsChot: rowData[12],              // Cột M
+      tinhTrangTKQC: rowData[13],       // Cột N
+      soDonHoanHuy: rowData[14],        // Cột O
+      dsSauHoanHuy: rowData[15],        // Cột P
+      soDonSauHoanHuy: rowData[16],     // Cột Q
+      cpqc: rowData[17],                // Cột R
+      chiPhiADS: rowData[18],           // Cột S
+      team: rowData[19],                // Cột T
+      doanhSoSauShip: rowData[21],      // Cột V
+      doanhSo: rowData[22],             // Cột W
+      doanhsoTC: rowData[23],           // Cột X
+      kpis: rowData[24],                // Cột Y
+      idNS: idNS                        // Cột Z
+    };
+
+    // Gắn thêm dữ liệu từ bảng Nhân sự nếu có
+    if (idNS && nhanSuMap[idNS]) {
+      row.idNSgoc = nhanSuMap[idNS].idNSgoc;
+      row.vitri = nhanSuMap[idNS].vitri;
+      row.teamNS = nhanSuMap[idNS].teamNS;
+    } else {
+      row.idNSgoc = "";
+      row.vitri = "";
+      row.teamNS = "";
+    }
+
+    result.push(row);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
