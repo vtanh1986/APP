@@ -1,200 +1,285 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <base target="_top">
-  <title>Customer Data Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <style>
-    body { padding: 20px; }
-    .filter-section { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-    .data-table { margin-top: 20px; }
-    .filter-label { font-weight: bold; margin-right: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý công trình</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #1a73e8;
+        }
+        .filter-section {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .filter-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        select, input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0d5bba;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+            color: #1a73e8;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="mb-4">Customer Data Dashboard</h2>
+    <h1>Quản lý công trình</h1>
     
     <div class="filter-section">
-      <div class="row mb-3">
-        <div class="col-md-4">
-          <label class="filter-label">Tên NVKD:</label>
-          <select id="nvkdFilter" class="form-select">
-            <option value="">Tất cả</option>
-          </select>
+        <h2>Bộ lọc</h2>
+        <div class="filter-group">
+            <label for="nvkd">Tên NVKD:</label>
+            <select id="nvkd">
+                <option value="">Tất cả</option>
+            </select>
         </div>
-        <div class="col-md-4">
-          <label class="filter-label">Trạng thái liên hệ:</label>
-          <select id="statusFilter" class="form-select">
-            <option value="">Tất cả</option>
-          </select>
+        <div class="filter-group">
+            <label for="trangthai">Trạng thái làm việc:</label>
+            <select id="trangthai">
+                <option value="">Tất cả</option>
+                <option value="Đang làm">Đang làm</option>
+                <option value="Đã xong">Đã xong</option>
+                <option value="Tạm dừng">Tạm dừng</option>
+            </select>
         </div>
-        <div class="col-md-4">
-          <label class="filter-label">Tiến độ công trình:</label>
-          <select id="progressFilter" class="form-select">
-            <option value="">Tất cả</option>
-          </select>
+        <div class="filter-group">
+            <label for="tiendo">Tiến độ công trình:</label>
+            <select id="tiendo">
+                <option value="">Tất cả</option>
+                <option value="0-25%">0-25%</option>
+                <option value="26-50%">26-50%</option>
+                <option value="51-75%">51-75%</option>
+                <option value="76-99%">76-99%</option>
+                <option value="100%">100%</option>
+            </select>
         </div>
-      </div>
-      <button id="filterBtn" class="btn btn-primary">Lọc dữ liệu</button>
-      <button id="resetBtn" class="btn btn-secondary ms-2">Reset</button>
+        <button id="filter-btn">Lọc dữ liệu</button>
+        <button id="reset-btn">Đặt lại</button>
     </div>
     
-    <div class="data-table">
-      <table id="dataTable" class="table table-striped table-bordered" style="width:100%">
-        <thead>
-          <tr>
-            <th>ID KH</th>
-            <th>Tên NVKD</th>
-            <th>Tên KH</th>
-            <th>Tỉnh</th>
-            <th>Huyện/TP</th>
-            <th>Điện thoại</th>
-            <th>Trạng thái liên hệ</th>
-            <th>Tiến độ CT</th>
-            <th>Ngày update</th>
-            <th>Ghi chú</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Data will be loaded here -->
-        </tbody>
-      </table>
+    <div id="loading" class="loading">Đang tải dữ liệu...</div>
+    
+    <div id="results">
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên công trình</th>
+                    <th>Địa chỉ</th>
+                    <th>NVKD</th>
+                    <th>Trạng thái</th>
+                    <th>Tiến độ</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <!-- Dữ liệu sẽ được thêm vào đây -->
+            </tbody>
+        </table>
     </div>
-  </div>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-  
-  <script>
-    $(document).ready(function() {
-      var table;
-      
-      // Load filter options
-      google.script.run.withSuccessHandler(function(options) {
-        populateSelect('#nvkdFilter', options.nvkdOptions);
-        populateSelect('#statusFilter', options.statusOptions);
-        populateSelect('#progressFilter', options.progressOptions);
-        
-        // Initialize DataTable
-        loadData();
-      }).getFilterOptions();
-      
-      function populateSelect(selector, options) {
-        var select = $(selector);
-        options.forEach(function(option) {
-          select.append($('<option>', { value: option, text: option }));
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbxX6_EaoZHgGDJBLhzk-E5mMTF_Zf967fEDNHMP67Jqg-nIDWk4WvfmGeG4xNXWNX6j/exec';
+            const filterBtn = document.getElementById('filter-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const nvkdSelect = document.getElementById('nvkd');
+            const trangthaiSelect = document.getElementById('trangthai');
+            const tiendoSelect = document.getElementById('tiendo');
+            const tableBody = document.getElementById('table-body');
+            const loadingDiv = document.getElementById('loading');
+            
+            let allData = []; // Lưu trữ tất cả dữ liệu từ API
+            
+            // Tải dữ liệu ban đầu
+            fetchData();
+            
+            // Sự kiện click nút lọc
+            filterBtn.addEventListener('click', function() {
+                filterData();
+            });
+            
+            // Sự kiện click nút đặt lại
+            resetBtn.addEventListener('click', function() {
+                nvkdSelect.value = '';
+                trangthaiSelect.value = '';
+                tiendoSelect.value = '';
+                filterData();
+            });
+            
+            // Hàm tải dữ liệu từ API
+            function fetchData() {
+                loadingDiv.style.display = 'block';
+                tableBody.innerHTML = '';
+                
+                fetch(scriptUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        allData = data;
+                        populateNVKDFilter(data);
+                        displayData(data);
+                        loadingDiv.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi tải dữ liệu:', error);
+                        loadingDiv.style.display = 'none';
+                        tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
+                    });
+            }
+            
+            // Hàm điền dữ liệu vào dropdown NVKD
+            function populateNVKDFilter(data) {
+                const nvkdSet = new Set();
+                
+                data.forEach(item => {
+                    if (item.nvkd) {
+                        nvkdSet.add(item.nvkd);
+                    }
+                });
+                
+                // Xóa các option cũ (trừ option đầu tiên)
+                while (nvkdSelect.options.length > 1) {
+                    nvkdSelect.remove(1);
+                }
+                
+                // Thêm các option mới
+                const sortedNVKD = Array.from(nvkdSet).sort();
+                sortedNVKD.forEach(nvkd => {
+                    const option = document.createElement('option');
+                    option.value = nvkd;
+                    option.textContent = nvkd;
+                    nvkdSelect.appendChild(option);
+                });
+            }
+            
+            // Hàm hiển thị dữ liệu
+            function displayData(data) {
+                tableBody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Không có dữ liệu phù hợp</td></tr>';
+                    return;
+                }
+                
+                data.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${item.tencongtrinh || ''}</td>
+                        <td>${item.diachi || ''}</td>
+                        <td>${item.nvkd || ''}</td>
+                        <td>${item.trangthai || ''}</td>
+                        <td>${item.tiendo || ''}</td>
+                        <td>${item.ngaybatdau || ''}</td>
+                        <td>${item.ngayketthuc || ''}</td>
+                        <td>${item.ghichu || ''}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+            
+            // Hàm lọc dữ liệu
+            function filterData() {
+                const selectedNVKD = nvkdSelect.value;
+                const selectedTrangthai = trangthaiSelect.value;
+                const selectedTiendo = tiendoSelect.value;
+                
+                const filteredData = allData.filter(item => {
+                    // Lọc theo NVKD
+                    if (selectedNVKD && item.nvkd !== selectedNVKD) {
+                        return false;
+                    }
+                    
+                    // Lọc theo trạng thái
+                    if (selectedTrangthai && item.trangthai !== selectedTrangthai) {
+                        return false;
+                    }
+                    
+                    // Lọc theo tiến độ
+                    if (selectedTiendo) {
+                        if (selectedTiendo === "100%" && item.tiendo !== "100%") {
+                            return false;
+                        }
+                        if (selectedTiendo === "0-25%" && (item.tiendo === "100%" || !item.tiendo || 
+                            (parseInt(item.tiendo) > 25))) {
+                            return false;
+                        }
+                        if (selectedTiendo === "26-50%" && (!item.tiendo || 
+                            (parseInt(item.tiendo) < 26 || parseInt(item.tiendo) > 50))) {
+                            return false;
+                        }
+                        if (selectedTiendo === "51-75%" && (!item.tiendo || 
+                            (parseInt(item.tiendo) < 51 || parseInt(item.tiendo) > 75))) {
+                            return false;
+                        }
+                        if (selectedTiendo === "76-99%" && (!item.tiendo || 
+                            (parseInt(item.tiendo) < 76 || item.tiendo === "100%"))) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+                
+                displayData(filteredData);
+            }
         });
-      }
-      
-      function loadData(filters = {}) {
-        if (table) {
-          table.destroy();
-        }
-        
-        google.script.run.withSuccessHandler(function(data) {
-          table = $('#dataTable').DataTable({
-            data: data,
-            columns: [
-              { data: 'idKH' },
-              { data: 'tenNVKD' },
-              { data: 'tenKH' },
-              { data: 'tinh' },
-              { data: 'huyenTP' },
-              { data: 'dienThoai' },
-              { data: 'trangThaiLienHe' },
-              { data: 'tienDoCT' },
-              { data: 'ngayUpdate' },
-              { 
-                data: null,
-                render: function(data, type, row) {
-                  return (row.note1 || '') + '<br>' + (row.note2 || '') + '<br>' + (row.note3 || '');
-                }
-              }
-            ],
-            pageLength: 10,
-            language: {
-              search: "Tìm kiếm:",
-              lengthMenu: "Hiển thị _MENU_ bản ghi mỗi trang",
-              info: "Hiển thị _START_ đến _END_ của _TOTAL_ bản ghi",
-              paginate: {
-                first: "Đầu",
-                last: "Cuối",
-                next: "Tiếp",
-                previous: "Trước"
-              }
-            }
-          });
-        }).getDataFromSheet();
-      }
-      
-      // Apply filters
-      $('#filterBtn').click(function() {
-        var filters = {
-          nvkd: $('#nvkdFilter').val(),
-          status: $('#statusFilter').val(),
-          progress: $('#progressFilter').val()
-        };
-        
-        if (table) {
-          table.destroy();
-        }
-        
-        google.script.run.withSuccessHandler(function(data) {
-          var filteredData = data.filter(function(row) {
-            return (
-              (filters.nvkd === '' || row.tenNVKD === filters.nvkd) &&
-              (filters.status === '' || row.trangThaiLienHe === filters.status) &&
-              (filters.progress === '' || row.tienDoCT === filters.progress)
-            );
-          });
-          
-          table = $('#dataTable').DataTable({
-            data: filteredData,
-            columns: [
-              { data: 'idKH' },
-              { data: 'tenNVKD' },
-              { data: 'tenKH' },
-              { data: 'tinh' },
-              { data: 'huyenTP' },
-              { data: 'dienThoai' },
-              { data: 'trangThaiLienHe' },
-              { data: 'tienDoCT' },
-              { data: 'ngayUpdate' },
-              { 
-                data: null,
-                render: function(data, type, row) {
-                  return (row.note1 || '') + '<br>' + (row.note2 || '') + '<br>' + (row.note3 || '');
-                }
-              }
-            ],
-            pageLength: 10,
-            language: {
-              search: "Tìm kiếm:",
-              lengthMenu: "Hiển thị _MENU_ bản ghi mỗi trang",
-              info: "Hiển thị _START_ đến _END_ của _TOTAL_ bản ghi",
-              paginate: {
-                first: "Đầu",
-                last: "Cuối",
-                next: "Tiếp",
-                previous: "Trước"
-              }
-            }
-          });
-        }).getDataFromSheet();
-      });
-      
-      // Reset filters
-      $('#resetBtn').click(function() {
-        $('#nvkdFilter, #statusFilter, #progressFilter').val('');
-        if (table) {
-          table.destroy();
-        }
-        loadData();
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>
