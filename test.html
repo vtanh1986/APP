@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý công trình - Bộ lọc nâng cao</title>
+    <!-- Thêm thư viện cần thiết -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
+        /* Giữ nguyên các style cũ */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -63,6 +67,12 @@
         }
         .reset-filter:hover {
             background-color: #d32f2f;
+        }
+        .export-excel {
+            background-color: #2e7d32;
+        }
+        .export-excel:hover {
+            background-color: #1b5e20;
         }
         table {
             width: 100%;
@@ -191,6 +201,7 @@
             
             <button id="refreshBtn">Làm mới</button>
             <button id="resetFilter" class="reset-filter">Xóa lọc</button>
+            <button id="exportExcel" class="export-excel">Xuất Excel</button>
         </div>
         
         <div id="dataContainer">
@@ -210,9 +221,10 @@
         const dataContainer = document.getElementById('dataContainer');
         const refreshBtn = document.getElementById('refreshBtn');
         const resetFilterBtn = document.getElementById('resetFilter');
+        const exportExcelBtn = document.getElementById('exportExcel');
         const paginationDiv = document.getElementById('pagination');
         
-        // Các bộ lọc (đã đổi tên theo yêu cầu)
+        // Các bộ lọc
         const tenNVKDFilter = document.getElementById('tenNVKDFilter');
         const trangThaiLienHeFilter = document.getElementById('trangThaiLienHeFilter');
         const tienDoCTFilter = document.getElementById('tienDoCTFilter');
@@ -271,8 +283,8 @@
         // Cập nhật tất cả bộ lọc
         function updateFilters() {
             updateFilterOptions('tenNVKD', tenNVKDFilter);
-            updateFilterOptions('trangThaiLienHe', trangThaiLienHeFilter);  // Đã đổi tên
-            updateFilterOptions('tienDoCT', tienDoCTFilter);  // Đã đổi tên
+            updateFilterOptions('trangThaiLienHe', trangThaiLienHeFilter);
+            updateFilterOptions('tienDoCT', tienDoCTFilter);
             updateFilterOptions('tenKDT', tenKDTFilter);
         }
 
@@ -289,14 +301,14 @@
         // Hàm lọc dữ liệu theo các điều kiện
         function filterData() {
             const tenNVKD = tenNVKDFilter.value;
-            const trangThaiLienHe = trangThaiLienHeFilter.value;  // Đã đổi tên
-            const tienDoCT = tienDoCTFilter.value;  // Đã đổi tên
+            const trangThaiLienHe = trangThaiLienHeFilter.value;
+            const tienDoCT = tienDoCTFilter.value;
             const tenKDT = tenKDTFilter.value;
             
             return allData.filter(row => {
                 return (!tenNVKD || row.tenNVKD === tenNVKD) &&
-                       (!trangThaiLienHe || row.trangThaiLienHe === trangThaiLienHe) &&  // Đã đổi tên
-                       (!tienDoCT || row.tienDoCT === tienDoCT) &&  // Đã đổi tên
+                       (!trangThaiLienHe || row.trangThaiLienHe === trangThaiLienHe) &&
+                       (!tienDoCT || row.tienDoCT === tienDoCT) &&
                        (!tenKDT || row.tenKDT === tenKDT);
             });
         }
@@ -330,7 +342,7 @@
                 return;
             }
             
-            // Lấy tất cả keys từ các object để làm header (bao gồm cả anhcongtrinh)
+            // Lấy tất cả keys từ các object để làm header
             const headers = [...new Set(data.flatMap(item => Object.keys(item)))];
             
             let html = `<table>
@@ -443,6 +455,86 @@
             window.scrollTo(0, 0);
         }
 
+        // Hàm xuất dữ liệu ra Excel với hình ảnh nhúng
+        async function exportToExcel() {
+            // Lấy dữ liệu đã lọc (toàn bộ, không phân trang)
+            const filteredData = filterData();
+            
+            if (filteredData.length === 0) {
+                alert('Không có dữ liệu để xuất Excel!');
+                return;
+            }
+            
+            // Tạo workbook mới
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Danh sách công trình');
+            
+            // Lấy tất cả headers
+            const headers = [...new Set(filteredData.flatMap(item => Object.keys(item)))];
+            
+            // Thêm header row
+            worksheet.addRow(headers);
+            
+            // Thêm dữ liệu từng dòng
+            for (const row of filteredData) {
+                const newRow = worksheet.addRow([]);
+                
+                headers.forEach((header, colIndex) => {
+                    const cellValue = row[header] !== undefined ? row[header] : '';
+                    const cell = newRow.getCell(colIndex + 1);
+                    
+                    if (header === 'anhcongtrinh' && cellValue) {
+                        // Xử lý hình ảnh
+                        const imageUrl = cellValue.startsWith('http') ? cellValue : `https://drive.google.com/thumbnail?id=${cellValue}`;
+                        
+                        // Thêm hình ảnh vào cell
+                        (async () => {
+                            try {
+                                const response = await fetch(imageUrl);
+                                const imageBuffer = await response.arrayBuffer();
+                                
+                                const imageId = workbook.addImage({
+                                    buffer: imageBuffer,
+                                    extension: 'jpeg', // hoặc 'png' tùy định dạng ảnh
+                                });
+                                
+                                // Đặt kích thước cho hình ảnh (100x100 pixels)
+                                worksheet.addImage(imageId, {
+                                    tl: { col: colIndex, row: newRow.number - 1 },
+                                    ext: { width: 100, height: 100 },
+                                });
+                                
+                                // Đặt chiều cao cho dòng chứa ảnh
+                                worksheet.getRow(newRow.number).height = 80;
+                            } catch (error) {
+                                console.error('Lỗi khi thêm hình ảnh:', error);
+                                cell.value = imageUrl; // Nếu không thêm được ảnh thì ghi link
+                            }
+                        })();
+                    } else {
+                        cell.value = cellValue;
+                    }
+                });
+            }
+            
+            // Căn chỉnh độ rộng cột tự động
+            worksheet.columns.forEach(column => {
+                let maxLength = 0;
+                column.eachCell({ includeEmpty: true }, cell => {
+                    if (cell.value && typeof cell.value === 'string') {
+                        maxLength = Math.max(maxLength, cell.value.length);
+                    }
+                });
+                column.width = Math.min(Math.max(maxLength + 2, 10), 50);
+            });
+            
+            // Xuất file Excel
+            const buffer = await workbook.xlsx.writeBuffer();
+            const fileName = `Danh_sach_cong_trinh_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            
+            saveAs(new Blob([buffer]), fileName);
+        }
+
         // Gọi hàm fetchData khi trang load
         document.addEventListener('DOMContentLoaded', fetchData);
         
@@ -468,6 +560,9 @@
             filterAndRenderData();
             setupPagination();
         });
+        
+        // Thêm sự kiện cho nút xuất Excel
+        exportExcelBtn.addEventListener('click', exportToExcel);
         
         // Đóng modal xem ảnh
         closePreview.addEventListener('click', () => {
