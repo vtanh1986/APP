@@ -3,63 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý công trình - Full Data</title>
+    <title>Quản lý công trình - Bộ lọc nâng cao</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
             color: #1a73e8;
+            text-align: center;
+            margin-bottom: 20px;
         }
-        .filter-section {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
             margin-bottom: 20px;
         }
         .filter-group {
-            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
         }
-        label {
-            display: inline-block;
-            width: 150px;
+        .filter-label {
             font-weight: bold;
+            margin-bottom: 5px;
         }
-        select, input {
+        .filter-select, .filter-input {
             padding: 8px;
-            width: 200px;
             border: 1px solid #ddd;
             border-radius: 4px;
         }
         button {
             background-color: #1a73e8;
             color: white;
-            padding: 10px 15px;
             border: none;
+            padding: 10px 15px;
             border-radius: 4px;
             cursor: pointer;
-            margin-right: 10px;
+            font-size: 14px;
+            height: fit-content;
+            align-self: flex-end;
         }
         button:hover {
-            background-color: #0d5bba;
+            background-color: #0d62c9;
+        }
+        .reset-filter {
+            background-color: #f44336;
+        }
+        .reset-filter:hover {
+            background-color: #d32f2f;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            font-size: 0.9em;
         }
         th, td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
         }
         th {
             background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
+            cursor: pointer;
+            position: relative;
+        }
+        th:hover {
+            background-color: #e6e6e6;
+        }
+        th.sort-asc::after {
+            content: " ↑";
+            color: #1a73e8;
+        }
+        th.sort-desc::after {
+            content: " ↓";
+            color: #1a73e8;
         }
         tr:nth-child(even) {
             background-color: #f9f9f9;
@@ -68,317 +97,387 @@
             background-color: #f1f1f1;
         }
         .loading {
-            display: none;
-            margin: 20px 0;
-            color: #1a73e8;
-            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
         }
-        .container {
-            overflow-x: auto;
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+            padding: 20px;
+            text-align: center;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+        .pagination button {
+            margin: 0;
+        }
+        .image-cell img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-cell img:hover {
+            transform: scale(1.5);
+            z-index: 100;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        .image-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .image-preview img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .close-preview {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Quản lý công trình - Full Data</h1>
-    
-    <div class="filter-section">
-        <h2>Bộ lọc</h2>
-        <div class="filter-group">
-            <label for="nvkd">Tên NVKD:</label>
-            <select id="nvkd">
-                <option value="">Tất cả</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="trangthai">Trạng thái làm việc:</label>
-            <select id="trangthai">
-                <option value="">Tất cả</option>
-                <option value="Đang làm">Đang làm</option>
-                <option value="Đã xong">Đã xong</option>
-                <option value="Tạm dừng">Tạm dừng</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="tiendo">Tiến độ công trình:</label>
-            <select id="tiendo">
-                <option value="">Tất cả</option>
-                <option value="0-25%">0-25%</option>
-                <option value="26-50%">26-50%</option>
-                <option value="51-75%">51-75%</option>
-                <option value="76-99%">76-99%</option>
-                <option value="100%">100%</option>
-            </select>
-        </div>
-        <button id="filter-btn">Lọc dữ liệu</button>
-        <button id="reset-btn">Đặt lại</button>
-        <button id="export-btn">Xuất Excel</button>
-    </div>
-    
-    <div id="loading" class="loading">Đang tải dữ liệu...</div>
-    
     <div class="container">
-        <table id="data-table">
-            <thead id="table-header">
-                <!-- Tiêu đề cột sẽ được thêm tự động -->
-            </thead>
-            <tbody id="table-body">
-                <!-- Dữ liệu sẽ được thêm vào đây -->
-            </tbody>
-        </table>
+        <h1>QUẢN LÝ CÔNG TRÌNH - BỘ LỌC NÂNG CAO</h1>
+        
+        <div class="controls">
+            <div class="filter-group">
+                <label class="filter-label">Tên NVKD:</label>
+                <select id="tenNVKDFilter" class="filter-select">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Trạng thái liên hệ:</label>
+                <select id="trangThaiLienHeFilter" class="filter-select">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Tiến độ CT:</label>
+                <select id="tienDoCTFilter" class="filter-select">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Tên KĐT:</label>
+                <select id="tenKDTFilter" class="filter-select">
+                    <option value="">-- Tất cả --</option>
+                </select>
+            </div>
+            
+            <button id="refreshBtn">Làm mới</button>
+            <button id="resetFilter" class="reset-filter">Xóa lọc</button>
+        </div>
+        
+        <div id="dataContainer">
+            <p class="loading">Đang tải dữ liệu...</p>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <div id="imagePreviewModal" class="image-preview" style="display: none;">
+        <span class="close-preview">&times;</span>
+        <img id="previewImage" src="" alt="Xem trước hình ảnh">
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const scriptUrl = 'https://script.google.com/macros/s/AKfycbxX6_EaoZHgGDJBLhzk-E5mMTF_Zf967fEDNHMP67Jqg-nIDWk4WvfmGeG4xNXWNX6j/exec';
-            const filterBtn = document.getElementById('filter-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const exportBtn = document.getElementById('export-btn');
-            const nvkdSelect = document.getElementById('nvkd');
-            const trangthaiSelect = document.getElementById('trangthai');
-            const tiendoSelect = document.getElementById('tiendo');
-            const tableHeader = document.getElementById('table-header');
-            const tableBody = document.getElementById('table-body');
-            const loadingDiv = document.getElementById('loading');
-            
-            let allData = []; // Lưu trữ tất cả dữ liệu từ API
-            let allColumns = []; // Lưu trữ tất cả các cột từ dữ liệu
-            
-            // Tải dữ liệu ban đầu
-            fetchData();
-            
-            // Sự kiện click nút lọc
-            filterBtn.addEventListener('click', function() {
-                filterData();
-            });
-            
-            // Sự kiện click nút đặt lại
-            resetBtn.addEventListener('click', function() {
-                nvkdSelect.value = '';
-                trangthaiSelect.value = '';
-                tiendoSelect.value = '';
-                filterData();
-            });
-            
-            // Sự kiện click nút xuất Excel
-            exportBtn.addEventListener('click', function() {
-                exportToExcel();
-            });
-            
-            // Hàm tải dữ liệu từ API
-            function fetchData() {
-                loadingDiv.style.display = 'block';
-                tableBody.innerHTML = '';
-                tableHeader.innerHTML = '';
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbySsoyEMFa6mlbp4gQlivw8kTBoEDrNyVkAN0FuknkOZ1MMAZcusiN30AtMG3oT0N2-/exec';
+        const dataContainer = document.getElementById('dataContainer');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const resetFilterBtn = document.getElementById('resetFilter');
+        const paginationDiv = document.getElementById('pagination');
+        
+        // Các bộ lọc (đã đổi tên theo yêu cầu)
+        const tenNVKDFilter = document.getElementById('tenNVKDFilter');
+        const trangThaiLienHeFilter = document.getElementById('trangThaiLienHeFilter');
+        const tienDoCTFilter = document.getElementById('tienDoCTFilter');
+        const tenKDTFilter = document.getElementById('tenKDTFilter');
+        
+        // Modal xem ảnh
+        const imagePreviewModal = document.getElementById('imagePreviewModal');
+        const previewImage = document.getElementById('previewImage');
+        const closePreview = document.querySelector('.close-preview');
+        
+        let allData = [];
+        let currentData = [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let sortColumn = null;
+        let sortDirection = 'asc';
+
+        // Hàm fetch dữ liệu từ API
+        async function fetchData() {
+            try {
+                dataContainer.innerHTML = '<p class="loading">Đang tải dữ liệu...</p>';
                 
-                fetch(scriptUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        allData = data;
-                        
-                        // Xác định tất cả các cột có trong dữ liệu
-                        if (data.length > 0) {
-                            allColumns = Object.keys(data[0]);
-                            
-                            // Thêm cột STT vào đầu danh sách
-                            allColumns.unshift('stt');
-                        }
-                        
-                        populateNVKDFilter(data);
-                        createTableHeader();
-                        displayData(data);
-                        loadingDiv.style.display = 'none';
-                    })
-                    .catch(error => {
-                        console.error('Lỗi khi tải dữ liệu:', error);
-                        loadingDiv.style.display = 'none';
-                        tableBody.innerHTML = '<tr><td colspan="100%" style="text-align: center;">Có lỗi xảy ra khi tải dữ liệu</td></tr>';
-                    });
-            }
-            
-            // Hàm tạo tiêu đề bảng tự động từ các cột dữ liệu
-            function createTableHeader() {
-                const headerRow = document.createElement('tr');
+                const response = await fetch(apiUrl);
                 
-                allColumns.forEach(column => {
-                    const th = document.createElement('th');
-                    
-                    // Đặt tên hiển thị đẹp hơn cho các cột
-                    let displayName = column;
-                    switch(column) {
-                        case 'stt':
-                            displayName = 'STT';
-                            break;
-                        case 'tencongtrinh':
-                            displayName = 'Tên công trình';
-                            break;
-                        case 'diachi':
-                            displayName = 'Địa chỉ';
-                            break;
-                        case 'nvkd':
-                            displayName = 'NVKD';
-                            break;
-                        case 'trangthai':
-                            displayName = 'Trạng thái';
-                            break;
-                        case 'tiendo':
-                            displayName = 'Tiến độ';
-                            break;
-                        case 'ngaybatdau':
-                            displayName = 'Ngày bắt đầu';
-                            break;
-                        case 'ngayketthuc':
-                            displayName = 'Ngày kết thúc';
-                            break;
-                        case 'ghichu':
-                            displayName = 'Ghi chú';
-                            break;
-                        // Thêm các trường hợp khác nếu cần
-                    }
-                    
-                    th.textContent = displayName;
-                    headerRow.appendChild(th);
-                });
-                
-                tableHeader.appendChild(headerRow);
-            }
-            
-            // Hàm điền dữ liệu vào dropdown NVKD
-            function populateNVKDFilter(data) {
-                const nvkdSet = new Set();
-                
-                data.forEach(item => {
-                    if (item.nvkd) {
-                        nvkdSet.add(item.nvkd);
-                    }
-                });
-                
-                // Xóa các option cũ (trừ option đầu tiên)
-                while (nvkdSelect.options.length > 1) {
-                    nvkdSelect.remove(1);
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status}`);
                 }
                 
-                // Thêm các option mới
-                const sortedNVKD = Array.from(nvkdSet).sort();
-                sortedNVKD.forEach(nvkd => {
-                    const option = document.createElement('option');
-                    option.value = nvkd;
-                    option.textContent = nvkd;
-                    nvkdSelect.appendChild(option);
-                });
-            }
-            
-            // Hàm hiển thị dữ liệu
-            function displayData(data) {
-                tableBody.innerHTML = '';
+                const data = await response.json();
                 
-                if (data.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="${allColumns.length}" style="text-align: center;">Không có dữ liệu phù hợp</td></tr>`;
-                    return;
+                // Kiểm tra nếu dữ liệu là mảng
+                if (Array.isArray(data)) {
+                    allData = data;
+                } else if (typeof data === 'object' && data !== null) {
+                    allData = [data];
+                } else {
+                    allData = [];
                 }
                 
-                data.forEach((item, index) => {
-                    const row = document.createElement('tr');
-                    
-                    // Thêm tất cả các cột vào hàng
-                    allColumns.forEach(column => {
-                        const cell = document.createElement('td');
-                        
-                        if (column === 'stt') {
-                            cell.textContent = index + 1;
-                        } else {
-                            cell.textContent = item[column] || '';
-                        }
-                        
-                        row.appendChild(cell);
-                    });
-                    
-                    tableBody.appendChild(row);
-                });
-            }
-            
-            // Hàm lọc dữ liệu
-            function filterData() {
-                const selectedNVKD = nvkdSelect.value;
-                const selectedTrangthai = trangthaiSelect.value;
-                const selectedTiendo = tiendoSelect.value;
+                // Cập nhật các bộ lọc
+                updateFilters();
                 
-                const filteredData = allData.filter(item => {
-                    // Lọc theo NVKD
-                    if (selectedNVKD && item.nvkd !== selectedNVKD) {
-                        return false;
-                    }
-                    
-                    // Lọc theo trạng thái
-                    if (selectedTrangthai && item.trangthai !== selectedTrangthai) {
-                        return false;
-                    }
-                    
-                    // Lọc theo tiến độ
-                    if (selectedTiendo) {
-                        if (selectedTiendo === "100%" && item.tiendo !== "100%") {
-                            return false;
-                        }
-                        if (selectedTiendo === "0-25%" && (item.tiendo === "100%" || !item.tiendo || 
-                            (parseInt(item.tiendo) > 25))) {
-                            return false;
-                        }
-                        if (selectedTiendo === "26-50%" && (!item.tiendo || 
-                            (parseInt(item.tiendo) < 26 || parseInt(item.tiendo) > 50))) {
-                            return false;
-                        }
-                        if (selectedTiendo === "51-75%" && (!item.tiendo || 
-                            (parseInt(item.tiendo) < 51 || parseInt(item.tiendo) > 75))) {
-                            return false;
-                        }
-                        if (selectedTiendo === "76-99%" && (!item.tiendo || 
-                            (parseInt(item.tiendo) < 76 || item.tiendo === "100%"))) {
-                            return false;
-                        }
-                    }
-                    
-                    return true;
-                });
+                currentPage = 1;
+                filterAndRenderData();
+                setupPagination();
                 
-                displayData(filteredData);
+            } catch (error) {
+                dataContainer.innerHTML = `
+                    <p class="error">Có lỗi xảy ra khi tải dữ liệu:</p>
+                    <pre>${error.message}</pre>
+                `;
+                console.error('Lỗi khi fetch dữ liệu:', error);
             }
+        }
+
+        // Cập nhật tất cả bộ lọc
+        function updateFilters() {
+            updateFilterOptions('tenNVKD', tenNVKDFilter);
+            updateFilterOptions('trangThaiLienHe', trangThaiLienHeFilter);  // Đã đổi tên
+            updateFilterOptions('tienDoCT', tienDoCTFilter);  // Đã đổi tên
+            updateFilterOptions('tenKDT', tenKDTFilter);
+        }
+
+        // Cập nhật options cho một bộ lọc
+        function updateFilterOptions(field, filterElement) {
+            const uniqueValues = [...new Set(allData.map(item => item[field]))].filter(Boolean).sort();
             
-            // Hàm xuất dữ liệu ra Excel
-            function exportToExcel() {
-                // Lấy dữ liệu hiện tại (đã lọc nếu có)
-                const rows = Array.from(tableBody.querySelectorAll('tr'));
-                if (rows.length === 0) {
-                    alert('Không có dữ liệu để xuất');
-                    return;
+            filterElement.innerHTML = '<option value="">-- Tất cả --</option>';
+            uniqueValues.forEach(value => {
+                filterElement.innerHTML += `<option value="${value}">${value}</option>`;
+            });
+        }
+
+        // Hàm lọc dữ liệu theo các điều kiện
+        function filterData() {
+            const tenNVKD = tenNVKDFilter.value;
+            const trangThaiLienHe = trangThaiLienHeFilter.value;  // Đã đổi tên
+            const tienDoCT = tienDoCTFilter.value;  // Đã đổi tên
+            const tenKDT = tenKDTFilter.value;
+            
+            return allData.filter(row => {
+                return (!tenNVKD || row.tenNVKD === tenNVKD) &&
+                       (!trangThaiLienHe || row.trangThaiLienHe === trangThaiLienHe) &&  // Đã đổi tên
+                       (!tienDoCT || row.tienDoCT === tienDoCT) &&  // Đã đổi tên
+                       (!tenKDT || row.tenKDT === tenKDT);
+            });
+        }
+
+        // Hàm sắp xếp dữ liệu
+        function sortData(data) {
+            if (!sortColumn) return data;
+            
+            return [...data].sort((a, b) => {
+                const valA = a[sortColumn];
+                const valB = b[sortColumn];
+                
+                if (valA === valB) return 0;
+                
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    return sortDirection === 'asc' 
+                        ? valA.localeCompare(valB) 
+                        : valB.localeCompare(valA);
                 }
                 
-                // Tạo nội dung CSV
-                let csvContent = "data:text/csv;charset=utf-8,";
+                return sortDirection === 'asc' 
+                    ? (valA > valB ? 1 : -1)
+                    : (valA < valB ? 1 : -1);
+            });
+        }
+
+        // Hàm render dữ liệu ra bảng
+        function renderTable(data) {
+            if (data.length === 0) {
+                dataContainer.innerHTML = '<p class="error">Không có dữ liệu phù hợp với điều kiện lọc</p>';
+                return;
+            }
+            
+            // Lấy tất cả keys từ các object để làm header (bao gồm cả anhcongtrinh)
+            const headers = [...new Set(data.flatMap(item => Object.keys(item)))];
+            
+            let html = `<table>
+                <thead>
+                    <tr>
+                        ${headers.map(header => 
+                            `<th onclick="sortTable('${header}')" 
+                                ${sortColumn === header ? `class="sort-${sortDirection}"` : ''}>
+                                ${header}
+                            </th>`
+                        ).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.map(row => `
+                        <tr>
+                            ${headers.map(header => {
+                                const cellValue = row[header] !== undefined ? row[header] : '';
+                                if (header === 'anhcongtrinh' && cellValue) {
+                                    // Xử lý hiển thị hình ảnh
+                                    const imageUrl = cellValue.startsWith('http') ? cellValue : `https://drive.google.com/thumbnail?id=${cellValue}`;
+                                    return `<td class="image-cell">
+                                        <img src="${imageUrl}" alt="Ảnh công trình" onclick="showImagePreview('${imageUrl}')">
+                                    </td>`;
+                                }
+                                return `<td>${cellValue}</td>`;
+                            }).join('')}
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>`;
+            
+            dataContainer.innerHTML = html;
+        }
+
+        // Hàm xử lý sắp xếp khi click vào header
+        window.sortTable = function(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            filterAndRenderData();
+        }
+
+        // Hiển thị preview ảnh lớn
+        window.showImagePreview = function(imageUrl) {
+            previewImage.src = imageUrl;
+            imagePreviewModal.style.display = 'flex';
+        }
+
+        // Hàm lọc và render dữ liệu
+        function filterAndRenderData() {
+            let filteredData = filterData();
+            filteredData = sortData(filteredData);
+            
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            currentData = filteredData.slice(start, end);
+            
+            renderTable(currentData);
+        }
+
+        // Hàm thiết lập phân trang
+        function setupPagination() {
+            const filteredData = filterData();
+            const pageCount = Math.ceil(filteredData.length / rowsPerPage);
+            
+            let html = '';
+            if (pageCount > 1) {
+                if (currentPage > 1) {
+                    html += `<button onclick="changePage(${currentPage - 1})">Trước</button>`;
+                }
                 
-                // Thêm tiêu đề
-                const headers = Array.from(tableHeader.querySelectorAll('th')).map(th => th.textContent);
-                csvContent += headers.join(",") + "\r\n";
+                // Hiển thị tối đa 5 trang xung quanh trang hiện tại
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(pageCount, currentPage + 2);
                 
-                // Thêm dữ liệu
-                rows.forEach(row => {
-                    const rowData = Array.from(row.querySelectorAll('td')).map(td => {
-                        // Xử lý dữ liệu để tránh lỗi CSV
-                        let text = td.textContent;
-                        if (text.includes(',') || text.includes('"') || text.includes('\n')) {
-                            text = '"' + text.replace(/"/g, '""') + '"';
-                        }
-                        return text;
-                    });
-                    csvContent += rowData.join(",") + "\r\n";
-                });
+                if (startPage > 1) {
+                    html += `<button onclick="changePage(1)">1</button>`;
+                    if (startPage > 2) html += `<span>...</span>`;
+                }
                 
-                // Tạo link download
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "du_lieu_cong_trinh.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `<button onclick="changePage(${i})" 
+                        ${currentPage === i ? 'style="background-color:#0d62c9"' : ''}>
+                        ${i}
+                    </button>`;
+                }
+                
+                if (endPage < pageCount) {
+                    if (endPage < pageCount - 1) html += `<span>...</span>`;
+                    html += `<button onclick="changePage(${pageCount})">${pageCount}</button>`;
+                }
+                
+                if (currentPage < pageCount) {
+                    html += `<button onclick="changePage(${currentPage + 1})">Sau</button>`;
+                }
+            }
+            
+            paginationDiv.innerHTML = html;
+        }
+
+        // Hàm thay đổi trang
+        window.changePage = function(page) {
+            currentPage = page;
+            filterAndRenderData();
+            setupPagination();
+            window.scrollTo(0, 0);
+        }
+
+        // Gọi hàm fetchData khi trang load
+        document.addEventListener('DOMContentLoaded', fetchData);
+        
+        // Thêm sự kiện click cho nút refresh
+        refreshBtn.addEventListener('click', fetchData);
+        
+        // Thêm sự kiện cho các bộ lọc
+        [tenNVKDFilter, trangThaiLienHeFilter, tienDoCTFilter, tenKDTFilter].forEach(filter => {
+            filter.addEventListener('change', () => {
+                currentPage = 1;
+                filterAndRenderData();
+                setupPagination();
+            });
+        });
+        
+        // Thêm sự kiện cho nút xóa lọc
+        resetFilterBtn.addEventListener('click', () => {
+            tenNVKDFilter.value = "";
+            trangThaiLienHeFilter.value = "";
+            tienDoCTFilter.value = "";
+            tenKDTFilter.value = "";
+            currentPage = 1;
+            filterAndRenderData();
+            setupPagination();
+        });
+        
+        // Đóng modal xem ảnh
+        closePreview.addEventListener('click', () => {
+            imagePreviewModal.style.display = 'none';
+        });
+        
+        // Đóng modal khi click bên ngoài ảnh
+        imagePreviewModal.addEventListener('click', (e) => {
+            if (e.target === imagePreviewModal) {
+                imagePreviewModal.style.display = 'none';
             }
         });
     </script>
