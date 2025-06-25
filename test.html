@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* Giữ nguyên các style cũ */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -133,6 +132,7 @@
             border-radius: 4px;
             cursor: pointer;
             transition: transform 0.2s;
+            object-fit: cover;
         }
         .image-cell img:hover {
             transform: scale(1.5);
@@ -162,6 +162,18 @@
             right: 20px;
             color: white;
             font-size: 30px;
+            cursor: pointer;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 5px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
             cursor: pointer;
         }
     </style>
@@ -217,7 +229,7 @@
     </div>
 
     <script>
-        const apiUrl = 'https://script.google.com/macros/s/AKfycbySsoyEMFa6mlbp4gQlivw8kTBoEDrNyVkAN0FuknkOZ1MMAZcusiN30AtMG3oT0N2-/exec';
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbxsCiGANq8qAwOLDKe8NXrE0o18vMK9aOvQetBJoiks12xMpLFbfpMaIh-KFpMSzMzn/exec';
         const dataContainer = document.getElementById('dataContainer');
         const refreshBtn = document.getElementById('refreshBtn');
         const resetFilterBtn = document.getElementById('resetFilter');
@@ -335,6 +347,44 @@
             });
         }
 
+        // Hàm định dạng ngày tháng
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Hàm xử lý hiển thị ảnh
+        function renderImages(imageData) {
+            if (!imageData) return '';
+            
+            // Nếu là chuỗi JSON (mảng ảnh)
+            try {
+                const images = JSON.parse(imageData);
+                if (Array.isArray(images) && images.length > 0) {
+                    return `<div class="image-grid">
+                        ${images.map(img => {
+                            const imageUrl = img.startsWith('http') ? img : `https://drive.google.com/thumbnail?id=${img}`;
+                            return `<img src="${imageUrl}" alt="Ảnh công trình" onclick="showImagePreview('${imageUrl}')">`;
+                        }).join('')}
+                    </div>`;
+                }
+            } catch (e) {
+                // Nếu không phải JSON, xử lý như ảnh đơn
+                const imageUrl = imageData.startsWith('http') ? imageData : `https://drive.google.com/thumbnail?id=${imageData}`;
+                return `<img src="${imageUrl}" alt="Ảnh công trình" onclick="showImagePreview('${imageUrl}')" style="max-width:100px;max-height:100px;">`;
+            }
+            
+            return '';
+        }
+
         // Hàm render dữ liệu ra bảng
         function renderTable(data) {
             if (data.length === 0) {
@@ -360,14 +410,18 @@
                     ${data.map(row => `
                         <tr>
                             ${headers.map(header => {
-                                const cellValue = row[header] !== undefined ? row[header] : '';
-                                if (header === 'anhcongtrinh' && cellValue) {
-                                    // Xử lý hiển thị hình ảnh
-                                    const imageUrl = cellValue.startsWith('http') ? cellValue : `https://drive.google.com/thumbnail?id=${cellValue}`;
-                                    return `<td class="image-cell">
-                                        <img src="${imageUrl}" alt="Ảnh công trình" onclick="showImagePreview('${imageUrl}')">
-                                    </td>`;
+                                let cellValue = row[header] !== undefined ? row[header] : '';
+                                
+                                // Định dạng ngày tháng cho các trường ngày
+                                if (header === 'ngayTiepCan' || header === 'ngayUpdate') {
+                                    cellValue = formatDate(cellValue);
                                 }
+                                
+                                // Xử lý hiển thị ảnh cho trường anhCongTrinh
+                                if (header === 'anhCongTrinh') {
+                                    return `<td class="image-cell">${renderImages(cellValue)}</td>`;
+                                }
+                                
                                 return `<td>${cellValue}</td>`;
                             }).join('')}
                         </tr>
@@ -480,12 +534,30 @@
                 const newRow = worksheet.addRow([]);
                 
                 headers.forEach((header, colIndex) => {
-                    const cellValue = row[header] !== undefined ? row[header] : '';
+                    let cellValue = row[header] !== undefined ? row[header] : '';
+                    
+                    // Định dạng ngày tháng cho các trường ngày
+                    if (header === 'ngayTiepCan' || header === 'ngayUpdate') {
+                        cellValue = formatDate(cellValue);
+                    }
+                    
                     const cell = newRow.getCell(colIndex + 1);
                     
-                    if (header === 'anhcongtrinh' && cellValue) {
-                        // Xử lý hình ảnh
-                        const imageUrl = cellValue.startsWith('http') ? cellValue : `https://drive.google.com/thumbnail?id=${cellValue}`;
+                    if (header === 'anhCongTrinh' && cellValue) {
+                        // Xử lý hình ảnh - chỉ lấy ảnh đầu tiên nếu có nhiều ảnh
+                        let imageUrl = '';
+                        try {
+                            const images = JSON.parse(cellValue);
+                            if (Array.isArray(images) && images.length > 0) {
+                                imageUrl = images[0];
+                            } else {
+                                imageUrl = cellValue;
+                            }
+                        } catch (e) {
+                            imageUrl = cellValue;
+                        }
+                        
+                        imageUrl = imageUrl.startsWith('http') ? imageUrl : `https://drive.google.com/thumbnail?id=${imageUrl}`;
                         
                         // Thêm hình ảnh vào cell
                         (async () => {
@@ -495,7 +567,7 @@
                                 
                                 const imageId = workbook.addImage({
                                     buffer: imageBuffer,
-                                    extension: 'jpeg', // hoặc 'png' tùy định dạng ảnh
+                                    extension: 'jpeg',
                                 });
                                 
                                 // Đặt kích thước cho hình ảnh (100x100 pixels)
@@ -508,7 +580,7 @@
                                 worksheet.getRow(newRow.number).height = 80;
                             } catch (error) {
                                 console.error('Lỗi khi thêm hình ảnh:', error);
-                                cell.value = imageUrl; // Nếu không thêm được ảnh thì ghi link
+                                cell.value = imageUrl;
                             }
                         })();
                     } else {
