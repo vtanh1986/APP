@@ -140,16 +140,12 @@
                 const data = await response.json();
                 console.log('Dữ liệu trả về:', data);
                 
-                // Xử lý dữ liệu trả về
                 if (Array.isArray(data)) {
-                    // Tìm sản phẩm có mã hàng trùng khớp chính xác
                     const exactMatch = data.find(item => item.maHang == maHang);
                     if (exactMatch) return exactMatch;
-                    
-                    // Nếu không tìm thấy, lấy sản phẩm đầu tiên
                     if (data.length > 0) return data[0];
                 }
-                return data || {}; // Trả về dữ liệu hoặc object rỗng
+                return data || {};
             } catch (error) {
                 console.error(`Lỗi khi lấy dữ liệu:`, error);
                 return {
@@ -248,27 +244,30 @@
             
             let html = '';
             
-            for (let i = 0; i < maHangList.length; i += 2) {
-                const maHang1 = maHangList[i];
-                const maHang2 = maHangList[i + 1];
-                
-                try {
+            try {
+                for (let i = 0; i < maHangList.length; i += 2) {
+                    const maHang1 = maHangList[i];
+                    const maHang2 = maHangList[i + 1];
+                    
                     const product1 = await fetchProductData(maHang1);
                     const product2 = maHang2 ? await fetchProductData(maHang2) : null;
                     
                     html += createContainer(product1, product2);
-                } catch (error) {
-                    console.error(`Lỗi khi tạo container:`, error);
-                    html += createContainer(
-                        { maHang: maHang1 },
-                        maHang2 ? { maHang: maHang2 } : null
-                    );
                 }
+                
+                content.innerHTML = html;
+                
+                // Thêm delay ngắn để đảm bảo DOM đã render xong trước khi in
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    window.print();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Lỗi khi tạo tag giá:', error);
+                loading.style.display = 'none';
+                alert('Có lỗi xảy ra khi tạo tag giá. Vui lòng thử lại!');
             }
-            
-            content.innerHTML = html;
-            loading.style.display = 'none';
-            window.print();
         }
 
         document.getElementById('generateButton').addEventListener('click', generateContainers);
