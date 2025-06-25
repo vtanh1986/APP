@@ -126,20 +126,6 @@
         .pagination button {
             margin: 0;
         }
-        .image-cell img {
-            max-width: 100px;
-            max-height: 100px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            object-fit: cover;
-        }
-        .image-cell img:hover {
-            transform: scale(1.5);
-            z-index: 100;
-            position: relative;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
         .image-preview {
             position: fixed;
             top: 0;
@@ -164,17 +150,15 @@
             font-size: 30px;
             cursor: pointer;
         }
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 5px;
-        }
-        .image-grid img {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 4px;
+        .image-link {
+            color: #1a73e8;
+            text-decoration: underline;
             cursor: pointer;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        .image-link:hover {
+            color: #0d62c9;
         }
     </style>
 </head>
@@ -364,25 +348,22 @@
             });
         }
 
-        // Hàm xử lý hiển thị ảnh
-        function renderImages(imageData) {
+        // Hàm xử lý hiển thị đường dẫn ảnh
+        function renderImagePaths(imageData) {
             if (!imageData) return '';
             
-            // Nếu là chuỗi JSON (mảng ảnh)
             try {
                 const images = JSON.parse(imageData);
                 if (Array.isArray(images) && images.length > 0) {
-                    return `<div class="image-grid">
-                        ${images.map(img => {
-                            const imageUrl = img.startsWith('http') ? img : `https://drive.google.com/thumbnail?id=${img}`;
-                            return `<img src="${imageUrl}" alt="Ảnh công trình" onclick="showImagePreview('${imageUrl}')">`;
-                        }).join('')}
-                    </div>`;
+                    return images.map(img => {
+                        const imageUrl = img.startsWith('http') ? img : `https://drive.google.com/thumbnail?id=${img}`;
+                        return `<span class="image-link" onclick="showImagePreview('${imageUrl}')">${imageUrl}</span>`;
+                    }).join('<br>');
                 }
             } catch (e) {
                 // Nếu không phải JSON, xử lý như ảnh đơn
                 const imageUrl = imageData.startsWith('http') ? imageData : `https://drive.google.com/thumbnail?id=${imageData}`;
-                return `<img src="${imageUrl}" alt="Ảnh công trình" onclick="showImagePreview('${imageUrl}')" style="max-width:100px;max-height:100px;">`;
+                return `<span class="image-link" onclick="showImagePreview('${imageUrl}')">${imageUrl}</span>`;
             }
             
             return '';
@@ -421,9 +402,9 @@
                                     cellValue = formatDate(cellValue);
                                 }
                                 
-                                // Xử lý hiển thị ảnh cho trường anhCongTrinh
+                                // Xử lý hiển thị đường dẫn ảnh cho trường anhCongTrinh
                                 if (header === 'anhCongTrinh') {
-                                    return `<td class="image-cell">${renderImages(cellValue)}</td>`;
+                                    return `<td>${renderImagePaths(cellValue)}</td>`;
                                 }
                                 
                                 return `<td>${cellValue}</td>`;
@@ -513,7 +494,7 @@
             window.scrollTo(0, 0);
         }
 
-        // Hàm xuất dữ liệu ra Excel với hình ảnh nhúng
+        // Hàm xuất dữ liệu ra Excel
         async function exportToExcel() {
             // Lấy dữ liệu đã lọc (toàn bộ, không phân trang)
             const filteredData = filterData();
@@ -546,51 +527,19 @@
                         cellValue = formatDate(cellValue);
                     }
                     
-                    const cell = newRow.getCell(colIndex + 1);
-                    
+                    // Xử lý trường ảnh - chỉ lấy đường dẫn
                     if (header === 'anhCongTrinh' && cellValue) {
-                        // Xử lý hình ảnh - chỉ lấy ảnh đầu tiên nếu có nhiều ảnh
-                        let imageUrl = '';
                         try {
                             const images = JSON.parse(cellValue);
                             if (Array.isArray(images) && images.length > 0) {
-                                imageUrl = images[0];
-                            } else {
-                                imageUrl = cellValue;
+                                cellValue = images.join('\n');
                             }
                         } catch (e) {
-                            imageUrl = cellValue;
+                            // Giữ nguyên giá trị nếu không phải JSON
                         }
-                        
-                        imageUrl = imageUrl.startsWith('http') ? imageUrl : `https://drive.google.com/thumbnail?id=${imageUrl}`;
-                        
-                        // Thêm hình ảnh vào cell
-                        (async () => {
-                            try {
-                                const response = await fetch(imageUrl);
-                                const imageBuffer = await response.arrayBuffer();
-                                
-                                const imageId = workbook.addImage({
-                                    buffer: imageBuffer,
-                                    extension: 'jpeg',
-                                });
-                                
-                                // Đặt kích thước cho hình ảnh (100x100 pixels)
-                                worksheet.addImage(imageId, {
-                                    tl: { col: colIndex, row: newRow.number - 1 },
-                                    ext: { width: 100, height: 100 },
-                                });
-                                
-                                // Đặt chiều cao cho dòng chứa ảnh
-                                worksheet.getRow(newRow.number).height = 80;
-                            } catch (error) {
-                                console.error('Lỗi khi thêm hình ảnh:', error);
-                                cell.value = imageUrl;
-                            }
-                        })();
-                    } else {
-                        cell.value = cellValue;
                     }
+                    
+                    newRow.getCell(colIndex + 1).value = cellValue;
                 });
             }
             
