@@ -254,6 +254,9 @@
         let sortColumn = null;
         let sortDirection = 'asc';
 
+        // Danh sách các cột cần ẩn
+        const hiddenColumns = ['idKH', 'nvkd', 'chucVu', 'nhom', 'duongDanAnh', 'lichSuTienDoCongTrinh'];
+
         // Hàm fetch dữ liệu từ API
         async function fetchData() {
             try {
@@ -392,8 +395,9 @@
                 return;
             }
             
-            // Lấy tất cả keys từ các object để làm header
-            const headers = [...new Set(data.flatMap(item => Object.keys(item)))];
+            // Lấy tất cả keys từ các object để làm header, loại bỏ các cột ẩn
+            const headers = [...new Set(data.flatMap(item => Object.keys(item)))]
+                .filter(header => !hiddenColumns.includes(header));
             
             let html = `<table>
                 <thead>
@@ -523,8 +527,9 @@
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Danh sách công trình');
             
-            // Lấy tất cả headers
-            const headers = [...new Set(filteredData.flatMap(item => Object.keys(item)))];
+            // Lấy tất cả headers, loại bỏ các cột ẩn
+            const headers = [...new Set(filteredData.flatMap(item => Object.keys(item)))]
+                .filter(header => !hiddenColumns.includes(header));
             
             // Thêm header row
             worksheet.addRow(headers);
