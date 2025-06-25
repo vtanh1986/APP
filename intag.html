@@ -5,7 +5,6 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <title>IN TAG GIÁ GẠCH</title>
     <style>
-        /* Giữ nguyên phần style như trước */
         @page {
             size: A4 portrait;
             margin: 0;
@@ -118,10 +117,10 @@
 </head>
 <body>
     <div id='input-container'>
-        <textarea id='productCodesInput' placeholder='Nhập các mã hàng (maHang) vào đây, mỗi mã một dòng... Ví dụ:
-761750
-761751
-761752'></textarea>
+        <textarea id='productCodesInput' placeholder='Nhập các MÃ HÀNG vào đây, mỗi mã một dòng... Ví dụ:
+744884
+744885
+761750'></textarea>
         <button id='generateButton'>Tạo bản in tag giá</button>
     </div>
 
@@ -135,17 +134,35 @@
             try {
                 console.log(`Đang gọi API cho mã hàng: ${maHang}`);
                 const response = await fetch(`${API_URL}?maHang=${encodeURIComponent(maHang)}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                console.log(`Dữ liệu trả về cho ${maHang}:`, data);
                 
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                console.log('Dữ liệu trả về:', data);
+                
+                // Xử lý dữ liệu trả về
                 if (Array.isArray(data)) {
-                    return data.length > 0 ? { ...data[0], inputCode: maHang } : { inputCode: maHang };
+                    // Tìm sản phẩm có mã hàng trùng khớp chính xác
+                    const exactMatch = data.find(item => item.maHang == maHang);
+                    if (exactMatch) return exactMatch;
+                    
+                    // Nếu không tìm thấy, lấy sản phẩm đầu tiên
+                    if (data.length > 0) return data[0];
                 }
-                return data ? { ...data, inputCode: maHang } : { inputCode: maHang };
+                return data || {}; // Trả về dữ liệu hoặc object rỗng
             } catch (error) {
-                console.error(`Lỗi khi lấy dữ liệu cho mã hàng ${maHang}:`, error);
-                return { inputCode: maHang };
+                console.error(`Lỗi khi lấy dữ liệu:`, error);
+                return {
+                    maHang: maHang,
+                    maSanPham: '',
+                    nhanHieu: '',
+                    xuatXu: '',
+                    tenHangTiengViet: '',
+                    kichThuoc: '',
+                    boSuuTap: '',
+                    giaNieYetCoVAT: '',
+                    giaSauGiam: ''
+                };
             }
         }
 
@@ -160,11 +177,6 @@
                 return value !== undefined && value !== null ? value : defaultValue;
             };
 
-            // Luôn sử dụng mã từ input (inputCode)
-            const getProductCode = (product) => {
-                return product?.inputCode || '';
-            };
-
             return `
                 <div class='container'>
                     <div class='column column-1'>
@@ -174,20 +186,20 @@
                         <div class='row bold'>Tên sản phẩm</div>
                         <div class='row bold'>Kích thước</div>
                         <div class='row bold'>Bộ sưu tập</div>
-                        <div class='row bold'>Giá niêm yết</div>
-                        <div class='row bold'>Giá bán</div>
+                        <div class='row bold'>Giá niêm yết có VAT</div>
+                        <div class='row bold'>Giá sau giảm</div>
                     </div>
                     <div class='column column-2'>
-                        <div class='row'>${getValue(product1?.nhanHieu)}</div>
-                        <div class='row'>${getValue(product1?.xuatXu)}</div>
-                        <div class='row'>${getProductCode(product1)}</div>
-                        <div class='row'>${getValue(product1?.tenHang)}</div>
-                        <div class='row'>${getValue(product1?.kichThuoc)}</div>
-                        <div class='row'>${getValue(product1?.boSuuTap)}</div>
-                        <div class='row'>${formatPrice(product1?.giaNiemYet)}</div>
-                        <div class='row'>${formatPrice(product1?.giaBan)}</div>
+                        <div class='row'>${getValue(product1.nhanHieu)}</div>
+                        <div class='row'>${getValue(product1.xuatXu)}</div>
+                        <div class='row'>${getValue(product1.maSanPham || product1.maHang)}</div>
+                        <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
+                        <div class='row'>${getValue(product1.kichThuoc)}</div>
+                        <div class='row'>${getValue(product1.boSuuTap)}</div>
+                        <div class='row'>${formatPrice(product1.giaNieYetCoVAT)}</div>
+                        <div class='row'>${formatPrice(product1.giaSauGiam)}</div>
                         <div class='qrcode'>
-                            <img src='https://quickchart.io/qr?text=${getProductCode(product1)}' alt='QR Code'>
+                            <img src='https://quickchart.io/qr?text=${getValue(product1.maSanPham || product1.maHang)}' alt='QR Code'>
                         </div>
                     </div>
                     <div class='column column-3'>
@@ -197,20 +209,20 @@
                         <div class='row bold'>Tên sản phẩm</div>
                         <div class='row bold'>Kích thước</div>
                         <div class='row bold'>Bộ sưu tập</div>
-                        <div class='row bold'>Giá niêm yết</div>
-                        <div class='row bold'>Giá bán</div>
+                        <div class='row bold'>Giá niêm yết có VAT</div>
+                        <div class='row bold'>Giá sau giảm</div>
                     </div>
                     <div class='column column-4'>
                         <div class='row'>${getValue(product2?.nhanHieu)}</div>
                         <div class='row'>${getValue(product2?.xuatXu)}</div>
-                        <div class='row'>${getProductCode(product2)}</div>
-                        <div class='row'>${getValue(product2?.tenHang)}</div>
+                        <div class='row'>${getValue(product2?.maSanPham || product2?.maHang)}</div>
+                        <div class='row'>${getValue(product2?.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product2?.kichThuoc)}</div>
                         <div class='row'>${getValue(product2?.boSuuTap)}</div>
-                        <div class='row'>${formatPrice(product2?.giaNiemYet)}</div>
-                        <div class='row'>${formatPrice(product2?.giaBan)}</div>
+                        <div class='row'>${formatPrice(product2?.giaNieYetCoVAT)}</div>
+                        <div class='row'>${formatPrice(product2?.giaSauGiam)}</div>
                         <div class='qrcode'>
-                            <img src='https://quickchart.io/qr?text=${getProductCode(product2)}' alt='QR Code'>
+                            <img src='https://quickchart.io/qr?text=${getValue(product2?.maSanPham || product2?.maHang)}' alt='QR Code'>
                         </div>
                     </div>
                 </div>
@@ -223,7 +235,10 @@
                                   .filter(line => line.trim() !== '')
                                   .map(line => line.trim());
             
-            console.log('Danh sách mã hàng đã nhập:', maHangList);
+            if (maHangList.length === 0) {
+                alert('Vui lòng nhập ít nhất một mã hàng!');
+                return;
+            }
             
             const content = document.getElementById('content');
             const loading = document.getElementById('loading');
@@ -237,31 +252,23 @@
                 const maHang1 = maHangList[i];
                 const maHang2 = maHangList[i + 1];
                 
-                console.log(`Đang xử lý mã hàng: ${maHang1} và ${maHang2 || '(không có)'}`);
-                
                 try {
                     const product1 = await fetchProductData(maHang1);
                     const product2 = maHang2 ? await fetchProductData(maHang2) : null;
                     
                     html += createContainer(product1, product2);
                 } catch (error) {
-                    console.error(`Lỗi khi tạo container cho ${maHang1} và ${maHang2}:`, error);
-                    // Vẫn tạo container với mã từ input
+                    console.error(`Lỗi khi tạo container:`, error);
                     html += createContainer(
-                        { inputCode: maHang1 }, 
-                        maHang2 ? { inputCode: maHang2 } : null
+                        { maHang: maHang1 },
+                        maHang2 ? { maHang: maHang2 } : null
                     );
                 }
             }
             
             content.innerHTML = html;
             loading.style.display = 'none';
-            
-            if (maHangList.length === 0) {
-                alert('Vui lòng nhập ít nhất một mã hàng!');
-            } else {
-                console.log('Đã tạo xong các tag giá');
-            }
+            window.print();
         }
 
         document.getElementById('generateButton').addEventListener('click', generateContainers);
