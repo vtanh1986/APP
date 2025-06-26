@@ -124,6 +124,14 @@
             opacity: 0;
             pointer-events: none;
         }
+        .strikethrough {
+            text-decoration: line-through;
+        }
+        .discounted-price {
+            font-weight: bold;
+            font-size: 8.5pt;
+            color: #d00;
+        }
     </style>
 </head>
 <body>
@@ -219,8 +227,12 @@
                         <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product1.kichThuoc)}</div>
                         <div class='row'>${getValue(product1.boSuuTap)}</div>
-                        <div class='row'>${formatPrice(product1.giaNieYetCoVAT)}</div>
-                        <div class='row'>${formatPrice(product1.giaSauGiam)}</div>
+                        <div class='row'>
+                            <span class="strikethrough">${formatPrice(product1.giaNieYetCoVAT)}</span>
+                        </div>
+                        <div class='row'>
+                            <span class="discounted-price">${formatPrice(product1.giaSauGiam)}</span>
+                        </div>
                         <div class='qrcode'>
                             <img src='https://quickchart.io/qr?text=${getValue(product1.maSanPham || product1.maHang)}' alt='QR Code'>
                         </div>
@@ -242,8 +254,12 @@
                         <div class='row'>${getValue(product2?.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product2?.kichThuoc)}</div>
                         <div class='row'>${getValue(product2?.boSuuTap)}</div>
-                        <div class='row'>${formatPrice(product2?.giaNieYetCoVAT)}</div>
-                        <div class='row'>${formatPrice(product2?.giaSauGiam)}</div>
+                        <div class='row'>
+                            <span class="strikethrough">${formatPrice(product2?.giaNieYetCoVAT)}</span>
+                        </div>
+                        <div class='row'>
+                            <span class="discounted-price">${formatPrice(product2?.giaSauGiam)}</span>
+                        </div>
                         <div class='qrcode'>
                             <img src='https://quickchart.io/qr?text=${getValue(product2?.maSanPham || product2?.maHang)}' alt='QR Code'>
                         </div>
