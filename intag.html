@@ -278,7 +278,6 @@
                 
                 let result = { maHang: maHang, isValid: false };
                 
-                // Tìm sản phẩm trong response
                 const productData = Array.isArray(data) 
                     ? data.find(item => item.maHang == maHang)
                     : (data.maHang == maHang ? data : null);
@@ -286,14 +285,15 @@
                 if (productData) {
                     result = { ...productData, isValid: true };
                     
-                    // Tính toán chính sách giá và % giảm giá
                     const giaNieYet = parseFloat(productData.giaNieYetCoVAT) || 0;
                     const giaBan = parseFloat(productData.giaSauGiam) || 0;
                     const phanTramGiam = giaNieYet > 0 ? Math.round((1 - giaBan / giaNieYet) * 100) : 0;
                     
-                    // Tạo ký hiệu chính sách giá (ưu tiên từ API, nếu không có thì dùng mặc định)
-                    const chinhSachGia = productData.chinhsachgiaban || 'Focus';
-                    const kyHieuChinhSach = chinhSachGia.charAt(0).toUpperCase();
+                    // Sửa thành chinhSachGiaBan và thêm kiểm tra kỹ hơn
+                    let kyHieuChinhSach = 'F'; // Giá trị mặc định
+                    if (productData.chinhSachGiaBan && typeof productData.chinhSachGiaBan === 'string' && productData.chinhSachGiaBan.trim().length > 0) {
+                        kyHieuChinhSach = productData.chinhSachGiaBan.trim().charAt(0).toUpperCase();
+                    }
                     
                     result.displayBrand = {
                         name: productData.nhanHieu || 'THƯƠNG HIỆU',
@@ -311,7 +311,7 @@
                     isValid: false,
                     displayBrand: {
                         name: 'THƯƠNG HIỆU',
-                        policy: 'F.30' // Giá trị mặc định khi lỗi
+                        policy: 'F.30'
                     }
                 };
                 productCache[maHang] = emptyResult;
