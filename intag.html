@@ -193,6 +193,19 @@
             border: 1px dashed #ccc;
             margin-bottom: 10px;
         }
+        .brand-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .brand-name {
+            flex: 1;
+        }
+        .price-policy {
+            margin-left: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -208,7 +221,7 @@
     <div id='input-container' style="display: none;">
         <textarea id='productCodesInput' placeholder='Nhập các MÃ HÀNG vào đây, mỗi mã một dòng... Ví dụ:
 744884
-744885
+723465
 761750'></textarea>
         <button id='generateButton'>Tạo bản in tag giá</button>
     </div>
@@ -261,24 +274,46 @@
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 const data = await response.json();
+                console.log('API Response:', data); // Debug log
                 
                 let result = { maHang: maHang, isValid: false };
                 
-                if (Array.isArray(data)) {
-                    const exactMatch = data.find(item => item.maHang == maHang);
-                    if (exactMatch) {
-                        result = { ...exactMatch, isValid: true };
-                    }
-                } else if (data && data.maHang == maHang) {
-                    result = { ...data, isValid: true };
+                // Tìm sản phẩm trong response
+                const productData = Array.isArray(data) 
+                    ? data.find(item => item.maHang == maHang)
+                    : (data.maHang == maHang ? data : null);
+
+                if (productData) {
+                    result = { ...productData, isValid: true };
+                    
+                    // Tính toán chính sách giá và % giảm giá
+                    const giaNieYet = parseFloat(productData.giaNieYetCoVAT) || 0;
+                    const giaBan = parseFloat(productData.giaSauGiam) || 0;
+                    const phanTramGiam = giaNieYet > 0 ? Math.round((1 - giaBan / giaNieYet) * 100) : 0;
+                    
+                    // Tạo ký hiệu chính sách giá (ưu tiên từ API, nếu không có thì dùng mặc định)
+                    const chinhSachGia = productData.chinhsachgiaban || 'Focus';
+                    const kyHieuChinhSach = chinhSachGia.charAt(0).toUpperCase();
+                    
+                    result.displayBrand = {
+                        name: productData.nhanHieu || 'THƯƠNG HIỆU',
+                        policy: `${kyHieuChinhSach}.${phanTramGiam}`
+                    };
                 }
                 
                 productCache[maHang] = result;
                 return result;
                 
             } catch (error) {
-                console.error(`Lỗi khi lấy dữ liệu:`, error);
-                const emptyResult = { maHang: maHang, isValid: false };
+                console.error(`Lỗi khi lấy dữ liệu ${maHang}:`, error);
+                const emptyResult = { 
+                    maHang: maHang, 
+                    isValid: false,
+                    displayBrand: {
+                        name: 'THƯƠNG HIỆU',
+                        policy: 'F.30' // Giá trị mặc định khi lỗi
+                    }
+                };
                 productCache[maHang] = emptyResult;
                 return emptyResult;
             }
@@ -295,9 +330,18 @@
                 return value !== undefined && value !== null ? value : defaultValue;
             };
 
+            const renderBrand = (displayBrand) => {
+                if (!displayBrand) return '';
+                return `
+                    <div class="brand-container">
+                        <div class="brand-name">${getValue(displayBrand.name)}</div>
+                        <div class="price-policy">${getValue(displayBrand.policy)}</div>
+                    </div>
+                `;
+            };
+
             let html = '';
             
-            // Xử lý sản phẩm 1
             if (product1 && product1.isValid) {
                 html += `
                 <div class='container'>
@@ -312,7 +356,7 @@
                         <div class='row bold'>Giá bán có VAT</div>
                     </div>
                     <div class='column column-2'>
-                        <div class='row'>${getValue(product1.nhanHieu)}</div>
+                        <div class='row'>${renderBrand(product1.displayBrand)}</div>
                         <div class='row'>${getValue(product1.xuatXu)}</div>
                         <div class='row'>${getValue(product1.maSanPham || product1.maHang)}</div>
                         <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
@@ -329,7 +373,6 @@
                         </div>
                     </div>`;
                 
-                // Xử lý sản phẩm 2 nếu có
                 if (product2 && product2.isValid) {
                     html += `
                     <div class='column column-3'>
@@ -343,7 +386,7 @@
                         <div class='row bold'>Giá bán có VAT</div>
                     </div>
                     <div class='column column-4'>
-                        <div class='row'>${getValue(product2.nhanHieu)}</div>
+                        <div class='row'>${renderBrand(product2.displayBrand)}</div>
                         <div class='row'>${getValue(product2.xuatXu)}</div>
                         <div class='row'>${getValue(product2.maSanPham || product2.maHang)}</div>
                         <div class='row'>${getValue(product2.tenHangTiengViet)}</div>
@@ -360,7 +403,6 @@
                         </div>
                     </div>`;
                 } else if (product2) {
-                    // Thêm thông báo cho mã hàng không hợp lệ
                     html += `
                     <div class='column column-3'></div>
                     <div class='column column-4'></div>
@@ -369,7 +411,6 @@
                 
                 html += `</div>`;
             } else if (product1) {
-                // Chỉ hiển thị thông báo cho mã hàng không hợp lệ
                 html += `<div class='invalid-message">Mã hàng ${product1.maHang} không tồn tại trong hệ thống</div>`;
             }
             
@@ -397,7 +438,6 @@
                 const productPromises = maHangList.map(maHang => fetchProductData(maHang));
                 const products = await Promise.all(productPromises);
                 
-                // Lọc ra các sản phẩm hợp lệ
                 const validProducts = products.filter(p => p.isValid);
                 const invalidProducts = products.filter(p => !p.isValid);
                 
@@ -415,7 +455,6 @@
                 const fragment = document.createDocumentFragment();
                 const tempDiv = document.createElement('div');
                 
-                // Tạo container cho từng cặp sản phẩm hợp lệ
                 for (let i = 0; i < validProducts.length; i += 2) {
                     const product1 = validProducts[i];
                     const product2 = validProducts[i + 1];
