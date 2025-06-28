@@ -285,11 +285,10 @@
                 if (productData) {
                     result = { ...productData, isValid: true };
                     
-                    const giaNieYet = parseFloat(productData.giaNieYetCoVAT) || 0;
-                    const giaBan = parseFloat(productData.giaSauGiam) || 0;
-                    const phanTramGiam = giaNieYet > 0 ? Math.round((1 - giaBan / giaNieYet) * 100) : 0;
+                    // Sửa lại phần này để lấy trực tiếp từ phanTramGiamGia
+                    const phanTramGiam = Math.round((parseFloat(productData.phanTramGiamGia) || 0) * 100;
                     
-                    // Sửa thành chinhSachGiaBan và thêm kiểm tra kỹ hơn
+                    // Lấy ký hiệu chính sách giá
                     let kyHieuChinhSach = 'F'; // Giá trị mặc định
                     if (productData.chinhSachGiaBan && typeof productData.chinhSachGiaBan === 'string' && productData.chinhSachGiaBan.trim().length > 0) {
                         kyHieuChinhSach = productData.chinhSachGiaBan.trim().charAt(0).toUpperCase();
