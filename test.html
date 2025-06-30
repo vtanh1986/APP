@@ -128,28 +128,28 @@
             <div class="filter-group">
                 <label class="filter-label">Tên NVKD:</label>
                 <select id="tenNVKDFilter" class="selectpicker" multiple data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" title="- Chọn -">
-                    
+                    <!-- Options sẽ được thêm tự động -->
                 </select>
             </div>
             
             <div class="filter-group">
                 <label class="filter-label">Trạng thái liên hệ:</label>
                 <select id="trangThaiLienHeFilter" class="selectpicker" multiple data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" title="- Chọn -">
-                    
+                    <!-- Options sẽ được thêm tự động -->
                 </select>
             </div>
             
             <div class="filter-group">
                 <label class="filter-label">Tiến độ CT:</label>
                 <select id="tienDoCTFilter" class="selectpicker" multiple data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" title="- Chọn -">
-                    
+                    <!-- Options sẽ được thêm tự động -->
                 </select>
             </div>
             
             <div class="filter-group">
                 <label class="filter-label">Tên KĐT:</label>
                 <select id="tenKDTFilter" class="selectpicker" multiple data-live-search="true" data-actions-box="true" data-selected-text-format="count > 3" title="- Chọn -">
-                    
+                    <!-- Options sẽ được thêm tự động -->
                 </select>
             </div>
             
@@ -186,6 +186,26 @@
         
         let allData = [];
 
+        // Hàm định dạng ngày tháng
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            try {
+                // Xử lý cả định dạng Date object và string
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return dateString;
+                
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                console.error('Lỗi định dạng ngày:', e);
+                return dateString;
+            }
+        }
+
         // Hàm fetch dữ liệu từ API
         async function fetchData() {
             try {
@@ -198,19 +218,17 @@
                 }
                 
                 const data = await response.json();
-                console.log('Dữ liệu từ API:', data); // Log dữ liệu để kiểm tra
+                console.log('Dữ liệu từ API:', data);
                 
-                // Kiểm tra nếu dữ liệu là mảng
                 if (Array.isArray(data)) {
                     allData = data;
                 } else if (typeof data === 'object' && data !== null) {
-                    // Nếu là object đơn lẻ, chuyển thành mảng
                     allData = [data];
                 } else {
                     allData = [];
                 }
                 
-                console.log('Dữ liệu đã xử lý:', allData); // Log dữ liệu đã xử lý
+                console.log('Dữ liệu đã xử lý:', allData);
                 
                 // Cập nhật các bộ lọc
                 updateFilters();
@@ -240,11 +258,27 @@
 
         // Cập nhật options cho một bộ lọc
         function updateFilterOptions(field, filterElement) {
-            const uniqueValues = [...new Set(allData.map(item => item[field]))].filter(value => value !== undefined && value !== null && value !== '').sort();
+            // Lấy tất cả giá trị, lọc bỏ giá trị rỗng/null/undefined
+            const allValues = allData.map(item => item[field])
+                                   .filter(value => value !== undefined && 
+                                                  value !== null && 
+                                                  value !== '');
             
-            // Giữ lại option "- Tất cả -" đầu tiên
-            filterElement.innerHTML = '<option value="">- Tất cả -</option>';
+            // Tạo một Map để đảm bảo không trùng lặp
+            const uniqueValuesMap = new Map();
+            allValues.forEach(value => {
+                if (!uniqueValuesMap.has(value)) {
+                    uniqueValuesMap.set(value, true);
+                }
+            });
             
+            // Chuyển Map thành mảng và sắp xếp
+            const uniqueValues = Array.from(uniqueValuesMap.keys()).sort();
+            
+            // Xóa tất cả options hiện có
+            filterElement.innerHTML = '';
+            
+            // Thêm các giá trị duy nhất vào dropdown
             uniqueValues.forEach(value => {
                 filterElement.innerHTML += `<option value="${value}">${value}</option>`;
             });
@@ -259,22 +293,11 @@
             const selectedTenKDT = Array.from(tenKDTFilter.selectedOptions).map(opt => opt.value);
             
             return allData.filter(row => {
-                // Kiểm tra nếu chọn "- Tất cả -" hoặc không chọn gì
-                const tenNVKDMatch = selectedTenNVKD.length === 0 || 
-                                    selectedTenNVKD.includes("") || 
-                                    selectedTenNVKD.includes(row.tenNVKD);
-                
-                const trangThaiLienHeMatch = selectedTrangThaiLienHe.length === 0 || 
-                                           selectedTrangThaiLienHe.includes("") || 
-                                           selectedTrangThaiLienHe.includes(row.trangThaiLienHe);
-                
-                const tienDoCTMatch = selectedTienDoCT.length === 0 || 
-                                     selectedTienDoCT.includes("") || 
-                                     selectedTienDoCT.includes(row.tienDoCT);
-                
-                const tenKDTMatch = selectedTenKDT.length === 0 || 
-                                   selectedTenKDT.includes("") || 
-                                   selectedTenKDT.includes(row.tenKDT);
+                // Kiểm tra nếu không chọn gì (plugin sẽ coi là chọn Tất cả)
+                const tenNVKDMatch = selectedTenNVKD.length === 0 || selectedTenNVKD.includes(row.tenNVKD);
+                const trangThaiLienHeMatch = selectedTrangThaiLienHe.length === 0 || selectedTrangThaiLienHe.includes(row.trangThaiLienHe);
+                const tienDoCTMatch = selectedTienDoCT.length === 0 || selectedTienDoCT.includes(row.tienDoCT);
+                const tenKDTMatch = selectedTenKDT.length === 0 || selectedTenKDT.includes(row.tenKDT);
                 
                 return tenNVKDMatch && trangThaiLienHeMatch && tienDoCTMatch && tenKDTMatch;
             });
@@ -287,8 +310,12 @@
                 return;
             }
             
-            // Lấy tất cả keys từ các object để làm header
-            const headers = Object.keys(data[0]);
+            // Danh sách các cột cần ẩn
+            const hiddenColumns = ['nvkd', 'chucVu', 'nhom', 'duongDanAnh', 'lichSuTienDoCongTrinh'];
+            
+            // Lấy tất cả keys từ các object để làm header (loại bỏ các cột cần ẩn)
+            const headers = Object.keys(data[0])
+                                .filter(header => !hiddenColumns.includes(header));
             
             let html = `
             <div class="data-table-container">
@@ -299,11 +326,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.map(row => `
+                        ${data.map(row => {
+                            // Định dạng lại ngày tiếp cận
+                            const formattedRow = {...row};
+                            if (formattedRow.ngayTiepCan) {
+                                formattedRow.ngayTiepCan = formatDate(formattedRow.ngayTiepCan);
+                            }
+                            
+                            return `
                             <tr>
-                                ${headers.map(header => `<td>${row[header] || ''}</td>`).join('')}
-                            </tr>
-                        `).join('')}
+                                ${headers.map(header => `<td>${formattedRow[header] || ''}</td>`).join('')}
+                            </tr>`;
+                        }).join('')}
                     </tbody>
                 </table>
             </div>`;
@@ -314,7 +348,7 @@
         // Hàm lọc và render dữ liệu
         function filterAndRenderData() {
             const filteredData = filterData();
-            console.log('Dữ liệu sau khi lọc:', filteredData); // Log dữ liệu đã lọc
+            console.log('Dữ liệu sau khi lọc:', filteredData);
             renderTable(filteredData);
         }
 
