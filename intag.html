@@ -133,7 +133,7 @@
             font-size: 8.5pt;
             color: #d00;
         }
-        #login-protection {
+        #password-protection {
             position: fixed;
             top: 0;
             left: 0;
@@ -147,23 +147,20 @@
             flex-direction: column;
             color: white;
         }
-        #login-form {
+        #password-form {
             background: white;
             padding: 20px;
             border-radius: 5px;
             color: black;
             text-align: center;
-            width: 300px;
         }
-        #login-form select, 
-        #login-form input {
+        #password-form input {
             margin: 10px 0;
             padding: 8px;
-            width: 100%;
-            box-sizing: border-box;
+            width: 200px;
             display: block;
         }
-        #login-form button {
+        #password-form button {
             padding: 8px 15px;
             background: #4CAF50;
             color: white;
@@ -171,9 +168,8 @@
             border-radius: 4px;
             cursor: pointer;
             width: 100%;
-            margin-top: 10px;
         }
-        #login-form button:hover {
+        #password-form button:hover {
             background: #45a049;
         }
         .error-message {
@@ -216,16 +212,12 @@
     </style>
 </head>
 <body>
-    <div id="login-protection">
-        <div id="login-form">
-            <h2>ĐĂNG NHẬP HỆ THỐNG</h2>
-            <select id="username-select">
-                <option value="">-- Chọn nhân viên --</option>
-                <!-- Danh sách nhân viên sẽ được load từ API -->
-            </select>
-            <input type="password" id="password-input" placeholder="Mật khẩu" autocomplete="off">
-            <button id="login-submit">Đăng nhập</button>
-            <div id="login-error" class="error-message">Mật khẩu không đúng. Vui lòng thử lại.</div>
+    <div id="password-protection">
+        <div id="password-form">
+            <h2>Vui lòng nhập mật khẩu</h2>
+            <input type="password" id="password-input" placeholder="Nhập mật khẩu" autocomplete="off">
+            <button id="password-submit">Xác nhận</button>
+            <div id="password-error" class="error-message">Mật khẩu không đúng. Vui lòng thử lại.</div>
         </div>
     </div>
 
@@ -241,113 +233,50 @@
     <div id='loading' class='loading'>Đang tải dữ liệu...</div>
 
     <script>
-        // Phần xác thực đăng nhập
-        const AUTH_API_URL = "https://script.google.com/macros/s/AKfycbyobzL5OnOzL5Ol0gDjPSpaTmBc4-yDAaSMEfRimZXExom1ftFrYkfmX8OizAGV93Pv/exec";
-        const usernameSelect = document.getElementById('username-select');
+        // Phần xác thực mật khẩu
+        const CORRECT_PASSWORD = "ritavo123";
         const passwordInput = document.getElementById('password-input');
-        const loginSubmit = document.getElementById('login-submit');
-        const loginError = document.getElementById('login-error');
-        const loginProtection = document.getElementById('login-protection');
+        const passwordSubmit = document.getElementById('password-submit');
+        const passwordError = document.getElementById('password-error');
+        const passwordProtection = document.getElementById('password-protection');
         const inputContainer = document.getElementById('input-container');
 
-        // Load danh sách nhân viên từ API
-        async function loadEmployeeList() {
-            try {
-                const response = await fetch(`${AUTH_API_URL}?action=getEmployees`);
-                if (!response.ok) throw new Error('Không thể tải danh sách nhân viên');
-                
-                const data = await response.json();
-                
-                if (data && Array.isArray(data)) {
-                    // Xóa các option cũ (nếu có)
-                    while (usernameSelect.options.length > 1) {
-                        usernameSelect.remove(1);
-                    }
-                    
-                    // Thêm các nhân viên mới vào dropdown
-                    data.forEach(employee => {
-                        const option = document.createElement('option');
-                        option.value = employee.tenNVKD;
-                        option.textContent = employee.tenNVKD;
-                        usernameSelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Lỗi khi tải danh sách nhân viên:', error);
-                loginError.textContent = 'Không thể tải danh sách nhân viên';
-                loginError.style.display = 'block';
-            }
-        }
-
-        // Kiểm tra đăng nhập
-        async function checkLogin() {
-            const username = usernameSelect.value;
-            const password = passwordInput.value.trim();
+        function checkPassword() {
+            const enteredPassword = passwordInput.value.trim();
             
-            if (!username) {
-                showLoginError('Vui lòng chọn nhân viên');
-                return;
-            }
-            
-            if (!password) {
-                showLoginError('Vui lòng nhập mật khẩu');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${AUTH_API_URL}?tenNVKD=${encodeURIComponent(username)}`);
-                
-                if (!response.ok) throw new Error('Lỗi kết nối');
-                
-                const data = await response.json();
-                
-                if (data && data.password && data.password === password) {
-                    // Đăng nhập thành công
-                    loginProtection.style.display = 'none';
-                    inputContainer.style.display = 'block';
-                    sessionStorage.setItem('authenticated', 'true');
-                    sessionStorage.setItem('username', username);
-                } else {
-                    showLoginError('Mật khẩu không đúng');
-                }
-            } catch (error) {
-                console.error('Lỗi khi xác thực:', error);
-                showLoginError('Lỗi hệ thống. Vui lòng thử lại');
-            }
-        }
-
-        function showLoginError(message) {
-            loginError.textContent = message;
-            loginError.style.display = 'block';
-            setTimeout(() => {
-                loginError.style.display = 'none';
-            }, 3000);
-        }
-
-        // Sự kiện khi trang được tải
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load danh sách nhân viên
-            loadEmployeeList();
-            
-            // Kiểm tra nếu đã đăng nhập trước đó
-            if (sessionStorage.getItem('authenticated') === 'true') {
-                loginProtection.style.display = 'none';
+            if (enteredPassword === CORRECT_PASSWORD) {
+                passwordProtection.style.display = 'none';
                 inputContainer.style.display = 'block';
+                sessionStorage.setItem('authenticated', 'true');
+            } else {
+                passwordError.style.display = 'block';
+                passwordInput.value = '';
+                setTimeout(() => {
+                    passwordError.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        passwordSubmit.addEventListener('click', checkPassword);
+        
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
             }
         });
 
-        // Sự kiện click nút đăng nhập
-        loginSubmit.addEventListener('click', checkLogin);
-        
-        // Cho phép nhấn Enter để đăng nhập
-        passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkLogin();
+        // Kiểm tra khi trang tải xong
+        document.addEventListener('DOMContentLoaded', function() {
+            if (sessionStorage.getItem('authenticated') === 'true') {
+                passwordProtection.style.display = 'none';
+                inputContainer.style.display = 'block';
+            } else {
+                passwordInput.focus();
             }
         });
 
         // Phần chức năng chính
-        const PRODUCT_API_URL = 'https://script.google.com/macros/s/AKfycbxpt47VUSds_528dm_0ZRPsR5cFOTk1gr-YC05xiOHL7pWZ8jPx2TV7tRMKIACV5RKz/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxpt47VUSds_528dm_0ZRPsR5cFOTk1gr-YC05xiOHL7pWZ8jPx2TV7tRMKIACV5RKz/exec';
         const productCache = {};
         
         async function fetchProductData(maHang) {
@@ -356,7 +285,7 @@
             }
 
             try {
-                const response = await fetch(`${PRODUCT_API_URL}?maHang=${encodeURIComponent(maHang)}`);
+                const response = await fetch(`${API_URL}?maHang=${encodeURIComponent(maHang)}`);
                 
                 if (!response.ok) throw new Error('Network response was not ok');
                 
@@ -491,12 +420,12 @@
                     html += `
                     <div class='column column-3'></div>
                     <div class='column column-4'></div>
-                    <div class='invalid-message'>Mã hàng ${product2.maHang} không tồn tại trong hệ thống</div>`;
+                    <div class='invalid-message">Mã hàng ${product2.maHang} không tồn tại trong hệ thống</div>`;
                 }
                 
                 html += `</div>`;
             } else if (product1) {
-                html += `<div class='invalid-message'>Mã hàng ${product1.maHang} không tồn tại trong hệ thống</div>`;
+                html += `<div class='invalid-message">Mã hàng ${product1.maHang} không tồn tại trong hệ thống</div>`;
             }
             
             return html;
