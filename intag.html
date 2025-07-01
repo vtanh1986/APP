@@ -662,11 +662,6 @@
                     loading.classList.remove('show');
                     loading.classList.add('hide');
                     
-                    // Sử dụng requestIdleCallback để in khi browser rảnh
-                    requestIdleCallback(() => {
-                        window.print();
-                    }, { timeout: 1000 });
-                    
                 } catch (error) {
                     console.error('Lỗi khi tạo tag giá:', error);
                     loading.classList.remove('show');
