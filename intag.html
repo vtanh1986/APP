@@ -25,6 +25,8 @@
             border: 1px solid #ccc;
             margin-bottom: 0;
             page-break-inside: avoid;
+            will-change: transform;
+            contain: content;
         }
         .column {
             display: flex;
@@ -34,6 +36,8 @@
             box-sizing: border-box;
             border-right: 1px solid #ccc;
             position: relative;
+            will-change: transform;
+            contain: content;
         }
         .column-1, .column-3 {
             width: 22mm;
@@ -75,6 +79,8 @@
         .qrcode img {
             width: 100%;
             height: 100%;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
         #input-container {
             margin-bottom: 10mm;
@@ -215,6 +221,8 @@
             margin-top: 10px;
         }
     </style>
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="preconnect" href="https://quickchart.io">
 </head>
 <body>
     <div id="password-protection">
@@ -240,7 +248,7 @@
 
     <script>
         // Cấu hình bảo mật
-        const CORRECT_PASSWORD = "ritavo123"; // Mật khẩu plaintext
+        const CORRECT_PASSWORD = "ritavo123";
         const MAX_FAILED_ATTEMPTS = 5;
         const LOCKOUT_DURATION = 30 * 60 * 1000; // 30 phút
         const SESSION_DURATION = 30 * 60 * 1000; // 30 phút
@@ -375,6 +383,10 @@
                 passwordProtection.style.display = 'none';
                 inputContainer.style.display = 'block';
                 resetInactivityTimer();
+                
+                // Preload QR code generator
+                const img = new Image();
+                img.src = 'https://quickchart.io/qr?text=preload';
             } else {
                 passwordInput.focus();
                 if (isLockedOut()) {
@@ -386,82 +398,116 @@
         // Phần chức năng chính
         const API_URL = 'https://script.google.com/macros/s/AKfycbxpt47VUSds_528dm_0ZRPsR5cFOTk1gr-YC05xiOHL7pWZ8jPx2TV7tRMKIACV5RKz/exec';
         const productCache = {};
+        const QR_CACHE_PREFIX = 'qr_cache_';
         
-        async function fetchProductData(maHang) {
-            if (productCache[maHang]) {
-                return productCache[maHang];
+        // Batch request optimization
+        async function fetchProductDataBatch(maHangList) {
+            const uncachedItems = maHangList.filter(maHang => !productCache[maHang]);
+            const cachedItems = maHangList.filter(maHang => productCache[maHang]).map(maHang => productCache[maHang]);
+            
+            if (uncachedItems.length === 0) {
+                return cachedItems;
             }
 
             try {
-                const response = await fetch(`${API_URL}?maHang=${encodeURIComponent(maHang)}`);
+                const response = await fetch(`${API_URL}?maHangList=${encodeURIComponent(uncachedItems.join(','))}`);
                 
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 const data = await response.json();
                 
-                let result = { maHang: maHang, isValid: false };
+                // Xử lý dữ liệu trả về và cập nhật cache
+                const processedData = Array.isArray(data) ? data : [data];
                 
-                const productData = Array.isArray(data) 
-                    ? data.find(item => item.maHang == maHang)
-                    : (data.maHang == maHang ? data : null);
-
-                if (productData) {
-                    result = { ...productData, isValid: true };
+                processedData.forEach(item => {
+                    const result = { ...item, isValid: true };
                     
-                    // Lấy phần trăm giảm giá từ API và nhân 100
-                    const phanTramGiam = Math.round((parseFloat(productData.phanTramGiamGia) || 0) * 100);
-                    
-                    // Lấy ký hiệu chính sách giá
+                    const phanTramGiam = Math.round((parseFloat(item.phanTramGiamGia) || 0) * 100);
                     let kyHieuChinhSach = 'F';
-                    if (productData.chinhSachGiaBan && typeof productData.chinhSachGiaBan === 'string' && productData.chinhSachGiaBan.trim().length > 0) {
-                        kyHieuChinhSach = productData.chinhSachGiaBan.trim().charAt(0).toUpperCase();
+                    if (item.chinhSachGiaBan && typeof item.chinhSachGiaBan === 'string' && item.chinhSachGiaBan.trim().length > 0) {
+                        kyHieuChinhSach = item.chinhSachGiaBan.trim().charAt(0).toUpperCase();
                     }
                     
                     result.displayBrand = {
-                        name: productData.nhanHieu || 'THƯƠNG HIỆU',
+                        name: item.nhanHieu || 'THƯƠNG HIỆU',
                         policy: `${kyHieuChinhSach}.${phanTramGiam}`
                     };
-                }
+                    
+                    productCache[item.maHang] = result;
+                });
                 
-                productCache[maHang] = result;
-                return result;
+                // Thêm các item không tìm thấy vào cache với isValid = false
+                uncachedItems.forEach(maHang => {
+                    if (!processedData.some(item => item.maHang === maHang)) {
+                        productCache[maHang] = { 
+                            maHang, 
+                            isValid: false,
+                            displayBrand: {
+                                name: 'THƯƠNG HIỆU',
+                                policy: 'F.30'
+                            }
+                        };
+                    }
+                });
+                
+                return maHangList.map(maHang => productCache[maHang]);
                 
             } catch (error) {
-                console.error(`Lỗi khi lấy dữ liệu ${maHang}:`, error);
-                const emptyResult = { 
-                    maHang: maHang, 
-                    isValid: false,
-                    displayBrand: {
-                        name: 'THƯƠNG HIỆU',
-                        policy: 'F.30'
-                    }
-                };
-                productCache[maHang] = emptyResult;
-                return emptyResult;
+                console.error('Lỗi khi lấy dữ liệu hàng loạt:', error);
+                
+                // Trả về dữ liệu cache nếu có, hoặc dữ liệu mặc định
+                return maHangList.map(maHang => {
+                    return productCache[maHang] || { 
+                        maHang, 
+                        isValid: false,
+                        displayBrand: {
+                            name: 'THƯƠNG HIỆU',
+                            policy: 'F.30'
+                        }
+                    };
+                });
             }
         }
 
+        // QR Code caching
+        function getQRCodeUrl(maHang) {
+            const cacheKey = QR_CACHE_PREFIX + maHang;
+            const cachedUrl = localStorage.getItem(cacheKey);
+            
+            if (cachedUrl) {
+                return cachedUrl;
+            }
+            
+            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(maHang)}&size=100&margin=0`;
+            try {
+                localStorage.setItem(cacheKey, qrUrl);
+            } catch (e) {
+                console.warn('Không thể cache QR code do giới hạn localStorage');
+            }
+            return qrUrl;
+        }
+
+        function formatPrice(price) {
+            if (!price && price !== 0) return '';
+            const priceNumber = typeof price === 'string' ? parseFloat(price.replace(/,/g, '')) : price;
+            return isNaN(priceNumber) ? '' : new Intl.NumberFormat('vi-VN').format(priceNumber) + ' đ';
+        };
+
+        function getValue(value, defaultValue = '') {
+            return value !== undefined && value !== null ? escapeHtml(value) : escapeHtml(defaultValue);
+        };
+
+        function renderBrand(displayBrand) {
+            if (!displayBrand) return '';
+            return `
+                <div class="brand-container">
+                    <div class="brand-name">${getValue(displayBrand.name)}</div>
+                    <div class="price-policy">${getValue(displayBrand.policy)}</div>
+                </div>
+            `;
+        };
+
         function createContainer(product1, product2) {
-            const formatPrice = (price) => {
-                if (!price && price !== 0) return '';
-                const priceNumber = typeof price === 'string' ? parseFloat(price.replace(/,/g, '')) : price;
-                return isNaN(priceNumber) ? '' : new Intl.NumberFormat('vi-VN').format(priceNumber) + ' đ';
-            };
-
-            const getValue = (value, defaultValue = '') => {
-                return value !== undefined && value !== null ? escapeHtml(value) : escapeHtml(defaultValue);
-            };
-
-            const renderBrand = (displayBrand) => {
-                if (!displayBrand) return '';
-                return `
-                    <div class="brand-container">
-                        <div class="brand-name">${getValue(displayBrand.name)}</div>
-                        <div class="price-policy">${getValue(displayBrand.policy)}</div>
-                    </div>
-                `;
-            };
-
             let html = '';
             
             if (product1 && product1.isValid) {
@@ -491,7 +537,7 @@
                             <span class="discounted-price">${formatPrice(product1.giaSauGiam)}</span>
                         </div>
                         <div class='qrcode'>
-                            <img src='https://quickchart.io/qr?text=${getValue(product1.maSanPham || product1.maHang)}' alt='QR Code'>
+                            <img src='${getQRCodeUrl(product1.maSanPham || product1.maHang)}' alt='QR Code' loading='lazy'>
                         </div>
                     </div>`;
                 
@@ -521,7 +567,7 @@
                             <span class="discounted-price">${formatPrice(product2.giaSauGiam)}</span>
                         </div>
                         <div class='qrcode'>
-                            <img src='https://quickchart.io/qr?text=${getValue(product2.maSanPham || product2.maHang)}' alt='QR Code'>
+                            <img src='${getQRCodeUrl(product2.maSanPham || product2.maHang)}' alt='QR Code' loading='lazy'>
                         </div>
                     </div>`;
                 } else if (product2) {
@@ -556,59 +602,91 @@
             content.innerHTML = '';
             loading.classList.add('show');
             
-            try {
-                const productPromises = maHangList.map(maHang => fetchProductData(maHang));
-                const products = await Promise.all(productPromises);
-                
-                const validProducts = products.filter(p => p.isValid);
-                const invalidProducts = products.filter(p => !p.isValid);
-                
-                if (invalidProducts.length > 0) {
-                    const invalidCodes = invalidProducts.map(p => p.maHang).join(', ');
-                    alert(`Các mã hàng sau không tồn tại trong hệ thống:\n${invalidCodes}`);
-                }
-                
-                if (validProducts.length === 0) {
-                    content.innerHTML = '<div class="empty-container">Không có mã hàng hợp lệ nào để hiển thị</div>';
-                    loading.classList.remove('show');
-                    return;
-                }
-                
-                const fragment = document.createDocumentFragment();
-                const tempDiv = document.createElement('div');
-                
-                for (let i = 0; i < validProducts.length; i += 2) {
-                    const product1 = validProducts[i];
-                    const product2 = validProducts[i + 1];
-                    tempDiv.innerHTML = createContainer(product1, product2);
-                    while (tempDiv.firstChild) {
-                        fragment.appendChild(tempDiv.firstChild);
+            // Sử dụng requestAnimationFrame để UI không bị block
+            requestAnimationFrame(async () => {
+                try {
+                    // Sử dụng batch request thay vì từng cái một
+                    const products = await fetchProductDataBatch(maHangList);
+                    
+                    const validProducts = products.filter(p => p.isValid);
+                    const invalidProducts = products.filter(p => !p.isValid);
+                    
+                    if (invalidProducts.length > 0) {
+                        const invalidCodes = invalidProducts.map(p => p.maHang).join(', ');
+                        alert(`Các mã hàng sau không tồn tại trong hệ thống:\n${invalidCodes}`);
                     }
+                    
+                    if (validProducts.length === 0) {
+                        content.innerHTML = '<div class="empty-container">Không có mã hàng hợp lệ nào để hiển thị</div>';
+                        loading.classList.remove('show');
+                        return;
+                    }
+                    
+                    // Tạo DOM ảo để tối ưu hiệu năng
+                    let fragment = document.createDocumentFragment();
+                    
+                    // Chia thành các chunk để render từng phần
+                    const chunkSize = 10;
+                    for (let i = 0; i < validProducts.length; i += chunkSize) {
+                        const chunk = validProducts.slice(i, i + chunkSize);
+                        
+                        // Tạo container cho từng chunk
+                        const chunkFragment = document.createDocumentFragment();
+                        const tempDiv = document.createElement('div');
+                        
+                        for (let j = 0; j < chunk.length; j += 2) {
+                            const product1 = chunk[j];
+                            const product2 = chunk[j + 1];
+                            tempDiv.innerHTML = createContainer(product1, product2);
+                            while (tempDiv.firstChild) {
+                                chunkFragment.appendChild(tempDiv.firstChild);
+                            }
+                        }
+                        
+                        fragment.appendChild(chunkFragment);
+                        
+                        // Cho phép browser render từng phần
+                        if (i === 0) {
+                            content.appendChild(fragment);
+                            fragment = document.createDocumentFragment();
+                        }
+                        
+                        // Nhường CPU cho browser
+                        await new Promise(resolve => setTimeout(resolve, 0));
+                    }
+                    
+                    if (fragment.childNodes.length > 0) {
+                        content.appendChild(fragment);
+                    }
+                    
+                    loading.classList.remove('show');
+                    loading.classList.add('hide');
+                    
+                    // Sử dụng requestIdleCallback để in khi browser rảnh
+                    requestIdleCallback(() => {
+                        window.print();
+                    }, { timeout: 1000 });
+                    
+                } catch (error) {
+                    console.error('Lỗi khi tạo tag giá:', error);
+                    loading.classList.remove('show');
+                    alert('Có lỗi xảy ra khi tạo tag giá. Vui lòng thử lại!');
                 }
-                
-                content.appendChild(fragment);
-                
-                loading.classList.remove('show');
-                loading.classList.add('hide');
-                setTimeout(() => {
-                    loading.classList.remove('hide');
-                    loading.style.display = 'none';
-                    window.print();
-                }, 300);
-                
-            } catch (error) {
-                console.error('Lỗi khi tạo tag giá:', error);
-                loading.classList.remove('show');
-                loading.classList.add('hide');
-                setTimeout(() => {
-                    loading.classList.remove('hide');
-                    loading.style.display = 'none';
-                }, 300);
-                alert('Có lỗi xảy ra khi tạo tag giá. Vui lòng thử lại!');
-            }
+            });
         }
 
         document.getElementById('generateButton').addEventListener('click', generateContainers);
+
+        // Register service worker if supported
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful');
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
     </script>
 </body>
 </html>
