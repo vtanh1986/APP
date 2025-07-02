@@ -9,12 +9,23 @@
     <!-- Thêm Bootstrap Multiselect CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
     <style>
+        /* CSS đã tối ưu */
+        :root {
+            --primary-color: #1a73e8;
+            --error-color: #d32f2f;
+            --success-color: #2e7d32;
+            --border-color: #ddd;
+            --table-even-bg: #f9f9f9;
+            --table-header-bg: #f2f2f2;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
             background-color: #f5f5f5;
         }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -22,101 +33,127 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            will-change: transform;
         }
+        
         h1 {
-            color: #1a73e8;
+            color: var(--primary-color);
             text-align: center;
             margin-bottom: 20px;
             font-size: 20px;
             font-weight: normal;
         }
+        
         .filter-container {
             display: flex;
             flex-direction: column;
             gap: 15px;
             margin-bottom: 20px;
         }
+        
         .filter-group {
             display: flex;
             flex-direction: column;
         }
+        
         .filter-label {
             font-weight: bold;
             margin-bottom: 5px;
         }
+        
         .button-group {
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
+        
         button {
             padding: 8px 15px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            transition: opacity 0.2s ease;
         }
-        .refresh-btn {
-            background-color: #1a73e8;
-            color: white;
-        }
-        .reset-btn {
-            background-color: #f44336;
-            color: white;
-        }
-        .export-btn {
-            background-color: #2e7d32;
-            color: white;
-        }
+        
         button:hover {
             opacity: 0.9;
         }
+        
+        .refresh-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .reset-btn {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .export-btn {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
             font-size: 14px;
         }
+        
         th, td {
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             padding: 8px;
             text-align: left;
         }
+        
         th {
-            background-color: #f2f2f2;
+            background-color: var(--table-header-bg);
             position: sticky;
             top: 0;
         }
+        
         tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: var(--table-even-bg);
         }
-        .loading {
-            text-align: center;
+        
+        .loading, .error {
             padding: 20px;
+            text-align: center;
+        }
+        
+        .loading {
             font-style: italic;
             color: #666;
         }
+        
         .error {
-            color: #d32f2f;
+            color: var(--error-color);
             font-weight: bold;
-            padding: 20px;
-            text-align: center;
         }
-        /* Tùy chỉnh multiselect */
-        .bootstrap-select .dropdown-toggle {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: white;
-        }
-        .bootstrap-select .filter-option {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        
         .data-table-container {
             max-height: 500px;
             overflow-y: auto;
             margin-top: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .bootstrap-select .dropdown-toggle {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .bootstrap-select .filter-option {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        [data-loading="true"] {
+            display: none;
         }
     </style>
 </head>
@@ -165,219 +202,179 @@
         </div>
     </div>
 
-    <!-- Thêm các thư viện JavaScript cần thiết -->
+    <!-- Thêm các thư viện JavaScript ở cuối body -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/i18n/defaults-vi_VN.min.js"></script>
 
     <script>
+        // JavaScript đã tối ưu
         const apiUrl = 'https://script.google.com/macros/s/AKfycbxsCiGANq8qAwOLDKe8NXrE0o18vMK9aOvQetBJoiks12xMpLFbfpMaIh-KFpMSzMzn/exec';
-        const dataContainer = document.getElementById('dataContainer');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const resetFilterBtn = document.getElementById('resetFilter');
-        const exportExcelBtn = document.getElementById('exportExcel');
         
-        // Các bộ lọc
-        const tenNVKDFilter = document.getElementById('tenNVKDFilter');
-        const trangThaiLienHeFilter = document.getElementById('trangThaiLienHeFilter');
-        const tienDoCTFilter = document.getElementById('tienDoCTFilter');
-        const tenKDTFilter = document.getElementById('tenKDTFilter');
-        
-        let allData = [];
+        // Cache các phần tử DOM
+        const elements = {
+            dataContainer: document.getElementById('dataContainer'),
+            filters: {
+                tenNVKD: document.getElementById('tenNVKDFilter'),
+                trangThaiLienHe: document.getElementById('trangThaiLienHeFilter'),
+                tienDoCT: document.getElementById('tienDoCTFilter'),
+                tenKDT: document.getElementById('tenKDTFilter')
+            },
+            buttons: {
+                refresh: document.getElementById('refreshBtn'),
+                reset: document.getElementById('resetFilter'),
+                export: document.getElementById('exportExcel')
+            }
+        };
 
-        // Hàm định dạng ngày tháng
+        let allData = [];
+        let filteredData = [];
+        let debounceTimer;
+
+        // Hàm định dạng ngày tháng tối ưu
         function formatDate(dateString) {
             if (!dateString) return '';
             
-            try {
-                // Xử lý cả định dạng Date object và string
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return dateString;
-                
-                const day = date.getDate().toString().padStart(2, '0');
-                const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                const year = date.getFullYear();
-                
-                return `${day}/${month}/${year}`;
-            } catch (e) {
-                console.error('Lỗi định dạng ngày:', e);
+            if (typeof dateString === 'string' && dateString.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                 return dateString;
             }
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
         }
 
-        // Hàm fetch dữ liệu từ API
-        async function fetchData() {
+        // Hàm fetch dữ liệu với cache
+        async function fetchData(forceRefresh = false) {
             try {
-                dataContainer.innerHTML = '<p class="loading">Đang tải dữ liệu...</p>';
+                elements.dataContainer.innerHTML = '<p class="loading">Đang tải dữ liệu...</p>';
                 
-                const response = await fetch(apiUrl);
+                const url = forceRefresh ? `${apiUrl}?t=${Date.now()}` : apiUrl;
+                const response = await fetch(url);
                 
                 if (!response.ok) {
                     throw new Error(`Lỗi HTTP: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Dữ liệu từ API:', data);
+                allData = Array.isArray(data) ? data : (typeof data === 'object' && data !== null ? [data] : []);
                 
-                if (Array.isArray(data)) {
-                    allData = data;
-                } else if (typeof data === 'object' && data !== null) {
-                    allData = [data];
-                } else {
-                    allData = [];
-                }
-                
-                console.log('Dữ liệu đã xử lý:', allData);
-                
-                // Cập nhật các bộ lọc
                 updateFilters();
-                
-                // Hiển thị dữ liệu
                 filterAndRenderData();
                 
             } catch (error) {
                 console.error('Lỗi khi fetch dữ liệu:', error);
-                dataContainer.innerHTML = `
+                elements.dataContainer.innerHTML = `
                     <p class="error">Có lỗi xảy ra khi tải dữ liệu:</p>
                     <p class="error">${error.message}</p>
                 `;
             }
         }
 
-        // Cập nhật tất cả bộ lọc
+        // Cập nhật bộ lọc hiệu quả
         function updateFilters() {
-            updateFilterOptions('tenNVKD', tenNVKDFilter);
-            updateFilterOptions('trangThaiLienHe', trangThaiLienHeFilter);
-            updateFilterOptions('tienDoCT', tienDoCTFilter);
-            updateFilterOptions('tenKDT', tenKDTFilter);
+            const fields = ['tenNVKD', 'trangThaiLienHe', 'tienDoCT', 'tenKDT'];
             
-            // Refresh multiselect sau khi cập nhật options
+            fields.forEach(field => {
+                const uniqueValues = new Set();
+                
+                allData.forEach(item => {
+                    const value = item[field];
+                    if (value !== undefined && value !== null && value !== '') {
+                        uniqueValues.add(value);
+                    }
+                });
+                
+                const sortedValues = Array.from(uniqueValues).sort();
+                const optionsHTML = sortedValues.map(value => 
+                    `<option value="${value}">${value}</option>`
+                ).join('');
+                
+                elements.filters[field].innerHTML = optionsHTML;
+            });
+            
             $('.selectpicker').selectpicker('refresh');
         }
 
-        // Cập nhật options cho một bộ lọc
-        function updateFilterOptions(field, filterElement) {
-            // Lấy tất cả giá trị, lọc bỏ giá trị rỗng/null/undefined
-            const allValues = allData.map(item => item[field])
-                                   .filter(value => value !== undefined && 
-                                                  value !== null && 
-                                                  value !== '');
-            
-            // Tạo một Map để đảm bảo không trùng lặp
-            const uniqueValuesMap = new Map();
-            allValues.forEach(value => {
-                if (!uniqueValuesMap.has(value)) {
-                    uniqueValuesMap.set(value, true);
-                }
-            });
-            
-            // Chuyển Map thành mảng và sắp xếp
-            const uniqueValues = Array.from(uniqueValuesMap.keys()).sort();
-            
-            // Xóa tất cả options hiện có
-            filterElement.innerHTML = '';
-            
-            // Thêm các giá trị duy nhất vào dropdown
-            uniqueValues.forEach(value => {
-                filterElement.innerHTML += `<option value="${value}">${value}</option>`;
-            });
-        }
-
-        // Hàm lọc dữ liệu theo các điều kiện
+        // Hàm lọc dữ liệu tối ưu
         function filterData() {
-            // Lấy các giá trị đã chọn từ multiselect
-            const selectedTenNVKD = Array.from(tenNVKDFilter.selectedOptions).map(opt => opt.value);
-            const selectedTrangThaiLienHe = Array.from(trangThaiLienHeFilter.selectedOptions).map(opt => opt.value);
-            const selectedTienDoCT = Array.from(tienDoCTFilter.selectedOptions).map(opt => opt.value);
-            const selectedTenKDT = Array.from(tenKDTFilter.selectedOptions).map(opt => opt.value);
+            const filters = {
+                tenNVKD: Array.from(elements.filters.tenNVKD.selectedOptions).map(opt => opt.value),
+                trangThaiLienHe: Array.from(elements.filters.trangThaiLienHe.selectedOptions).map(opt => opt.value),
+                tienDoCT: Array.from(elements.filters.tienDoCT.selectedOptions).map(opt => opt.value),
+                tenKDT: Array.from(elements.filters.tenKDT.selectedOptions).map(opt => opt.value)
+            };
             
             return allData.filter(row => {
-                // Kiểm tra nếu không chọn gì (plugin sẽ coi là chọn Tất cả)
-                const tenNVKDMatch = selectedTenNVKD.length === 0 || selectedTenNVKD.includes(row.tenNVKD);
-                const trangThaiLienHeMatch = selectedTrangThaiLienHe.length === 0 || selectedTrangThaiLienHe.includes(row.trangThaiLienHe);
-                const tienDoCTMatch = selectedTienDoCT.length === 0 || selectedTienDoCT.includes(row.tienDoCT);
-                const tenKDTMatch = selectedTenKDT.length === 0 || selectedTenKDT.includes(row.tenKDT);
-                
-                return tenNVKDMatch && trangThaiLienHeMatch && tienDoCTMatch && tenKDTMatch;
+                return (
+                    (filters.tenNVKD.length === 0 || filters.tenNVKD.includes(row.tenNVKD)) &&
+                    (filters.trangThaiLienHe.length === 0 || filters.trangThaiLienHe.includes(row.trangThaiLienHe)) &&
+                    (filters.tienDoCT.length === 0 || filters.tienDoCT.includes(row.tienDoCT)) &&
+                    (filters.tenKDT.length === 0 || filters.tenKDT.includes(row.tenKDT))
+                );
             });
         }
 
-        // Hàm render dữ liệu ra bảng
+        // Render bảng hiệu quả
         function renderTable(data) {
             if (data.length === 0) {
-                dataContainer.innerHTML = '<p class="error">Không có dữ liệu phù hợp với điều kiện lọc</p>';
+                elements.dataContainer.innerHTML = '<p class="error">Không có dữ liệu phù hợp với điều kiện lọc</p>';
                 return;
             }
             
-            // Danh sách các cột cần ẩn
             const hiddenColumns = ['nvkd', 'chucVu', 'nhom', 'duongDanAnh', 'lichSuTienDoCongTrinh'];
+            const headers = Object.keys(data[0]).filter(header => !hiddenColumns.includes(header));
+            const headersHTML = headers.map(header => `<th>${header}</th>`).join('');
             
-            // Lấy tất cả keys từ các object để làm header (loại bỏ các cột cần ẩn)
-            const headers = Object.keys(data[0])
-                                .filter(header => !hiddenColumns.includes(header));
+            const rowsHTML = data.map(row => {
+                const ngayTiepCanFormatted = row.ngayTiepCan ? formatDate(row.ngayTiepCan) : '';
+                
+                const cellsHTML = headers.map(header => {
+                    const value = header === 'ngayTiepCan' ? ngayTiepCanFormatted : (row[header] || '');
+                    return `<td>${value}</td>`;
+                }).join('');
+                
+                return `<tr>${cellsHTML}</tr>`;
+            }).join('');
             
-            let html = `
+            elements.dataContainer.innerHTML = `
             <div class="data-table-container">
                 <table class="table table-bordered table-hover">
-                    <thead>
-                        <tr>
-                            ${headers.map(header => `<th>${header}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.map(row => {
-                            // Định dạng lại ngày tiếp cận
-                            const formattedRow = {...row};
-                            if (formattedRow.ngayTiepCan) {
-                                formattedRow.ngayTiepCan = formatDate(formattedRow.ngayTiepCan);
-                            }
-                            
-                            return `
-                            <tr>
-                                ${headers.map(header => `<td>${formattedRow[header] || ''}</td>`).join('')}
-                            </tr>`;
-                        }).join('')}
-                    </tbody>
+                    <thead><tr>${headersHTML}</tr></thead>
+                    <tbody>${rowsHTML}</tbody>
                 </table>
             </div>`;
-            
-            dataContainer.innerHTML = html;
         }
 
-        // Hàm lọc và render dữ liệu
+        // Hàm lọc và render với debounce
         function filterAndRenderData() {
-            const filteredData = filterData();
-            console.log('Dữ liệu sau khi lọc:', filteredData);
-            renderTable(filteredData);
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                filteredData = filterData();
+                renderTable(filteredData);
+            }, 200);
         }
 
-        // Gọi hàm fetchData khi trang load
+        // Khởi tạo khi DOM ready
         $(document).ready(function() {
-            // Khởi tạo multiselect
             $('.selectpicker').selectpicker();
-            
-            // Sau đó fetch dữ liệu
             fetchData();
-        });
-        
-        // Thêm sự kiện click cho nút refresh
-        refreshBtn.addEventListener('click', fetchData);
-        
-        // Thêm sự kiện cho các bộ lọc
-        [tenNVKDFilter, trangThaiLienHeFilter, tienDoCTFilter, tenKDTFilter].forEach(filter => {
-            filter.addEventListener('change', filterAndRenderData);
-        });
-        
-        // Thêm sự kiện cho nút xóa lọc
-        resetFilterBtn.addEventListener('click', () => {
-            $('.selectpicker').selectpicker('deselectAll');
-            filterAndRenderData();
-        });
-        
-        // Thêm sự kiện cho nút xuất Excel
-        exportExcelBtn.addEventListener('click', () => {
-            alert('Chức năng xuất Excel sẽ được triển khai sau');
+            
+            // Thêm sự kiện
+            elements.buttons.refresh.addEventListener('click', () => fetchData(true));
+            elements.buttons.reset.addEventListener('click', () => {
+                $('.selectpicker').selectpicker('deselectAll');
+                filterAndRenderData();
+            });
+            elements.buttons.export.addEventListener('click', () => {
+                alert('Chức năng xuất Excel sẽ được triển khai sau');
+            });
+            
+            Object.values(elements.filters).forEach(filter => {
+                filter.addEventListener('change', filterAndRenderData);
+            });
         });
     </script>
 </body>
