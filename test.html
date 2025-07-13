@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <!-- Thêm Bootstrap Multiselect CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+    <!-- Thêm SheetJS để xuất Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         /* CSS đã tối ưu */
         :root {
@@ -357,6 +359,62 @@
             }, 200);
         }
 
+        // Hàm xuất Excel
+        function exportToExcel() {
+            if (!filteredData || filteredData.length === 0) {
+                alert('Không có dữ liệu để xuất Excel');
+                return;
+            }
+
+            try {
+                // 1. Chuẩn bị dữ liệu
+                const hiddenColumns = ['nvkd', 'chucVu', 'nhom', 'duongDanAnh', 'lichSuTienDoCongTrinh'];
+                const headers = Object.keys(filteredData[0]).filter(header => !hiddenColumns.includes(header));
+                
+                // 2. Tạo workbook và worksheet
+                const wb = XLSX.utils.book_new();
+                
+                // 3. Tạo dữ liệu cho worksheet (bao gồm cả header)
+                const wsData = [
+                    headers.map(h => h.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())), // Format header names
+                    ...filteredData.map(row => {
+                        return headers.map(header => {
+                            if (header === 'ngayTiepCan') {
+                                return formatDate(row[header]);
+                            }
+                            return row[header] || '';
+                        });
+                    })
+                ];
+                
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                
+                // 4. Định dạng cột ngày (nếu cần)
+                if (headers.includes('ngayTiepCan')) {
+                    const dateColIndex = headers.indexOf('ngayTiepCan');
+                    const range = XLSX.utils.decode_range(ws['!ref']);
+                    for (let i = range.s.r + 1; i <= range.e.r; ++i) {
+                        const cellAddress = XLSX.utils.encode_cell({r: i, c: dateColIndex});
+                        if (ws[cellAddress]) {
+                            ws[cellAddress].z = 'dd/mm/yyyy';
+                        }
+                    }
+                }
+                
+                // 5. Thêm worksheet vào workbook
+                XLSX.utils.book_append_sheet(wb, ws, "DanhSachCongTrinh");
+                
+                // 6. Xuất file
+                const now = new Date();
+                const fileName = `DanhSachCongTrinh_${now.getDate()}${now.getMonth()+1}${now.getFullYear()}_${now.getHours()}${now.getMinutes()}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+            } catch (error) {
+                console.error('Lỗi khi xuất Excel:', error);
+                alert('Có lỗi xảy ra khi xuất Excel: ' + error.message);
+            }
+        }
+
         // Khởi tạo khi DOM ready
         $(document).ready(function() {
             $('.selectpicker').selectpicker();
@@ -368,9 +426,7 @@
                 $('.selectpicker').selectpicker('deselectAll');
                 filterAndRenderData();
             });
-            elements.buttons.export.addEventListener('click', () => {
-                alert('Chức năng xuất Excel sẽ được triển khai sau');
-            });
+            elements.buttons.export.addEventListener('click', exportToExcel);
             
             Object.values(elements.filters).forEach(filter => {
                 filter.addEventListener('change', filterAndRenderData);
