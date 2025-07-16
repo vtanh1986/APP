@@ -508,15 +508,17 @@ K-9012'></textarea>
                 html += `
                 <div class='container'>
                     <div class='column column-1'>
-                        <div class='row bold'>Mã sản phẩm</div>
-                        <div class='row bold'>Tên sản phẩm</div>
-                        <div class='row bold'>Giá niêm yết (Đã bao gồm VAT)</div>
-                        <div class='row bold'>Giá bán (Đã bao gồm VAT)</div>
-                        <div class='row bold'>Xuất xứ</div>
-                        <div class='row bold'>Nhập khẩu & phân phối</div>
+			<div class='row bold'>KOHLER</div>
+                        <div class='row'>Mã sản phẩm</div>
+                        <div class='row'>Tên sản phẩm</div>
+                        <div class='row'>Giá niêm yết (VAT)</div>
+                        <div class='row'>Giá bán (VAT)</div>
+                        <div class='row'>Xuất xứ</div>
+                        <div class='row'>Nhập khẩu & phân phối</div>
+			<div class='row bold'>RITA VÕ</div>
                     </div>
                     <div class='column column-2'>
-                        <div class='row'>${getValue(product1.maSanPham)}</div>
+                        <div class='row bold'>${getValue(product1.maSanPham)}</div>
                         <div class='row'>${getValue(product1.tenTiengViet)}</div>
                         <div class='row'>
                             <span class="strikethrough">${formatPrice(product1.giaNieYetCoVAT)}</span>
@@ -534,15 +536,17 @@ K-9012'></textarea>
                 if (product2 && product2.isValid) {
                     html += `
                     <div class='column column-3'>
-                        <div class='row bold'>Mã sản phẩm</div>
-                        <div class='row bold'>Tên sản phẩm</div>
-                        <div class='row bold'>Giá niêm yết (Đã bao gồm VAT)</div>
-                        <div class='row bold'>Giá bán (Đã bao gồm VAT)</div>
-                        <div class='row bold'>Xuất xứ</div>
-                        <div class='row bold'>Nhập khẩu & phân phối</div>
+			<div class='row bold'>KOHLER</div>
+                        <div class='row'>Mã sản phẩm</div>
+                        <div class='row'>Tên sản phẩm</div>
+                        <div class='row'>Giá niêm yết (VAT)</div>
+                        <div class='row'>Giá bán (VAT)</div>
+                        <div class='row'>Xuất xứ</div>
+                        <div class='row'>Nhập khẩu & phân phối</div>
+			<div class='row bold'>RITA VÕ</div>
                     </div>
                     <div class='column column-4'>
-                        <div class='row'>${getValue(product2.maSanPham)}</div>
+                        <div class='row bold'>${getValue(product2.maSanPham)}</div>
                         <div class='row'>${getValue(product2.tenTiengViet)}</div>
                         <div class='row'>
                             <span class="strikethrough">${formatPrice(product2.giaNieYetCoVAT)}</span>
