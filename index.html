@@ -27,6 +27,7 @@
             page-break-inside: avoid;
             will-change: transform;
             contain: content;
+            position: relative;
         }
         .container-row {
             display: flex;
@@ -40,7 +41,6 @@
             justify-content: space-around;
             padding: 5px;
             box-sizing: border-box;
-            border-right: 1px solid #ccc;
             position: relative;
             will-change: transform;
             contain: content;
@@ -52,10 +52,19 @@
             width: 60mm;
         }
         .column-2 {
-            border-right: 2px solid #000;
+            border-right: 1px solid #ccc;
         }
         .column-4 {
-            border-right: 2px solid #000;
+            border-right: 1px solid #ccc;
+        }
+        .divider-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 90mm; /* Điều chỉnh vị trí sang trái để trùng với vạch kẻ dọc gần nhất bên trái */
+            width: 2px;
+            background-color: #000;
+            z-index: 1;
         }
         .bold {
             font-weight: bold;
@@ -233,12 +242,21 @@
             padding: 0 5px;
             box-sizing: border-box;
             border-bottom: 1px solid #ccc;
+            position: relative;
         }
         .logo-row img {
             height: 8mm;
             width: auto;
             max-width: 100%;
             object-fit: contain;
+        }
+        .logo-left {
+            position: absolute;
+            left: 5px;
+        }
+        .logo-right {
+            position: absolute;
+            left: calc(90mm + 5px); /* Điều chỉnh vị trí logo bên phải theo vạch kẻ dọc mới */
         }
         .bottom-row {
             display: flex;
@@ -247,12 +265,21 @@
             padding: 0 5px;
             box-sizing: border-box;
             border-top: 1px solid #ccc;
+            position: relative;
         }
         .bottom-row img {
             height: 8mm;
             width: auto;
             max-width: 100%;
             object-fit: contain;
+        }
+        .bottom-left {
+            position: absolute;
+            left: 5px;
+        }
+        .bottom-right {
+            position: absolute;
+            left: calc(90mm + 5px); /* Điều chỉnh vị trí logo bên phải theo vạch kẻ dọc mới */
         }
     </style>
     <link rel="preconnect" href="https://script.google.com">
@@ -541,8 +568,10 @@ K-9012'></textarea>
             if (product1 && product1.isValid) {
                 html += `
                 <div class='container'>
+                    <div class='divider-line'></div>
                     <div class='logo-row'>
-                        <img src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
+                        <img class='logo-left' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
+                        <img class='logo-right' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
                     </div>
                     <div class='container-row'>
                         <div class='column column-1'>
@@ -567,12 +596,8 @@ K-9012'></textarea>
                             <div class='qrcode'>
                                 <img src='${getQRCodeUrl(product1.maSanPham)}' alt='QR Code' loading='lazy'>
                             </div>
-                        </div>
-                    <div class='logo-row'>
-                        <img src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
-                    </div>`;
+                        </div>`;
                     
-                
                 if (product2 && product2.isValid) {
                     html += `
                         <div class='column column-3'>
@@ -602,16 +627,17 @@ K-9012'></textarea>
                     html += `
                         <div class='column column-3'></div>
                         <div class='column column-4'></div>
-                        <div class='invalid-message">Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống</div>`;
+                        <div class='invalid-message'>Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống</div>`;
                 }
                 
                 html += `</div>
                     <div class='bottom-row'>
-                        <img src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
+                        <img class='bottom-left' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
+                        <img class='bottom-right' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
                     </div>
                 </div>`;
             } else if (product1) {
-                html += `<div class='invalid-message">Mã sản phẩm ${escapeHtml(product1.maSanPham)} không tồn tại trong hệ thống</div>`;
+                html += `<div class='invalid-message'>Mã sản phẩm ${escapeHtml(product1.maSanPham)} không tồn tại trong hệ thống</div>`;
             }
             
             return html;
