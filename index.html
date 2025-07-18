@@ -278,6 +278,20 @@
             position: absolute;
             left: calc(98mm + 15px);
         }
+        .price-code {
+            position: absolute;
+            font-weight: bold;
+            font-size: 10pt;
+            color: #000;
+            z-index: 1;
+            bottom: 5mm;
+        }
+        .price-code-left {
+            left: 76mm;
+        }
+        .price-code-right {
+            right: 20mm;
+        }
     </style>
     <link rel="preconnect" href="https://script.google.com">
     <link rel="preconnect" href="https://quickchart.io">
@@ -549,10 +563,25 @@ K-9012'></textarea>
             return value !== undefined && value !== null ? escapeHtml(value) : escapeHtml(defaultValue);
         };
 
+        function getPriceCode(product) {
+            if (!product || !product.isValid) return '';
+            
+            // Lấy ký tự đầu tiên của goiGia
+            const packageChar = product.goiGia ? product.goiGia.charAt(0).toUpperCase() : 'A';
+            
+            // Tính phần trăm giảm giá (nhân 100)
+            const discountPercent = product.phanTramGiamGia ? Math.round(product.phanTramGiamGia * 100) : 0;
+            
+            return `${packageChar}.${discountPercent}`;
+        }
+
         function createContainer(product1, product2) {
             let html = '';
             
             if (product1 && product1.isValid) {
+                const priceCode1 = getPriceCode(product1);
+                const priceCode2 = product2 && product2.isValid ? getPriceCode(product2) : '';
+                
                 html += `
                 <div class='container'>
                     <div class='divider-line'></div>
@@ -611,15 +640,17 @@ K-9012'></textarea>
                         <div class='invalid-message'>Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống</div>`;
                 }
                 
-                // Thêm QR code vào bottom row
+                // Thêm QR code và price code vào bottom row
                 html += `</div>
                     <div class='bottom-row'>
                         <img class='bottom-left' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
                         ${product2 && product2.isValid ? `<img class='bottom-right' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>` : ''}
+                        <div class='price-code price-code-left'>${priceCode1}</div>
                         <div class='qrcode-bottom qrcode-left'>
                             <img src='${getQRCodeUrl(product1.maSanPham)}' alt='QR Code' loading='lazy'>
                         </div>
                         ${product2 && product2.isValid ? `
+                        <div class='price-code price-code-right'>${priceCode2}</div>
                         <div class='qrcode-bottom qrcode-right'>
                             <img src='${getQRCodeUrl(product2.maSanPham)}' alt='QR Code' loading='lazy'>
                         </div>` : ''}
