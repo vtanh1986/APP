@@ -74,22 +74,25 @@
         .row:last-child {
             border-bottom: none;
         }
-        .qrcode {
+        .qrcode-bottom {
             position: absolute;
-            bottom: 2px;
-            right: 4px;
-            width: 8mm;
-            height: 8mm;
-            background-color: #f0f0f0;
+            width: 9mm;
+            height: 9mm;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .qrcode img {
+        .qrcode-bottom img {
             width: 100%;
             height: 100%;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+        }
+        .qrcode-left {
+            right: 10px;
+        }
+        .qrcode-right {
+            right: 10px;
         }
         #input-container {
             margin-bottom: 10mm;
@@ -546,16 +549,6 @@ K-9012'></textarea>
             return value !== undefined && value !== null ? escapeHtml(value) : escapeHtml(defaultValue);
         };
 
-        function renderBrand(displayBrand) {
-            if (!displayBrand) return '';
-            return `
-                <div class="brand-container">
-                    <div class="brand-name">${getValue(displayBrand.name)}</div>
-                    <div class="price-policy">${getValue(displayBrand.policy)}</div>
-                </div>
-            `;
-        };
-
         function createContainer(product1, product2) {
             let html = '';
             
@@ -565,7 +558,7 @@ K-9012'></textarea>
                     <div class='divider-line'></div>
                     <div class='logo-row'>
                         <img class='logo-left' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
-                        <img class='logo-right' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
+                        ${product2 && product2.isValid ? `<img class='logo-right' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>` : ''}
                     </div>
                     <div class='container-row'>
                         <div class='column column-1'>
@@ -587,9 +580,6 @@ K-9012'></textarea>
                             </div>
                             <div class='row'>${getValue(product1.xuatXu)}</div>
                             <div class='row'>Công ty TNHH Tập đoàn RiTa Võ</div>
-                            <div class='qrcode'>
-                                <img src='${getQRCodeUrl(product1.maSanPham)}' alt='QR Code' loading='lazy'>
-                            </div>
                         </div>`;
                     
                 if (product2 && product2.isValid) {
@@ -613,9 +603,6 @@ K-9012'></textarea>
                             </div>
                             <div class='row'>${getValue(product2.xuatXu)}</div>
                             <div class='row'>Công ty TNHH Tập đoàn RiTa Võ</div>
-                            <div class='qrcode'>
-                                <img src='${getQRCodeUrl(product2.maSanPham)}' alt='QR Code' loading='lazy'>
-                            </div>
                         </div>`;
                 } else if (product2) {
                     html += `
@@ -624,10 +611,18 @@ K-9012'></textarea>
                         <div class='invalid-message'>Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống</div>`;
                 }
                 
+                // Thêm QR code vào bottom row
                 html += `</div>
                     <div class='bottom-row'>
                         <img class='bottom-left' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
-                        <img class='bottom-right' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
+                        ${product2 && product2.isValid ? `<img class='bottom-right' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>` : ''}
+                        <div class='qrcode-bottom qrcode-left'>
+                            <img src='${getQRCodeUrl(product1.maSanPham)}' alt='QR Code' loading='lazy'>
+                        </div>
+                        ${product2 && product2.isValid ? `
+                        <div class='qrcode-bottom qrcode-right'>
+                            <img src='${getQRCodeUrl(product2.maSanPham)}' alt='QR Code' loading='lazy'>
+                        </div>` : ''}
                     </div>
                 </div>`;
             } else if (product1) {
