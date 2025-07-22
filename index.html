@@ -7,12 +7,12 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 5mm;
+            margin: 5mm;
         }
         body {
             width: 210mm; 
             margin: 0;
-            padding: 10mm;
+            padding: 0;
             box-sizing: border-box;
             font-family: 'Times New Roman', serif;
             font-size: 10pt;
@@ -20,10 +20,10 @@
         .container {
             display: flex;
             flex-direction: column;
-            width: 210mm;        
+            width: 200mm;        
             height: 80mm;
             border: 1px solid #000;
-            margin-bottom: 0;
+            margin: 5mm auto;
             page-break-inside: avoid;
             will-change: transform;
             contain: content;
@@ -48,11 +48,11 @@
             contain: content;
         }
         .column-1, .column-3 {
-            width: 35mm;
+            width: 30mm;
             border-right: 1px solid #ccc;
         }
         .column-2, .column-4 {
-            width: 75mm;
+            width: 70mm;
         }
         .column-2 {
             border-right: 1px solid #000;
@@ -96,7 +96,8 @@
             right: 10px;
         }
         #input-container {
-            margin-bottom: 10mm;
+            margin: 10mm auto;
+            width: 200mm;
             display: none;
         }
         #productCodesInput {
@@ -113,10 +114,17 @@
             font-family: 'Times New Roman', serif;
             font-size: 10pt;
             cursor: pointer;
+            width: 100%;
         }
         @media print {
             #input-container {
                 display: none !important;
+            }
+            body {
+                padding: 0;
+            }
+            .container {
+                margin: 0 auto 5mm;
             }
         }
         .loading {
