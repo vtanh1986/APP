@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 5mm;
+            margin: 10mm 5mm;
         }
         body {
             width: 210mm; 
@@ -23,7 +23,7 @@
             width: 200mm;        
             height: 80mm;
             border: 1px solid #000;
-            margin: 5mm auto;
+            margin-bottom: 0;
             page-break-inside: avoid;
             will-change: transform;
             contain: content;
@@ -96,8 +96,7 @@
             right: 10px;
         }
         #input-container {
-            margin: 10mm auto;
-            width: 200mm;
+            margin-bottom: 10mm;
             display: none;
         }
         #productCodesInput {
@@ -114,17 +113,10 @@
             font-family: 'Times New Roman', serif;
             font-size: 10pt;
             cursor: pointer;
-            width: 100%;
         }
         @media print {
             #input-container {
                 display: none !important;
-            }
-            body {
-                padding: 0;
-            }
-            .container {
-                margin: 0 auto 5mm;
             }
         }
         .loading {
