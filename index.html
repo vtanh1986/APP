@@ -11,11 +11,17 @@
         }
         body {
             width: 210mm;
+            height: 297mm;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Times New Roman', serif;
             font-size: 10pt;
+            /* Thêm các dòng sau để căn giữa theo chiều dọc */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Căn giữa top/bottom */
+            align-items: center;     /* Căn giữa left/right */
         }
         .container {
             display: flex;
