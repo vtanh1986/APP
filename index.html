@@ -51,7 +51,16 @@
             
         }
         .column-2 {
-            border-right: 2px solid #000;
+            position: relative;
+        }
+        .column-2::after {
+            content: '';
+            position: absolute;
+            top: -60mm; /* Kéo dài lên trên bằng chiều cao của logo-row */
+            right: 0;
+            width: 2px;
+            height: calc(100% + 120mm); /* Tổng chiều cao của logo-row + bottom-row + container-row */
+            background-color: #000;
         }
         .column-3 {
            
@@ -294,6 +303,9 @@
             }
             .bottom-row {
                 border-top: 1px solid #000 !important;
+            }
+            .column-2::after {
+                background-color: #000 !important;
             }
         }
     </style>
