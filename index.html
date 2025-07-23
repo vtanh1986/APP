@@ -7,10 +7,10 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 6mm 6mm 15mm 6mm; /* Trên 6mm, dưới 15mm, trái/phải 6mm */
+            margin: 6mm 6mm 15mm 6mm;
         }
         body {
-            width: 198mm; /* Đúng bằng chiều rộng mong muốn */
+            width: 198mm;
             margin: 0 auto;
             padding: 0;
             font-family: 'Times New Roman', serif;
@@ -19,9 +19,9 @@
         .container {
             display: flex;
             flex-direction: column;
-            width: 198mm;        
+            width: 198mm;
             height: 78mm;
-            margin: 0 auto 1px auto;
+            margin: 0 auto 1mm auto;
             border: 1px solid #000;
             page-break-inside: avoid;
             position: relative;
@@ -44,7 +44,7 @@
         }
         .column-1, .column-3 {
             width: 30mm;
-            border-right: 1px solid #ccc;
+            border-right: 1px solid #000;
         }
         .column-2, .column-4 {
             width: 69mm;
@@ -53,9 +53,8 @@
             border-right: 1px solid #000;
         }
         .column-4 {
-            border-right: 1px solid #ccc;
+            border-right: 1px solid #000;
         }
-
         .bold {
             font-weight: bold;
         }
@@ -63,7 +62,7 @@
             display: flex;
             align-items: center;
             height: 9mm;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 1px solid #000;
             padding: 0 5px;
             box-sizing: border-box;
         }
@@ -111,18 +110,6 @@
             font-family: 'Times New Roman', serif;
             font-size: 10pt;
             cursor: pointer;
-        }
-        @media print {
-            #input-container {
-                display: none !important;
-            }
-            body {
-                margin: 0 auto;
-            }
-            .container {
-                margin-bottom: 0;
-                border-bottom: none;
-            }
         }
         .loading {
             position: fixed;
@@ -223,31 +210,13 @@
             margin-left: auto;
             margin-right: auto;
         }
-        .brand-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-        .brand-name {
-            flex: 1;
-        }
-        .price-policy {
-            margin-left: 10px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        .lockout-message {
-            color: red;
-            font-weight: bold;
-            margin-top: 10px;
-        }
         .logo-row {
             display: flex;
             align-items: center;
             height: 60mm;
             padding: 0 5px;
             box-sizing: border-box;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 1px solid #000;
             position: relative;
         }
         .logo-row img {
@@ -270,7 +239,7 @@
             height: 60mm;
             padding: 0 5px;
             box-sizing: border-box;
-            border-top: 1px solid #ccc;
+            border-top: 1px solid #000;
             position: relative;
         }
         .bottom-row img {
@@ -299,6 +268,32 @@
         }
         .price-code-right {
             right: 20mm;
+        }
+        .lockout-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        @media print {
+            #input-container {
+                display: none !important;
+            }
+            body {
+                margin: 0 auto;
+            }
+            .container {
+                margin-bottom: 0;
+                border-bottom: 1px solid #000 !important;
+            }
+            .column-4 {
+                border-right: 1px solid #000 !important;
+            }
+            .logo-row {
+                border-bottom: 1px solid #000 !important;
+            }
+            .bottom-row {
+                border-top: 1px solid #000 !important;
+            }
         }
     </style>
     <link rel="preconnect" href="https://script.google.com">
@@ -330,14 +325,12 @@ K-9012'></textarea>
         // Cấu hình bảo mật
         const CORRECT_PASSWORD = "ritavo123";
         const MAX_FAILED_ATTEMPTS = 5;
-        const LOCKOUT_DURATION = 30 * 60 * 1000; // 30 phút
-        const SESSION_DURATION = 30 * 60 * 1000; // 30 phút
+        const LOCKOUT_DURATION = 30 * 60 * 1000;
+        const SESSION_DURATION = 30 * 60 * 1000;
         
-        // Biến toàn cục
         let failedAttempts = 0;
         let inactivityTimer;
 
-        // DOM elements
         const passwordInput = document.getElementById('password-input');
         const passwordSubmit = document.getElementById('password-submit');
         const passwordError = document.getElementById('password-error');
@@ -345,7 +338,6 @@ K-9012'></textarea>
         const passwordProtection = document.getElementById('password-protection');
         const inputContainer = document.getElementById('input-container');
 
-        // Phần xác thực mật khẩu
         function checkPassword() {
             if (isLockedOut()) {
                 showLockoutMessage();
@@ -405,7 +397,6 @@ K-9012'></textarea>
             }, LOCKOUT_DURATION);
         }
 
-        // Quản lý session
         function setAuthCookie() {
             const expires = new Date();
             expires.setTime(expires.getTime() + SESSION_DURATION);
@@ -426,13 +417,11 @@ K-9012'></textarea>
             window.location.reload();
         }
 
-        // Quản lý thời gian không hoạt động
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(logout, SESSION_DURATION);
         }
 
-        // XSS Protection
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
             return unsafe.toString()
@@ -443,7 +432,6 @@ K-9012'></textarea>
                 .replace(/'/g, "&#039;");
         }
 
-        // Event listeners
         passwordSubmit.addEventListener('click', checkPassword);
         
         passwordInput.addEventListener('keypress', function(e) {
@@ -452,19 +440,16 @@ K-9012'></textarea>
             }
         });
 
-        // Theo dõi hoạt động người dùng
         ['mousemove', 'keypress', 'click', 'scroll'].forEach(event => {
             window.addEventListener(event, resetInactivityTimer);
         });
 
-        // Kiểm tra khi trang tải xong
         document.addEventListener('DOMContentLoaded', function() {
             if (checkAuthCookie()) {
                 passwordProtection.style.display = 'none';
                 inputContainer.style.display = 'block';
                 resetInactivityTimer();
                 
-                // Preload QR code generator
                 const img = new Image();
                 img.src = 'https://quickchart.io/qr?text=preload';
             } else {
@@ -475,12 +460,10 @@ K-9012'></textarea>
             }
         });
 
-        // Phần chức năng chính
         const API_URL = 'https://script.google.com/macros/s/AKfycbwgDTMSaSE7bXdJVb1iMh7UVKaUVRx0TdE9Ha45I-gydWd-IVKOMlHeX1Ocg7mSuNsu/exec';
         const productCache = {};
         const QR_CACHE_PREFIX = 'qr_cache_';
         
-        // Batch request optimization
         async function fetchProductDataBatch(maSanPhamList) {
             const uncachedItems = maSanPhamList.filter(maSanPham => !productCache[maSanPham]);
             const cachedItems = maSanPhamList.filter(maSanPham => productCache[maSanPham]).map(maSanPham => productCache[maSanPham]);
@@ -496,7 +479,6 @@ K-9012'></textarea>
                 
                 const data = await response.json();
                 
-                // Xử lý dữ liệu trả về và cập nhật cache
                 const processedData = Array.isArray(data) ? data : [data];
                 
                 processedData.forEach(item => {
@@ -510,7 +492,6 @@ K-9012'></textarea>
                     productCache[item.maSanPham] = result;
                 });
                 
-                // Thêm các item không tìm thấy vào cache với isValid = false
                 uncachedItems.forEach(maSanPham => {
                     if (!processedData.some(item => item.maSanPham === maSanPham)) {
                         productCache[maSanPham] = { 
@@ -529,7 +510,6 @@ K-9012'></textarea>
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu hàng loạt:', error);
                 
-                // Trả về dữ liệu cache nếu có, hoặc dữ liệu mặc định
                 return maSanPhamList.map(maSanPham => {
                     return productCache[maSanPham] || { 
                         maSanPham, 
@@ -543,7 +523,6 @@ K-9012'></textarea>
             }
         }
 
-        // QR Code caching
         function getQRCodeUrl(maSanPham) {
             const cacheKey = QR_CACHE_PREFIX + maSanPham;
             const cachedUrl = localStorage.getItem(cacheKey);
@@ -574,10 +553,7 @@ K-9012'></textarea>
         function getPriceCode(product) {
             if (!product || !product.isValid) return '';
             
-            // Lấy ký tự đầu tiên của goiGia
             const packageChar = product.goiGia ? product.goiGia.charAt(0).toUpperCase() : 'A';
-            
-            // Tính phần trăm giảm giá (nhân 100)
             const discountPercent = product.phanTramGiamGia ? Math.round(product.phanTramGiamGia * 100) : 0;
             
             return `${packageChar}.${discountPercent}`;
@@ -592,7 +568,6 @@ K-9012'></textarea>
                 
                 html += `
                 <div class='container'>
-                    <div class='divider-line'></div>
                     <div class='logo-row'>
                         <img class='logo-left' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>
                         ${product2 && product2.isValid ? `<img class='logo-right' src='https://img.forconstructionpros.com/files/base/acbm/fcp/image/2017/02/kohler_logo.589b284427a04.png?auto=format%2Ccompress&q=70' alt='KOHLER Logo'>` : ''}
@@ -648,7 +623,6 @@ K-9012'></textarea>
                         <div class='invalid-message'>Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống</div>`;
                 }
                 
-                // Thêm QR code và price code vào bottom row
                 html += `</div>
                     <div class='bottom-row'>
                         <img class='bottom-left' src='https://theme.hstatic.net/200000067582/1001251648/14/share_fb.png?v=867' alt='Rita Võ Logo'>
@@ -688,10 +662,8 @@ K-9012'></textarea>
             content.innerHTML = '';
             loading.classList.add('show');
             
-            // Sử dụng requestAnimationFrame để UI không bị block
             requestAnimationFrame(async () => {
                 try {
-                    // Sử dụng batch request thay vì từng cái một
                     const products = await fetchProductDataBatch(maSanPhamList);
                     
                     const validProducts = products.filter(p => p.isValid);
@@ -708,15 +680,11 @@ K-9012'></textarea>
                         return;
                     }
                     
-                    // Tạo DOM ảo để tối ưu hiệu năng
                     let fragment = document.createDocumentFragment();
-                    
-                    // Chia thành các chunk để render từng phần
                     const chunkSize = 10;
+                    
                     for (let i = 0; i < validProducts.length; i += chunkSize) {
                         const chunk = validProducts.slice(i, i + chunkSize);
-                        
-                        // Tạo container cho từng chunk
                         const chunkFragment = document.createDocumentFragment();
                         const tempDiv = document.createElement('div');
                         
@@ -731,13 +699,11 @@ K-9012'></textarea>
                         
                         fragment.appendChild(chunkFragment);
                         
-                        // Cho phép browser render từng phần
                         if (i === 0) {
                             content.appendChild(fragment);
                             fragment = document.createDocumentFragment();
                         }
                         
-                        // Nhường CPU cho browser
                         await new Promise(resolve => setTimeout(resolve, 0));
                     }
                     
@@ -758,7 +724,6 @@ K-9012'></textarea>
 
         document.getElementById('generateButton').addEventListener('click', generateContainers);
 
-        // Register service worker if supported
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
