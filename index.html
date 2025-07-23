@@ -7,29 +7,23 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 5mm;
+            margin: 6mm 6mm 15mm 6mm; /* Trên 6mm, dưới 15mm, trái/phải 6mm */
         }
         body {
-            width: 210mm;
-            min-height: 100vh; /* Chiều cao tối thiểu bằng viewport */
-            margin: 10mm auto;
+            width: 198mm; /* Đúng bằng chiều rộng mong muốn */
+            margin: 0 auto;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Times New Roman', serif;
             font-size: 10pt;
-            justify-content: center; /* Căn giữa theo chiều dọc */
-
         }
         .container {
             display: flex;
             flex-direction: column;
             width: 198mm;        
             height: 78mm;
-            margin: 1px auto;
+            margin: 0 auto 1mm auto;
             border: 1px solid #000;
             page-break-inside: avoid;
-            will-change: transform;
-            contain: content;
             position: relative;
             overflow: hidden;
         }
@@ -47,8 +41,6 @@
             padding: 5px;
             box-sizing: border-box;
             position: relative;
-            will-change: transform;
-            contain: content;
         }
         .column-1, .column-3 {
             width: 30mm;
@@ -101,6 +93,9 @@
         #input-container {
             margin-bottom: 10mm;
             display: none;
+            width: 198mm;
+            margin-left: auto;
+            margin-right: auto;
         }
         #productCodesInput {
             width: 100%;
@@ -120,6 +115,13 @@
         @media print {
             #input-container {
                 display: none !important;
+            }
+            body {
+                margin: 0 auto;
+            }
+            .container {
+                margin-bottom: 0;
+                border-bottom: none;
             }
         }
         .loading {
@@ -217,6 +219,9 @@
             font-style: italic;
             border: 1px dashed #ccc;
             margin-bottom: 10px;
+            width: 198mm;
+            margin-left: auto;
+            margin-right: auto;
         }
         .brand-container {
             display: flex;
