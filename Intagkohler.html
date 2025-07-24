@@ -7,7 +7,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 6mm 6mm 15mm 6mm;
+            margin: 6mm 5mm 15mm 5mm;
         }
         body {
             width: 198mm;
@@ -20,7 +20,7 @@
             display: flex;
             flex-direction: column;
             width: 198mm;
-            height: 76mm;
+            height: 74mm;
             margin: 0 auto 1px auto;
             border: 2px solid #000;
             page-break-inside: avoid;
@@ -51,7 +51,16 @@
             
         }
         .column-2 {
-            border-right: 2px solid #000;
+            position: relative;
+        }
+        .column-2::after {
+            content: '';
+            position: absolute;
+            top: -60mm; /* Kéo dài lên trên bằng chiều cao của logo-row */
+            right: 0;
+            width: 2px;
+            height: calc(100% + 120mm); /* Tổng chiều cao của logo-row + bottom-row + container-row */
+            background-color: #000;
         }
         .column-3 {
            
@@ -72,8 +81,8 @@
         }
         .qrcode-bottom {
             position: absolute;
-            width: 9mm;
-            height: 9mm;
+            width: 8mm;
+            height: 8mm;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -214,7 +223,7 @@
         .logo-row {
             display: flex;
             align-items: center;
-            height: 60mm;
+            height: 59mm;
             padding: 0 5px;
             box-sizing: border-box;
             border-bottom: 1px solid #ccc;
@@ -237,14 +246,14 @@
         .bottom-row {
             display: flex;
             align-items: center;
-            height: 60mm;
+            height: 61mm;
             padding: 0 5px;
             box-sizing: border-box;
             border-top: 1px solid #ccc;
             position: relative;
         }
         .bottom-row img {
-            height: 10mm;
+            height: 8.5mm;
             width: auto;
             max-width: 100%;
             object-fit: contain;
@@ -287,13 +296,19 @@
                 border-bottom: 1px solid #000 !important;
             }
             .column-4 {
-                border-right: 1px solid #000 !important;
+                
             }
             .logo-row {
-                border-bottom: 1px solid #000 !important;
+                
             }
             .bottom-row {
-                border-top: 1px solid #000 !important;
+                
+            }
+            .column-2::after {
+                display: block !important;
+                background-color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
