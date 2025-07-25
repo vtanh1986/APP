@@ -497,7 +497,10 @@ K-9012'></textarea>
                 
                 const processedData = Array.isArray(data) ? data : [data];
                 
-                processedData.forEach(item => {
+                // Lọc chỉ lấy sản phẩm có hh = 'M'
+                const filteredData = processedData.filter(item => item.hh === 'M');
+                
+                filteredData.forEach(item => {
                     const result = { ...item, isValid: true };
                     
                     result.displayBrand = {
@@ -508,8 +511,10 @@ K-9012'></textarea>
                     productCache[item.maSanPham] = result;
                 });
                 
+                // Đánh dấu các sản phẩm không hợp lệ (không tồn tại hoặc hh không phải 'M')
                 uncachedItems.forEach(maSanPham => {
-                    if (!processedData.some(item => item.maSanPham === maSanPham)) {
+                    if (!processedData.some(item => item.maSanPham === maSanPham) || 
+                        !filteredData.some(item => item.maSanPham === maSanPham)) {
                         productCache[maSanPham] = { 
                             maSanPham, 
                             isValid: false,
@@ -636,7 +641,7 @@ K-9012'></textarea>
                     html += `
                         <div class='column column-3'></div>
                         <div class='column column-4'></div>
-                        <div class='invalid-message'>Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống</div>`;
+                        <div class='invalid-message'>Mã sản phẩm ${escapeHtml(product2.maSanPham)} không tồn tại trong hệ thống hoặc không phải sản phẩm KOHLER</div>`;
                 }
                 
                 html += `</div>
@@ -655,7 +660,7 @@ K-9012'></textarea>
                     </div>
                 </div>`;
             } else if (product1) {
-                html += `<div class='invalid-message'>Mã sản phẩm ${escapeHtml(product1.maSanPham)} không tồn tại trong hệ thống</div>`;
+                html += `<div class='invalid-message'>Mã sản phẩm ${escapeHtml(product1.maSanPham)} không tồn tại trong hệ thống hoặc không phải sản phẩm KOHLER</div>`;
             }
             
             return html;
@@ -687,7 +692,7 @@ K-9012'></textarea>
                     
                     if (invalidProducts.length > 0) {
                         const invalidCodes = invalidProducts.map(p => p.maSanPham).join(', ');
-                        alert(`Các mã sản phẩm sau không tồn tại trong hệ thống:\n${invalidCodes}`);
+                        alert(`Các mã sản phẩm sau không tồn tại trong hệ thống hoặc không phải sản phẩm KOHLER:\n${invalidCodes}`);
                     }
                     
                     if (validProducts.length === 0) {
