@@ -236,11 +236,7 @@
     </div>
 
     <div id='input-container'>
-        <textarea id='productCodesInput' placeholder='Nhập các MÃ HÀNG vào đây, mỗi mã một dòng... Ví dụ:
-744884
-723465
-761750
-15050-7.8.S5'></textarea>
+        <textarea id='productCodesInput' placeholder='Nhập các MÃ HÀNG vào đây, mỗi mã một dòng...'></textarea>
         <button id='generateButton'>Tạo bản in tag giá</button>
     </div>
 
@@ -266,7 +262,7 @@
         const passwordProtection = document.getElementById('password-protection');
         const inputContainer = document.getElementById('input-container');
 
-        // Phần xác thực mật khẩu
+        // Hàm xác thực mật khẩu (đã sửa)
         function checkPassword() {
             if (isLockedOut()) {
                 showLockoutMessage();
@@ -276,12 +272,17 @@
             const enteredPassword = passwordInput.value.trim();
             
             if (enteredPassword === CORRECT_PASSWORD) {
+                // Đăng nhập thành công
+                passwordError.style.display = 'none';
                 passwordProtection.style.display = 'none';
                 inputContainer.style.display = 'block';
-                setAuthCookie();
+                
+                // Thiết lập session
+                sessionStorage.setItem('authenticated', 'true');
                 resetInactivityTimer();
                 failedAttempts = 0;
             } else {
+                // Sai mật khẩu
                 failedAttempts++;
                 passwordError.style.display = 'block';
                 passwordInput.value = '';
@@ -289,29 +290,28 @@
                 if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
                     lockAccount();
                     showLockoutMessage();
-                } else {
-                    setTimeout(() => {
-                        passwordError.style.display = 'none';
-                    }, 3000);
                 }
             }
         }
 
+        // Kiểm tra khóa tài khoản
         function isLockedOut() {
             const lockoutUntil = localStorage.getItem('lockoutUntil');
             return lockoutUntil && Date.now() < parseInt(lockoutUntil);
         }
 
+        // Khóa tài khoản
         function lockAccount() {
             const lockoutUntil = Date.now() + LOCKOUT_DURATION;
             localStorage.setItem('lockoutUntil', lockoutUntil.toString());
         }
 
+        // Hiển thị thông báo khóa
         function showLockoutMessage() {
             const lockoutUntil = localStorage.getItem('lockoutUntil');
             if (!lockoutUntil) return;
 
-            const remainingTime = Math.ceil((parseInt(lockoutUntil) - Date.now()) / (60 * 1000);
+            const remainingTime = Math.ceil((parseInt(lockoutUntil) - Date.now()) / (60 * 1000));
             lockoutMessage.textContent = `Tài khoản tạm thời bị khóa. Vui lòng thử lại sau ${remainingTime} phút.`;
             lockoutMessage.style.display = 'block';
             passwordInput.disabled = true;
@@ -326,28 +326,19 @@
             }, LOCKOUT_DURATION);
         }
 
-        // Quản lý session
-        function setAuthCookie() {
-            const expires = new Date();
-            expires.setTime(expires.getTime() + SESSION_DURATION);
-            document.cookie = `authenticated=true; expires=${expires.toUTCString()}; path=/; Secure; SameSite=Strict`;
+        // Kiểm tra đăng nhập
+        function checkAuth() {
+            return sessionStorage.getItem('authenticated') === 'true';
         }
 
-        function checkAuthCookie() {
-            return document.cookie.split(';').some((item) => item.trim().startsWith('authenticated='));
-        }
-
-        function clearAuthCookie() {
-            document.cookie = 'authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        }
-
+        // Đăng xuất
         function logout() {
-            clearAuthCookie();
+            sessionStorage.removeItem('authenticated');
             localStorage.removeItem('lockoutUntil');
             window.location.reload();
         }
 
-        // Quản lý thời gian không hoạt động
+        // Reset timer khi có hoạt động
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(logout, SESSION_DURATION);
@@ -380,14 +371,10 @@
 
         // Kiểm tra khi trang tải xong
         document.addEventListener('DOMContentLoaded', function() {
-            if (checkAuthCookie()) {
+            if (checkAuth()) {
                 passwordProtection.style.display = 'none';
                 inputContainer.style.display = 'block';
                 resetInactivityTimer();
-                
-                // Preload QR code generator
-                const img = new Image();
-                img.src = 'https://quickchart.io/qr?text=preload';
             } else {
                 passwordInput.focus();
                 if (isLockedOut()) {
