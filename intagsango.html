@@ -239,7 +239,8 @@
         <textarea id='productCodesInput' placeholder='Nhập các MÃ HÀNG vào đây, mỗi mã một dòng... Ví dụ:
 744884
 723465
-761750'></textarea>
+761750
+15050-7.8.S5'></textarea>
         <button id='generateButton'>Tạo bản in tag giá</button>
     </div>
 
@@ -310,7 +311,7 @@
             const lockoutUntil = localStorage.getItem('lockoutUntil');
             if (!lockoutUntil) return;
 
-            const remainingTime = Math.ceil((parseInt(lockoutUntil) - Date.now()) / (60 * 1000));
+            const remainingTime = Math.ceil((parseInt(lockoutUntil) - Date.now()) / (60 * 1000);
             lockoutMessage.textContent = `Tài khoản tạm thời bị khóa. Vui lòng thử lại sau ${remainingTime} phút.`;
             lockoutMessage.style.display = 'block';
             passwordInput.disabled = true;
@@ -402,15 +403,24 @@
         
         // Batch request optimization
         async function fetchProductDataBatch(maHangList) {
-            const uncachedItems = maHangList.filter(maHang => !productCache[maHang]);
-            const cachedItems = maHangList.filter(maHang => productCache[maHang]).map(maHang => productCache[maHang]);
+            // Chuẩn hóa mã hàng - giữ nguyên giá trị gốc nhưng encode khi gọi API
+            const normalizedMaHangList = maHangList.map(maHang => {
+                return {
+                    original: maHang.trim(),
+                    encoded: encodeURIComponent(maHang.trim())
+                };
+            });
+
+            const uncachedItems = normalizedMaHangList.filter(({original}) => !productCache[original]);
+            const cachedItems = normalizedMaHangList.filter(({original}) => productCache[original])
+                                                 .map(({original}) => productCache[original]);
             
             if (uncachedItems.length === 0) {
-                return cachedItems;
+                return normalizedMaHangList.map(({original}) => productCache[original] || createInvalidProduct(original));
             }
 
             try {
-                const response = await fetch(`${API_URL}?maHangList=${encodeURIComponent(uncachedItems.join(','))}`);
+                const response = await fetch(`${API_URL}?maHangList=${uncachedItems.map(({encoded}) => encoded).join(',')}`);
                 
                 if (!response.ok) throw new Error('Network response was not ok');
                 
@@ -420,7 +430,14 @@
                 const processedData = Array.isArray(data) ? data : [data];
                 
                 processedData.forEach(item => {
-                    const result = { ...item, isValid: true };
+                    const originalMaHang = findOriginalMaHang(item.maHang, uncachedItems);
+                    if (!originalMaHang) return;
+                    
+                    const result = { 
+                        ...item, 
+                        maHang: originalMaHang, // Lưu mã hàng gốc
+                        isValid: true 
+                    };
                     
                     const phanTramGiam = Math.round((parseFloat(item.phanTramGiamGia) || 0) * 100);
                     let kyHieuChinhSach = 'F';
@@ -433,40 +450,38 @@
                         policy: `${kyHieuChinhSach}.${phanTramGiam}`
                     };
                     
-                    productCache[item.maHang] = result;
+                    productCache[originalMaHang] = result;
                 });
                 
                 // Thêm các item không tìm thấy vào cache với isValid = false
-                uncachedItems.forEach(maHang => {
-                    if (!processedData.some(item => item.maHang === maHang)) {
-                        productCache[maHang] = { 
-                            maHang, 
-                            isValid: false,
-                            displayBrand: {
-                                name: 'THƯƠNG HIỆU',
-                                policy: 'F.30'
-                            }
-                        };
+                uncachedItems.forEach(({original}) => {
+                    if (!processedData.some(item => findOriginalMaHang(item.maHang, uncachedItems) === original)) {
+                        productCache[original] = createInvalidProduct(original);
                     }
                 });
                 
-                return maHangList.map(maHang => productCache[maHang]);
+                return normalizedMaHangList.map(({original}) => productCache[original] || createInvalidProduct(original));
                 
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu hàng loạt:', error);
-                
-                // Trả về dữ liệu cache nếu có, hoặc dữ liệu mặc định
-                return maHangList.map(maHang => {
-                    return productCache[maHang] || { 
-                        maHang, 
-                        isValid: false,
-                        displayBrand: {
-                            name: 'THƯƠNG HIỆU',
-                            policy: 'F.30'
-                        }
-                    };
-                });
+                return normalizedMaHangList.map(({original}) => productCache[original] || createInvalidProduct(original));
             }
+        }
+
+        function findOriginalMaHang(encodedMaHang, items) {
+            const found = items.find(({encoded}) => encoded === encodedMaHang);
+            return found ? found.original : null;
+        }
+
+        function createInvalidProduct(maHang) {
+            return { 
+                maHang, 
+                isValid: false,
+                displayBrand: {
+                    name: 'THƯƠNG HIỆU',
+                    policy: 'F.30'
+                }
+            };
         }
 
         // QR Code caching
@@ -530,7 +545,7 @@
                         <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product1.kichThuoc)}</div>
                         <div class='row'>${getValue(product1.doGianNo)}</div>
-			                  <div class='row'>${getValue(product1.doDay)}</div>
+                        <div class='row'>${getValue(product1.doDay)}</div>
                         <div class='row'>
                             <span class="strikethrough">${formatPrice(product1.giaBanNieYetCoVAT)}</span>
                         </div>
@@ -599,72 +614,54 @@
             content.innerHTML = '';
             loading.classList.add('show');
             
-            // Sử dụng requestAnimationFrame để UI không bị block
-            requestAnimationFrame(async () => {
-                try {
-                    // Sử dụng batch request thay vì từng cái một
-                    const products = await fetchProductDataBatch(maHangList);
-                    
-                    const validProducts = products.filter(p => p.isValid);
-                    const invalidProducts = products.filter(p => !p.isValid);
-                    
-                    if (invalidProducts.length > 0) {
-                        const invalidCodes = invalidProducts.map(p => p.maHang).join(', ');
-                        alert(`Các mã hàng sau không tồn tại trong hệ thống:\n${invalidCodes}`);
+            try {
+                const products = await fetchProductDataBatch(maHangList);
+                
+                const validProducts = products.filter(p => p.isValid);
+                const invalidProducts = products.filter(p => !p.isValid);
+                
+                if (invalidProducts.length > 0) {
+                    const invalidCodes = invalidProducts.map(p => p.maHang).join(', ');
+                    alert(`Các mã hàng sau không tồn tại trong hệ thống:\n${invalidCodes}`);
+                }
+                
+                if (validProducts.length === 0) {
+                    content.innerHTML = '<div class="empty-container">Không có mã hàng hợp lệ nào để hiển thị</div>';
+                    loading.classList.remove('show');
+                    return;
+                }
+                
+                let fragment = document.createDocumentFragment();
+                const tempDiv = document.createElement('div');
+                
+                for (let i = 0; i < validProducts.length; i += 2) {
+                    const product1 = validProducts[i];
+                    const product2 = validProducts[i + 1];
+                    tempDiv.innerHTML = createContainer(product1, product2);
+                    while (tempDiv.firstChild) {
+                        fragment.appendChild(tempDiv.firstChild);
                     }
                     
-                    if (validProducts.length === 0) {
-                        content.innerHTML = '<div class="empty-container">Không có mã hàng hợp lệ nào để hiển thị</div>';
-                        loading.classList.remove('show');
-                        return;
-                    }
-                    
-                    // Tạo DOM ảo để tối ưu hiệu năng
-                    let fragment = document.createDocumentFragment();
-                    
-                    // Chia thành các chunk để render từng phần
-                    const chunkSize = 10;
-                    for (let i = 0; i < validProducts.length; i += chunkSize) {
-                        const chunk = validProducts.slice(i, i + chunkSize);
-                        
-                        // Tạo container cho từng chunk
-                        const chunkFragment = document.createDocumentFragment();
-                        const tempDiv = document.createElement('div');
-                        
-                        for (let j = 0; j < chunk.length; j += 2) {
-                            const product1 = chunk[j];
-                            const product2 = chunk[j + 1];
-                            tempDiv.innerHTML = createContainer(product1, product2);
-                            while (tempDiv.firstChild) {
-                                chunkFragment.appendChild(tempDiv.firstChild);
-                            }
-                        }
-                        
-                        fragment.appendChild(chunkFragment);
-                        
-                        // Cho phép browser render từng phần
-                        if (i === 0) {
-                            content.appendChild(fragment);
-                            fragment = document.createDocumentFragment();
-                        }
-                        
-                        // Nhường CPU cho browser
+                    // Nhường CPU cho browser mỗi 10 sản phẩm
+                    if (i > 0 && i % 10 === 0) {
+                        content.appendChild(fragment);
+                        fragment = document.createDocumentFragment();
                         await new Promise(resolve => setTimeout(resolve, 0));
                     }
-                    
-                    if (fragment.childNodes.length > 0) {
-                        content.appendChild(fragment);
-                    }
-                    
-                    loading.classList.remove('show');
-                    loading.classList.add('hide');
-                    
-                } catch (error) {
-                    console.error('Lỗi khi tạo tag giá:', error);
-                    loading.classList.remove('show');
-                    alert('Có lỗi xảy ra khi tạo tag giá. Vui lòng thử lại!');
                 }
-            });
+                
+                if (fragment.childNodes.length > 0) {
+                    content.appendChild(fragment);
+                }
+                
+                loading.classList.remove('show');
+                loading.classList.add('hide');
+                
+            } catch (error) {
+                console.error('Lỗi khi tạo tag giá:', error);
+                loading.classList.remove('show');
+                alert('Có lỗi xảy ra khi tạo tag giá. Vui lòng thử lại!');
+            }
         }
 
         document.getElementById('generateButton').addEventListener('click', generateContainers);
