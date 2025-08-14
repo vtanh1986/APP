@@ -131,10 +131,7 @@
             opacity: 0;
             pointer-events: none;
         }
-        .strikethrough {
-            text-decoration: line-through;
-        }
-        .discounted-price {
+        .gia-niem-yet {
             font-weight: bold;
             font-size: 8.5pt;
             color: #d00;
@@ -555,9 +552,7 @@
                         <div class='row'>${getValue(product1.kichThuoc)}</div>
                         <div class='row'>${getValue(product1.doGianNo)}</div>
                         <div class='row'>${getValue(product1.doDay)}</div>
-                        <div class='row'>
-                            <span class="strikethrough">${formatPrice(product1.giaBanNieYetCoVAT)}</span>
-                        </div>
+                        <div class='row'><span class="gia-niem-yet">${formatPrice(product1.giaBanNieYetCoVAT)}</span></div>
 
                         <div class='qrcode'>
                             <img src='${getQRCodeUrl(product1.maHang)}' alt='QR Code' loading='lazy'>
@@ -584,9 +579,7 @@
                         <div class='row'>${getValue(product2.kichThuoc)}</div>
                         <div class='row'>${getValue(product2.doGianNo)}</div>
                         <div class='row'>${getValue(product2.doDay)}</div>
-                        <div class='row'>
-                            <span class="strikethrough">${formatPrice(product2.giaBanNieYetCoVAT)}</span>
-                        </div>
+                        <div class='row'><span class="gia-niem-yet">${formatPrice(product2.giaBanNieYetCoVAT)}</span></div>
                         <div class='qrcode'>
                             <img src='${getQRCodeUrl(product2.maHang)}' alt='QR Code' loading='lazy'>
                         </div>
