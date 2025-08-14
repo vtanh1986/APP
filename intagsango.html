@@ -443,7 +443,7 @@
                         kichThuoc: item.kichThuoc || '',
                         doDay: item.dobay || item.doDay || '',
                         doGianNo: item.dodiamho ? `${parseFloat(item.dodiamho) * 100}%` : (item.doGianNo || ''),
-                        giaNieYetCoVAT: item.giaBanHicVetCvAT || item.giaNieYetCoVAT || 0
+                        giaBanNieYetCoVAT: item.giaBanHicVetCvAT || item.giaBanNieYetCoVAT || 0
                     };
                     
                     const phanTramGiam = Math.round((parseFloat(item.phanTramGiamGia) || 0) * 100);
@@ -556,7 +556,7 @@
                         <div class='row'>${getValue(product1.doGianNo)}</div>
                         <div class='row'>${getValue(product1.doDay)}</div>
                         <div class='row'>
-                            <span class="strikethrough">${formatPrice(product1.giaNieYetCoVAT)}</span>
+                            <span class="strikethrough">${formatPrice(product1.giaBanNieYetCoVAT)}</span>
                         </div>
 
                         <div class='qrcode'>
@@ -585,7 +585,7 @@
                         <div class='row'>${getValue(product2.doGianNo)}</div>
                         <div class='row'>${getValue(product2.doDay)}</div>
                         <div class='row'>
-                            <span class="strikethrough">${formatPrice(product2.giaNieYetCoVAT)}</span>
+                            <span class="strikethrough">${formatPrice(product2.giaBanNieYetCoVAT)}</span>
                         </div>
                         <div class='qrcode'>
                             <img src='${getQRCodeUrl(product2.maHang)}' alt='QR Code' loading='lazy'>
