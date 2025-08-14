@@ -237,9 +237,9 @@
 
     <div id='input-container'>
         <textarea id='productCodesInput' placeholder='Nhập các MÃ HÀNG vào đây, mỗi mã một dòng... Ví dụ:
-744884
-723465
-761750'></textarea>
+150305885
+150659555
+15060-7.8.55'></textarea>
         <button id='generateButton'>Tạo bản in tag giá</button>
     </div>
 
@@ -417,10 +417,34 @@
                 const data = await response.json();
                 
                 // Xử lý dữ liệu trả về và cập nhật cache
-                const processedData = Array.isArray(data) ? data : [data];
+                let processedData = [];
+                
+                // Kiểm tra nếu dữ liệu trả về là mảng
+                if (Array.isArray(data)) {
+                    processedData = data;
+                } 
+                // Hoặc nếu là object có thuộc tính data
+                else if (data.data && Array.isArray(data.data)) {
+                    processedData = data.data;
+                }
+                // Hoặc nếu là object đơn lẻ
+                else if (data.maHang) {
+                    processedData = [data];
+                }
                 
                 processedData.forEach(item => {
-                    const result = { ...item, isValid: true };
+                    if (!item.maHang) return;
+                    
+                    const result = { 
+                        ...item, 
+                        isValid: true,
+                        tenHangTiengViet: item.tenhangTienpyltet || item.tenHangTiengViet || '',
+                        xuatXu: item.xueKui || item.xuatXu || '',
+                        kichThuoc: item.kichThuoc || '',
+                        doDay: item.dobay || item.doDay || '',
+                        doGianNo: item.dodiamho ? `${parseFloat(item.dodiamho) * 100}%` : (item.doGianNo || ''),
+                        giaNieYetCoVAT: item.giaBanHicVetCvAT || item.giaNieYetCoVAT || 0
+                    };
                     
                     const phanTramGiam = Math.round((parseFloat(item.phanTramGiamGia) || 0) * 100);
                     let kyHieuChinhSach = 'F';
@@ -429,7 +453,7 @@
                     }
                     
                     result.displayBrand = {
-                        name: item.nhanHieu || 'THƯƠNG HIỆU',
+                        name: item.nhanitieu || item.nhanHieu || 'THƯƠNG HIỆU',
                         policy: `${kyHieuChinhSach}.${phanTramGiam}`
                     };
                     
@@ -438,7 +462,7 @@
                 
                 // Thêm các item không tìm thấy vào cache với isValid = false
                 uncachedItems.forEach(maHang => {
-                    if (!processedData.some(item => item.maHang === maHang)) {
+                    if (!productCache[maHang]) {
                         productCache[maHang] = { 
                             maHang, 
                             isValid: false,
@@ -526,17 +550,17 @@
                     <div class='column column-2'>
                         <div class='row'>${renderBrand(product1.displayBrand)}</div>
                         <div class='row'>${getValue(product1.xuatXu)}</div>
-                        <div class='row'>${getValue(product1.maSanPham || product1.maHang)}</div>
+                        <div class='row'>${getValue(product1.maHang)}</div>
                         <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product1.kichThuoc)}</div>
                         <div class='row'>${getValue(product1.doGianNo)}</div>
-			<div class='row'>${getValue(product1.doDay)}</div>
+                        <div class='row'>${getValue(product1.doDay)}</div>
                         <div class='row'>
                             <span class="strikethrough">${formatPrice(product1.giaNieYetCoVAT)}</span>
                         </div>
 
                         <div class='qrcode'>
-                            <img src='${getQRCodeUrl(product1.maSanPham || product1.maHang)}' alt='QR Code' loading='lazy'>
+                            <img src='${getQRCodeUrl(product1.maHang)}' alt='QR Code' loading='lazy'>
                         </div>
                     </div>`;
                 
@@ -555,7 +579,7 @@
                     <div class='column column-4'>
                         <div class='row'>${renderBrand(product2.displayBrand)}</div>
                         <div class='row'>${getValue(product2.xuatXu)}</div>
-                        <div class='row'>${getValue(product2.maSanPham || product2.maHang)}</div>
+                        <div class='row'>${getValue(product2.maHang)}</div>
                         <div class='row'>${getValue(product2.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product2.kichThuoc)}</div>
                         <div class='row'>${getValue(product2.doGianNo)}</div>
@@ -564,7 +588,7 @@
                             <span class="strikethrough">${formatPrice(product2.giaNieYetCoVAT)}</span>
                         </div>
                         <div class='qrcode'>
-                            <img src='${getQRCodeUrl(product2.maSanPham || product2.maHang)}' alt='QR Code' loading='lazy'>
+                            <img src='${getQRCodeUrl(product2.maHang)}' alt='QR Code' loading='lazy'>
                         </div>
                     </div>`;
                 } else if (product2) {
