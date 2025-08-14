@@ -217,9 +217,15 @@
             font-weight: bold;
             margin-top: 10px;
         }
+        .brand-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
     </style>
     <link rel="preconnect" href="https://script.google.com">
     <link rel="preconnect" href="https://quickchart.io">
+    <link rel="preconnect" href="https://www.dropbox.com">
 </head>
 <body>
     <div id="password-protection">
@@ -249,6 +255,7 @@
         const MAX_FAILED_ATTEMPTS = 5;
         const LOCKOUT_DURATION = 30 * 60 * 1000; // 30 phút
         const SESSION_DURATION = 30 * 60 * 1000; // 30 phút
+        const BRAND_LOGO_URL = "https://www.dropbox.com/scl/fi/vlel27luyvkuuj8gz47wq/logo-adapt-02.png?rlkey=tsiz1b8q5hgctbdbcy6pqju15&raw=1";
         
         // Biến toàn cục
         let failedAttempts = 0;
@@ -381,9 +388,12 @@
                 inputContainer.style.display = 'block';
                 resetInactivityTimer();
                 
-                // Preload QR code generator
-                const img = new Image();
-                img.src = 'https://quickchart.io/qr?text=preload';
+                // Preload QR code generator và logo
+                const img1 = new Image();
+                img1.src = 'https://quickchart.io/qr?text=preload';
+                
+                const img2 = new Image();
+                img2.src = BRAND_LOGO_URL;
             } else {
                 passwordInput.focus();
                 if (isLockedOut()) {
@@ -518,14 +528,8 @@
             return value !== undefined && value !== null ? escapeHtml(value) : escapeHtml(defaultValue);
         };
 
-        function renderBrand(displayBrand) {
-            if (!displayBrand) return '';
-            return `
-                <div class="brand-container">
-                    <div class="brand-name">${getValue(displayBrand.name)}</div>
-                    <div class="price-policy">${getValue(displayBrand.policy)}</div>
-                </div>
-            `;
+        function renderBrandLogo() {
+            return `<img src="${BRAND_LOGO_URL}" class="brand-logo" alt="Brand Logo">`;
         };
 
         function createContainer(product1, product2) {
@@ -545,7 +549,7 @@
                         <div class='row bold'>Giá niêm yết có VAT/m2</div>
                     </div>
                     <div class='column column-2'>
-                        <div class='row'>${renderBrand(product1.displayBrand)}</div>
+                        <div class='row'>${renderBrandLogo()}</div>
                         <div class='row'>${getValue(product1.xuatXu)}</div>
                         <div class='row'>${getValue(product1.maHang)}</div>
                         <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
@@ -572,7 +576,7 @@
                         <div class='row bold'>Giá niêm yết có VAT/m2</div>
                     </div>
                     <div class='column column-4'>
-                        <div class='row'>${renderBrand(product2.displayBrand)}</div>
+                        <div class='row'>${renderBrandLogo()}</div>
                         <div class='row'>${getValue(product2.xuatXu)}</div>
                         <div class='row'>${getValue(product2.maHang)}</div>
                         <div class='row'>${getValue(product2.tenHangTiengViet)}</div>
