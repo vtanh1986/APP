@@ -540,22 +540,22 @@
                 <div class='container'>
                     <div class='column column-1'>
                         <div class='row bold'>Thương hiệu</div>
-                        <div class='row bold'>Xuất xứ</div>
                         <div class='row bold'>Mã sản phẩm</div>
                         <div class='row bold'>Tên sản phẩm</div>
                         <div class='row bold'>Kích thước (mm)</div>
                         <div class='row bold'>Độ giãn nở</div>
                         <div class='row bold'>Độ dày (mm)</div>
+                        <div class='row bold'>Xuất xứ</div> 
                         <div class='row bold'>Giá niêm yết có VAT/m2</div>
                     </div>
                     <div class='column column-2'>
                         <div class='row'>${renderBrandLogo()}</div>
-                        <div class='row'>${getValue(product1.xuatXu)}</div>
                         <div class='row'>${getValue(product1.maHang)}</div>
                         <div class='row'>${getValue(product1.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product1.kichThuoc)}</div>
                         <div class='row'>${getValue(product1.doGianNo)}</div>
                         <div class='row'>${getValue(product1.doDay)}</div>
+                        <div class='row'>${getValue(product1.xuatXu)}</div>                        
                         <div class='row'><span class="gia-niem-yet">${formatPrice(product1.giaBanNieYetCoVAT)}</span></div>
 
                         <div class='qrcode'>
@@ -567,22 +567,22 @@
                     html += `
                     <div class='column column-3'>
                         <div class='row bold'>Thương hiệu</div>
-                        <div class='row bold'>Xuất xứ</div>
                         <div class='row bold'>Mã sản phẩm</div>
                         <div class='row bold'>Tên sản phẩm</div>
                         <div class='row bold'>Kích thước (mm)</div>
                         <div class='row bold'>Độ giãn nở</div>
                         <div class='row bold'>Độ dày (mm)</div>
+                        <div class='row bold'>Xuất xứ</div>
                         <div class='row bold'>Giá niêm yết có VAT/m2</div>
                     </div>
                     <div class='column column-4'>
                         <div class='row'>${renderBrandLogo()}</div>
-                        <div class='row'>${getValue(product2.xuatXu)}</div>
                         <div class='row'>${getValue(product2.maHang)}</div>
                         <div class='row'>${getValue(product2.tenHangTiengViet)}</div>
                         <div class='row'>${getValue(product2.kichThuoc)}</div>
                         <div class='row'>${getValue(product2.doGianNo)}</div>
                         <div class='row'>${getValue(product2.doDay)}</div>
+                        <div class='row'>${getValue(product2.xuatXu)}</div>                        
                         <div class='row'><span class="gia-niem-yet">${formatPrice(product2.giaBanNieYetCoVAT)}</span></div>
                         <div class='qrcode'>
                             <img src='${getQRCodeUrl(product2.maHang)}' alt='QR Code' loading='lazy'>
