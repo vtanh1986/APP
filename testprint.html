@@ -254,39 +254,44 @@
             // Tách các dòng bằng _b_
             const rows = data.split('_b_');
             let tongTien = 0;
+            let stt = 0;
             
-            rows.forEach((row, index) => {
-                if (row.trim()) {
+            rows.forEach((row) => {
+                // Loại bỏ khoảng trắng thừa
+                const trimmedRow = row.trim();
+                
+                if (trimmedRow) {
                     // Tách các cột bằng _a_
-                    const cols = row.split('_a_');
+                    const cols = trimmedRow.split('_a_').map(col => col.trim());
                     
-                    if (cols.length >= 4) {
+                    if (cols.length >= 3) {
+                        stt++;
                         const tr = document.createElement('tr');
                         
                         // TT
                         const tdTT = document.createElement('td');
-                        tdTT.textContent = index + 1;
+                        tdTT.textContent = stt;
                         tr.appendChild(tdTT);
                         
                         // Tên hàng
                         const tdTen = document.createElement('td');
-                        tdTen.textContent = decodeURIComponent(cols[0]);
+                        tdTen.textContent = cols[0];
                         tr.appendChild(tdTen);
                         
                         // Số lượng
                         const tdSL = document.createElement('td');
-                        tdSL.textContent = cols[1];
+                        const soLuong = parseInt(cols[1]) || 0;
+                        tdSL.textContent = soLuong;
                         tr.appendChild(tdSL);
                         
                         // Đơn giá
                         const tdDonGia = document.createElement('td');
-                        const donGia = parseInt(cols[2]);
+                        const donGia = parseInt(cols[2]) || 0;
                         tdDonGia.textContent = donGia.toLocaleString('vi-VN');
                         tr.appendChild(tdDonGia);
                         
                         // Thành tiền
                         const tdThanhTien = document.createElement('td');
-                        const soLuong = parseInt(cols[1]);
                         const thanhTien = donGia * soLuong;
                         tdThanhTien.textContent = thanhTien.toLocaleString('vi-VN');
                         tr.appendChild(tdThanhTien);
@@ -298,13 +303,15 @@
             });
             
             // Thêm dòng tổng tiền
-            const trTotal = document.createElement('tr');
-            trTotal.className = 'total-row';
-            trTotal.innerHTML = `
-                <td colspan="4">TỔNG CỘNG</td>
-                <td>${tongTien.toLocaleString('vi-VN')}đ</td>
-            `;
-            tableBody.appendChild(trTotal);
+            if (stt > 0) {
+                const trTotal = document.createElement('tr');
+                trTotal.className = 'total-row';
+                trTotal.innerHTML = `
+                    <td colspan="4">TỔNG CỘNG</td>
+                    <td>${tongTien.toLocaleString('vi-VN')}đ</td>
+                `;
+                tableBody.appendChild(trTotal);
+            }
         }
     </script>
 </body>
