@@ -173,17 +173,17 @@
 <body>
     <div class="invoice-container">
         <div class="invoice-header">
-            <h1 id="shop-name">TRUNG NGUYÊN LEGEND</h1>
-            <p class="address" id="shop-address">Số 1 Minh Khai, Tp. Vinh</p>
-            <p class="phone" id="shop-phone">ĐT: 0912603507</p>
+            <h1>TRUNG NGUYÊN LEGEND</h1>
+            <p class="address">Số 1 Minh Khai, Tp. Vinh</p>
+            <p class="phone">ĐT: 0912603507</p>
         </div>
         
         <div class="invoice-info">
-            <div class="invoice-number" id="invoice-number">Số: 129525154141</div>
-            <div class="date-time" id="invoice-date">08/12/2025 - 10:40</div>
+            <div class="invoice-number">Số: <span id="invoice-number">129525154141</span></div>
+            <div class="date-time"><span id="date-time">08/12/2025 - 10:40</span></div>
         </div>
         
-        <table class="items-table" id="items-table">
+        <table class="items-table">
             <thead>
                 <tr>
                     <th>Tên hàng</th>
@@ -192,13 +192,13 @@
                 </tr>
             </thead>
             <tbody id="items-body">
-                <!-- Các món hàng sẽ được thêm bằng JavaScript -->
+                <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
             </tbody>
         </table>
         
         <div class="total-section">
             <div class="total-label">Tổng cộng:</div>
-            <div class="total-amount" id="total-amount">0 đ</div>
+            <div class="total-amount" id="total-amount">99.000 đ</div>
         </div>
         
         <div class="footer">
@@ -219,90 +219,123 @@
             if (!results[2]) return '';
             return decodeURIComponent(results[2].replace(/\+/g, ' '));
         }
-        
+
         // Hàm định dạng số tiền
         function formatCurrency(amount) {
-            return amount.toLocaleString('vi-VN') + ' đ';
+            return parseInt(amount).toLocaleString('vi-VN') + ' đ';
         }
-        
-        // Hàm chính để xử lý dữ liệu từ URL
-        function loadInvoiceFromURL() {
-            // Lấy dữ liệu từ URL
-            const shopName = getUrlParameter('shopName') || 'TRUNG NGUYÊN LEGEND';
-            const shopAddress = getUrlParameter('shopAddress') || 'Số 1 Minh Khai, Tp. Vinh';
-            const shopPhone = getUrlParameter('shopPhone') || 'ĐT: 0912603507';
-            const invoiceNumber = getUrlParameter('invoiceNumber') || '129525154141';
-            const invoiceDate = getUrlParameter('invoiceDate') || '08/12/2025 - 10:40';
-            const itemsData = getUrlParameter('itemsData');
+
+        // Hàm tạo ngày giờ hiện tại
+        function getCurrentDateTime() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} - ${hours}:${minutes}`;
+        }
+
+        // Hàm chính để xử lý và hiển thị dữ liệu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy dữ liệu từ URL parameters
+            const itemsParam = getUrlParameter('items');
+            const invoiceNumberParam = getUrlParameter('invoice_number');
+            const dateTimeParam = getUrlParameter('date_time');
             
-            // Cập nhật thông tin cửa hàng
-            document.getElementById('shop-name').textContent = shopName;
-            document.getElementById('shop-address').textContent = shopAddress;
-            document.getElementById('shop-phone').textContent = shopPhone;
-            document.getElementById('invoice-number').textContent = 'Số: ' + invoiceNumber;
-            document.getElementById('invoice-date').textContent = invoiceDate;
+            // Thiết lập số hóa đơn
+            if (invoiceNumberParam) {
+                document.getElementById('invoice-number').textContent = invoiceNumberParam;
+            }
+            
+            // Thiết lập ngày giờ
+            if (dateTimeParam) {
+                document.getElementById('date-time').textContent = dateTimeParam;
+            } else {
+                document.getElementById('date-time').textContent = getCurrentDateTime();
+            }
             
             let total = 0;
             const itemsBody = document.getElementById('items-body');
             
-            // Nếu có dữ liệu sản phẩm từ URL
-            if (itemsData) {
-                // Phân tích dữ liệu sản phẩm
-                // Định dạng: tên1_a_sl1_a_giá1_b_tên2_a_sl2_a_giá2_b_...
-                const items = itemsData.split('_b_');
+            // Xử lý dữ liệu items nếu có
+            if (itemsParam) {
+                // Tách các dòng dữ liệu (mỗi dòng phân cách bằng _a_)
+                const rows = itemsParam.split('_a_');
                 
-                items.forEach(itemStr => {
-                    if (itemStr.trim() === '') return;
+                rows.forEach(row => {
+                    // Tách các cột trong mỗi dòng (mỗi cột phân cách bằng _a_)
+                    const columns = row.split('_a_');
                     
-                    const itemParts = itemStr.split('_a_');
-                    if (itemParts.length >= 3) {
-                        const name = itemParts[0];
-                        const quantity = parseInt(itemParts[1]) || 0;
-                        const price = parseInt(itemParts[2]) || 0;
-                        const itemTotal = quantity * price;
-                        total += itemTotal;
+                    if (columns.length >= 3) {
+                        const itemName = columns[0];
+                        const quantity = columns[1];
+                        const price = columns[2];
                         
                         // Tạo hàng mới trong bảng
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${name}</td>
-                            <td class="quantity">${quantity}</td>
-                            <td class="price">${formatCurrency(itemTotal)}</td>
-                        `;
-                        itemsBody.appendChild(row);
+                        const tr = document.createElement('tr');
+                        
+                        // Tên hàng
+                        const tdName = document.createElement('td');
+                        tdName.textContent = itemName;
+                        
+                        // Số lượng
+                        const tdQuantity = document.createElement('td');
+                        tdQuantity.className = 'quantity';
+                        tdQuantity.textContent = quantity;
+                        
+                        // Tiền
+                        const tdPrice = document.createElement('td');
+                        tdPrice.className = 'price';
+                        tdPrice.textContent = formatCurrency(price);
+                        
+                        // Thêm các ô vào hàng
+                        tr.appendChild(tdName);
+                        tr.appendChild(tdQuantity);
+                        tr.appendChild(tdPrice);
+                        
+                        // Thêm hàng vào bảng
+                        itemsBody.appendChild(tr);
+                        
+                        // Tính tổng tiền
+                        total += parseInt(price) || 0;
                     }
                 });
             } else {
-                // Dữ liệu mặc định nếu không có từ URL
-                const defaultItems = [
-                    { name: 'Ken thập cẩm', quantity: 2, price: 30000 },
-                    { name: 'Cafe đen', quantity: 2, price: 12000 },
-                    { name: 'Cafe sữa', quantity: 1, price: 15000 }
+                // Nếu không có dữ liệu từ URL, sử dụng dữ liệu mẫu
+                const sampleItems = [
+                    { name: 'Ken thập cẩm', quantity: '2', price: 60000 },
+                    { name: 'Cafe đen', quantity: '2', price: 24000 },
+                    { name: 'Cafe sữa', quantity: '1', price: 15000 }
                 ];
                 
-                defaultItems.forEach(item => {
-                    const itemTotal = item.quantity * item.price;
-                    total += itemTotal;
+                sampleItems.forEach(item => {
+                    const tr = document.createElement('tr');
                     
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${item.name}</td>
-                        <td class="quantity">${item.quantity}</td>
-                        <td class="price">${formatCurrency(itemTotal)}</td>
-                    `;
-                    itemsBody.appendChild(row);
+                    const tdName = document.createElement('td');
+                    tdName.textContent = item.name;
+                    
+                    const tdQuantity = document.createElement('td');
+                    tdQuantity.className = 'quantity';
+                    tdQuantity.textContent = item.quantity;
+                    
+                    const tdPrice = document.createElement('td');
+                    tdPrice.className = 'price';
+                    tdPrice.textContent = formatCurrency(item.price);
+                    
+                    tr.appendChild(tdName);
+                    tr.appendChild(tdQuantity);
+                    tr.appendChild(tdPrice);
+                    
+                    itemsBody.appendChild(tr);
+                    
+                    total += item.price;
                 });
             }
             
             // Cập nhật tổng tiền
             document.getElementById('total-amount').textContent = formatCurrency(total);
-        }
-        
-        // Chạy khi trang đã tải xong
-        document.addEventListener('DOMContentLoaded', loadInvoiceFromURL);
-        
-        // Ví dụ URL để test:
-        // ?shopName=TRUNG NGUYÊN LEGEND&shopAddress=Số 1 Minh Khai, Tp. Vinh&shopPhone=ĐT: 0912603507&invoiceNumber=129525154141&invoiceDate=08/12/2025 - 10:40&itemsData=Ken thập cẩm_a_2_a_30000_b_Cafe đen_a_2_a_12000_b_Cafe sữa_a_1_a_15000
+        });
     </script>
 </body>
 </html>
