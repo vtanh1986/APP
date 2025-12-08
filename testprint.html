@@ -3,270 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hóa Đơn</title>
+    <title>Hóa Đơn Thanh Toán</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: 'Times New Roman', Times, serif;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
+            padding: 20px;
         }
-
-        .invoice-container {
-            max-width: 210mm;
+        
+        .invoice {
+            max-width: 600px;
             margin: 0 auto;
             background: white;
-            padding: 20mm;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
+        
         .header {
             text-align: center;
-            margin-bottom: 30px;
             border-bottom: 2px solid #333;
             padding-bottom: 20px;
+            margin-bottom: 20px;
         }
-
+        
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 5px;
         }
-
+        
         .header p {
+            color: #666;
             font-size: 14px;
+        }
+        
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .info-item {
+            font-size: 14px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .info-value {
             color: #666;
         }
-
-        .info-section {
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .info-section p {
-            margin: 5px 0;
-        }
-
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
-
-        table th {
+        
+        thead {
             background: #333;
             color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
         }
-
-        table td {
-            padding: 10px 12px;
+        
+        th {
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        th:first-child {
+            width: 40px;
+            text-align: center;
+        }
+        
+        th:nth-child(3),
+        th:nth-child(4),
+        th:nth-child(5) {
+            text-align: right;
+        }
+        
+        tbody tr {
             border-bottom: 1px solid #ddd;
         }
-
-        table tr:hover {
+        
+        tbody tr:hover {
             background: #f9f9f9;
         }
-
-        .text-right {
-            text-align: right;
+        
+        td {
+            padding: 10px 8px;
+            font-size: 14px;
+            color: #333;
         }
-
-        .text-center {
+        
+        td:first-child {
             text-align: center;
+            font-weight: bold;
         }
-
-        .total-section {
-            margin-top: 20px;
+        
+        td:nth-child(3),
+        td:nth-child(4),
+        td:nth-child(5) {
             text-align: right;
+        }
+        
+        .total-row {
+            background: #f0f0f0;
+            font-weight: bold;
             font-size: 16px;
         }
-
-        .total-section .total-row {
-            margin: 10px 0;
-            padding: 10px;
-        }
-
-        .total-section .grand-total {
-            font-size: 20px;
-            font-weight: bold;
-            color: #d9534f;
+        
+        .total-row td {
+            padding: 15px 8px;
             border-top: 2px solid #333;
-            padding-top: 15px;
-            margin-top: 15px;
         }
-
+        
         .footer {
-            margin-top: 50px;
             text-align: center;
-            font-size: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #999;
             color: #666;
+            font-size: 14px;
         }
-
-        /* Print styles */
+        
         @media print {
             body {
                 background: white;
                 padding: 0;
             }
-
-            .invoice-container {
-                max-width: 100%;
+            
+            .invoice {
                 box-shadow: none;
-                padding: 0;
-            }
-
-            table tr:hover {
-                background: none;
-            }
-
-            @page {
-                size: A4;
-                margin: 15mm;
-            }
-        }
-
-        .btn-print {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .btn-print:hover {
-            background: #0056b3;
-        }
-
-        @media print {
-            .btn-print {
-                display: none;
+                max-width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <button class="btn-print" onclick="window.print()">🖨️ In Hóa Đơn</button>
-
-    <div class="invoice-container">
+    <div class="invoice">
         <div class="header">
-            <h1>Hóa Đơn Bán Hàng</h1>
-            <p>Số: <span id="invoiceNumber"></span></p>
-            <p>Ngày: <span id="invoiceDate"></span></p>
+            <h1 id="tenShop">QUÁN CAFE ABC</h1>
+            <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
+            <p>ĐT: 0123 456 789</p>
         </div>
-
+        
         <div class="info-section">
-            <p><strong>Khách hàng:</strong> <span id="customerName"></span></p>
-            <p><strong>Địa chỉ:</strong> <span id="customerAddress"></span></p>
-            <p><strong>Điện thoại:</strong> <span id="customerPhone"></span></p>
+            <div class="info-item">
+                <span class="info-label">Thời gian:</span>
+                <span class="info-value" id="thoiGian">08/12/2025 14:30</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Bàn:</span>
+                <span class="info-value" id="ban">B05</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Số phiếu:</span>
+                <span class="info-value" id="soPhieu">#HD001234</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Thu ngân:</span>
+                <span class="info-value">Nguyễn Văn A</span>
+            </div>
         </div>
-
+        
         <table>
             <thead>
                 <tr>
-                    <th class="text-center" style="width: 5%">STT</th>
-                    <th style="width: 45%">Tên Hàng</th>
-                    <th class="text-right" style="width: 15%">Đơn Giá</th>
-                    <th class="text-center" style="width: 10%">SL</th>
-                    <th class="text-right" style="width: 25%">Thành Tiền</th>
+                    <th>TT</th>
+                    <th>Tên hàng</th>
+                    <th>SL</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
                 </tr>
             </thead>
-            <tbody id="invoiceItems">
-                <!-- Dữ liệu sẽ được load tự động -->
+            <tbody id="tableBody">
+                <tr>
+                    <td>1</td>
+                    <td>Cà phê đen</td>
+                    <td>2</td>
+                    <td>25,000</td>
+                    <td>50,000</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Cà phê sữa</td>
+                    <td>1</td>
+                    <td>30,000</td>
+                    <td>30,000</td>
+                </tr>
             </tbody>
         </table>
-
-        <div class="total-section">
-            <div class="total-row">
-                <strong>Tổng cộng:</strong> <span id="totalAmount">0</span> đ
-            </div>
-            <div class="grand-total">
-                <strong>Tổng thanh toán:</strong> <span id="grandTotal">0</span> đ
-            </div>
-        </div>
-
+        
         <div class="footer">
-            <p>Cảm ơn quý khách đã sử dụng dịch vụ!</p>
+            <p>Cảm ơn quý khách và hẹn gặp lại!</p>
+            <p>---===---</p>
         </div>
     </div>
 
     <script>
-        // Hàm format số tiền
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('vi-VN').format(amount);
+        // Lấy URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Cập nhật thông tin từ URL
+        const tenShop = urlParams.get('tenshop');
+        const diaChi = urlParams.get('diachi');
+        const soPhieu = urlParams.get('sophieu');
+        const thoiGian = urlParams.get('thoigian');
+        const ban = urlParams.get('ban');
+        const data = urlParams.get('data');
+        
+        if (tenShop) {
+            document.getElementById('tenShop').textContent = decodeURIComponent(tenShop);
         }
-
-        // Hàm parse URL parameters
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                items: params.get('items') || '[]',
-                invoiceNumber: params.get('invoice') || 'INV-001',
-                date: params.get('date') || new Date().toLocaleDateString('vi-VN'),
-                customer: params.get('customer') || 'Khách hàng',
-                address: params.get('address') || '',
-                phone: params.get('phone') || ''
-            };
+        
+        if (diaChi) {
+            document.getElementById('diaChi').textContent = decodeURIComponent(diaChi);
         }
-
-        // Load dữ liệu và hiển thị
-        function loadInvoiceData() {
-            const params = getUrlParams();
+        
+        if (soPhieu) {
+            document.getElementById('soPhieu').textContent = decodeURIComponent(soPhieu);
+        }
+        
+        if (thoiGian) {
+            document.getElementById('thoiGian').textContent = decodeURIComponent(thoiGian);
+        }
+        
+        if (ban) {
+            document.getElementById('ban').textContent = decodeURIComponent(ban);
+        }
+        
+        // Xử lý data cho bảng
+        if (data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // Xóa dữ liệu mẫu
             
-            // Hiển thị thông tin header
-            document.getElementById('invoiceNumber').textContent = params.invoiceNumber;
-            document.getElementById('invoiceDate').textContent = params.date;
-            document.getElementById('customerName').textContent = params.customer;
-            document.getElementById('customerAddress').textContent = params.address;
-            document.getElementById('customerPhone').textContent = params.phone;
-
-            // Parse items từ JSON
-            let items = [];
-            try {
-                items = JSON.parse(decodeURIComponent(params.items));
-            } catch (e) {
-                console.error('Lỗi parse dữ liệu:', e);
-            }
-
-            // Hiển thị items
-            const tbody = document.getElementById('invoiceItems');
-            let total = 0;
-
-            items.forEach((item, index) => {
-                const row = document.createElement('tr');
-                const thanhTien = item.donGia * item.soLuong;
-                total += thanhTien;
-
-                row.innerHTML = `
-                    <td class="text-center">${index + 1}</td>
-                    <td>${item.tenHang}</td>
-                    <td class="text-right">${formatCurrency(item.donGia)}</td>
-                    <td class="text-center">${item.soLuong}</td>
-                    <td class="text-right">${formatCurrency(thanhTien)}</td>
-                `;
-                tbody.appendChild(row);
+            // Tách các dòng bằng _b_
+            const rows = data.split('_b_');
+            let tongTien = 0;
+            
+            rows.forEach((row, index) => {
+                if (row.trim()) {
+                    // Tách các cột bằng _a_
+                    const cols = row.split('_a_');
+                    
+                    if (cols.length >= 4) {
+                        const tr = document.createElement('tr');
+                        
+                        // TT
+                        const tdTT = document.createElement('td');
+                        tdTT.textContent = index + 1;
+                        tr.appendChild(tdTT);
+                        
+                        // Tên hàng
+                        const tdTen = document.createElement('td');
+                        tdTen.textContent = decodeURIComponent(cols[0]);
+                        tr.appendChild(tdTen);
+                        
+                        // Số lượng
+                        const tdSL = document.createElement('td');
+                        tdSL.textContent = cols[1];
+                        tr.appendChild(tdSL);
+                        
+                        // Đơn giá
+                        const tdDonGia = document.createElement('td');
+                        const donGia = parseInt(cols[2]);
+                        tdDonGia.textContent = donGia.toLocaleString('vi-VN');
+                        tr.appendChild(tdDonGia);
+                        
+                        // Thành tiền
+                        const tdThanhTien = document.createElement('td');
+                        const soLuong = parseInt(cols[1]);
+                        const thanhTien = donGia * soLuong;
+                        tdThanhTien.textContent = thanhTien.toLocaleString('vi-VN');
+                        tr.appendChild(tdThanhTien);
+                        
+                        tableBody.appendChild(tr);
+                        tongTien += thanhTien;
+                    }
+                }
             });
-
-            // Hiển thị tổng tiền
-            document.getElementById('totalAmount').textContent = formatCurrency(total);
-            document.getElementById('grandTotal').textContent = formatCurrency(total);
+            
+            // Thêm dòng tổng tiền
+            const trTotal = document.createElement('tr');
+            trTotal.className = 'total-row';
+            trTotal.innerHTML = `
+                <td colspan="4">TỔNG CỘNG</td>
+                <td>${tongTien.toLocaleString('vi-VN')}đ</td>
+            `;
+            tableBody.appendChild(trTotal);
         }
-
-        // Load dữ liệu khi trang được tải
-        window.onload = loadInvoiceData;
     </script>
 </body>
 </html>
