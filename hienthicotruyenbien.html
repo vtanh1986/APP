@@ -2,204 +2,96 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>AppSheet API - Chọn cột hiển thị</title>
+  <title>AppSheet API - Hiển thị có truyền biến</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    #loading { font-size: 18px; color: #555; margin-bottom: 10px; }
-
-    .table-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-top: 20px;
-    }
-
-    #downloadBtn {
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background-color: #107C41;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-
-    #downloadBtn:hover { background-color: #0E6633; }
-    #downloadBtn img { width: 18px; height: 18px; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+    th { background: #f2f2f2; }
   </style>
 </head>
-
 <body>
+  <h2>Hiển thị dữ liệu qua AppSheet API</h2>
 
-<h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
-
-<!-- Bộ lọc ngày -->
-<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
-  <label>Từ ngày:</label>
-  <input type="date" id="fromDate">
-
-  <label>Đến ngày:</label>
-  <input type="date" id="toDate">
-
-  <button id="filterBtn" style="padding: 6px 12px; cursor:pointer;">
-    Lọc dữ liệu
-  </button>
-</div>
-
-<div id="loading">Đang tải dữ liệu...</div>
-
-<div class="table-container">
-  <div style="flex: 1">
-    <table id="dataTable" style="display:none;">
-      <thead id="thead"></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-
-  <button id="downloadBtn" style="display:none;">
-    <img src="https://cdn-icons-png.flaticon.com/512/732/732225.png">
-    Tải Excel
-  </button>
-</div>
-
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <div id="status">Đang tải...</div>
+  <table id="dataTable" style="display:none">
+    <thead>
+      <tr id="tableHeader"></tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
 
 <script>
-// ==========================
-// 1. TỰ ĐIỀN LẠI INPUT TỪ URL
-// ==========================
-const params = new URLSearchParams(window.location.search);
-if (params.get("from")) document.getElementById("fromDate").value = params.get("from");
-if (params.get("to"))   document.getElementById("toDate").value   = params.get("to");
-
-
-// ==========================
-// 2. NÚT LỌC → TẠO URL MỚI
-// ==========================
-document.getElementById("filterBtn").addEventListener("click", () => {
-  const from = document.getElementById("fromDate").value;
-  const to   = document.getElementById("toDate").value;
-
-  let newUrl = window.location.pathname + "?";
-  let params = [];
-
-  if (from) params.push("from=" + from);
-  if (to)   params.push("to=" + to);
-
-  newUrl += params.join("&");
-
-  window.location.href = newUrl;
-});
-
-
-// ==========================
-// 3. CHUẨN HÓA NGÀY dd/mm/yyyy → yyyy-mm-dd
-// ==========================
-function parseDate(d) {
-  if (!d) return null;
-  d = d.trim();
-  if (d.includes("/")) {
-    const [day, month, year] = d.split("/");
-    return `${year}-${month.padStart(2,"0")}-${day.padStart(2,"0")}`;
-  }
-  return d;
-}
-
-
-// ==========================
-// 4. LOAD DỮ LIỆU APPSHEET FIND API
-// ==========================
 async function loadData() {
+  const params = new URLSearchParams(window.location.search);
+  const filterFrom = params.get('from');
+  const filterTo = params.get('to');
 
-  let from = parseDate(new URLSearchParams(window.location.search).get("from"));
-  let to   = parseDate(new URLSearchParams(window.location.search).get("to"));
+  const url = "https://api.appsheet.com/api/v2/apps/95e21b2c-a592-437c-aa46-6747be0a9707/tables/cuocgoi/Action?applicationAccessKey=yHJ2v2HSgdzQQv0SaJZ9RPXoFNCNxjQVphP4p97q4JktO4FYQIxpkVGTmIjPc8qi";
 
-  let filter = "";
-  if (from) filter += `[NGAY XUAT HOA DON] >= DATE("${from}")`;
-  if (from && to) filter += " AND ";
-  if (to) filter += `[NGAY XUAT HOA DON] <= DATE("${to}")`;
-
-  const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
-  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
-  const body = { "Action": "Find", "Filter": filter };
-
-  console.log("Filter gửi API:", filter);
+  const reqBody = {
+    Action: "Find",
+    Properties: {
+      Selector: ``
+    }
+  };
 
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "ApplicationAccessKey": "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reqBody)
     });
 
-    const raw = await res.json();
-    const data = raw.Rows ?? raw;
+    const text = await res.text();
+    if (!text) throw new Error("Rỗng JSON");
+    const data = JSON.parse(text);
 
-    document.getElementById("loading").style.display = "none";
+    let rows = data.Rows || [];
 
-    if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu!";
-      return;
+    // Lọc theo khoảng ngày
+    if (filterFrom || filterTo) {
+      rows = rows.filter(r => {
+        const ngay = r["NGAYGOI"] || r["NGAY"] || "";
+        const d = new Date(ngay);
+
+        if (filterFrom && d < new Date(filterFrom)) return false;
+        if (filterTo && d > new Date(filterTo)) return false;
+        return true;
+      });
     }
 
-    document.getElementById("dataTable").style.display = "";
-    document.getElementById("downloadBtn").style.display = "inline-flex";
+    document.getElementById("status").innerText = "Tổng dòng: " + rows.length;
 
-    document.getElementById("thead").innerHTML =
-      "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
+    if (rows.length === 0) return;
 
-    document.getElementById("tbody").innerHTML =
-      data.map(row =>
-        "<tr>" +
-          columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>"
-      ).join("");
+    const headerRow = document.getElementById("tableHeader");
+    const body = document.getElementById("tableBody");
+
+    Object.keys(rows[0]).forEach(col => {
+      const th = document.createElement("th");
+      th.innerText = col;
+      headerRow.appendChild(th);
+    });
+
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      Object.values(r).forEach(val => {
+        const td = document.createElement("td");
+        td.innerText = val;
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+
+    document.getElementById("dataTable").style.display = "table";
 
   } catch (err) {
-    console.error("Lỗi fetch:", err);
-    document.getElementById("loading").innerText = "Lỗi tải dữ liệu!";
+    document.getElementById("status").innerText = "Lỗi: " + err.message;
   }
 }
 
-
-// ==========================
-// 5. EXPORT EXCEL
-// ==========================
-document.getElementById("downloadBtn").addEventListener("click", () => {
-  const table = document.getElementById("dataTable");
-  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
-
-  const dataRows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-    const tds = Array.from(tr.children);
-    return tds.map((td, i) => td.innerText.trim());
-  });
-
-  const wb = XLSX.utils.book_new();
-  const wsData = [columnsToShow, ...dataRows];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-  const dateColIndex = columnsToShow.indexOf("NGAY XUAT HOA DON");
-  dataRows.forEach((_, rowIndex) => {
-    const cellRef = XLSX.utils.encode_cell({r: rowIndex + 1, c: dateColIndex});
-    if(ws[cellRef]) ws[cellRef].t = 's';
-  });
-
-  XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
-  XLSX.writeFile(wb, "AppSheet_Data.xlsx");
-});
-
-
 loadData();
 </script>
-
 </body>
 </html>
