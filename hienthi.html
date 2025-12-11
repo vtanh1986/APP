@@ -23,51 +23,15 @@
 </table>
 
 <script>
-
-// Lấy toàn bộ query trên URL
-function getAllQueries() {
-  return Object.fromEntries(new URLSearchParams(location.search).entries());
-}
-
-// Tự động build Filter từ URL
-function buildAutoFilter() {
-  const params = getAllQueries();
-  let conditions = [];
-
-  for (let key in params) {
-    const value = params[key];
-
-    // Tự nhận dạng cặp FROM - TO theo ngày
-    if (key.toLowerCase() === "from") {
-      conditions.push(`[NGAY] >= DATE("${value}")`);
-      continue;
-    }
-    if (key.toLowerCase() === "to") {
-      conditions.push(`[NGAY] <= DATE("${value}")`);
-      continue;
-    }
-
-    // Các điều kiện text bình thường
-    conditions.push(`[${key}] = "${value}"`);
-  }
-
-  if (conditions.length === 0) return "";
-
-  return conditions.join(" AND ");
-}
-
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
 
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
 
-  const filter = buildAutoFilter();
-  console.log("Filter gửi lên:", filter);
-
-  const body = {
-    "Action": "Find",
-    "Filter": filter
-  };
+const body = {
+  "Action": "Find",
+  "Filter": ""
+};
 
   try {
     const res = await fetch(url, {
@@ -79,8 +43,14 @@ async function loadData() {
       body: JSON.stringify(body)
     });
 
+    console.log("Status:", res.status);
+
     const raw = await res.json();
+    console.log("Raw:", raw);
+
+    // FIX QUAN TRỌNG
     const data = raw.Rows ?? raw;
+    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
@@ -91,16 +61,14 @@ async function loadData() {
 
     document.getElementById("dataTable").style.display = "";
 
-    // Build header
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
-    // Build body
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
           columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>`
+        "</tr>"
       ).join("");
 
   } catch (err) {
@@ -110,8 +78,6 @@ async function loadData() {
 
 loadData();
 </script>
-
-
 
 
 
