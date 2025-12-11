@@ -9,11 +9,35 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
     #loading { font-size: 18px; color: #555; margin-bottom: 10px; }
-    .table-container { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 20px; }
-    #downloadBtn { padding: 6px 12px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px;
-      background-color: #107C41; color: white; border: none; border-radius: 4px; }
-    #downloadBtn:hover { background-color: #0E6633; }
-    #downloadBtn img { width: 18px; height: 18px; }
+
+    .table-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 20px;
+    }
+
+    #downloadBtn {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #107C41;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    #downloadBtn:hover {
+      background-color: #0E6633;
+    }
+
+    #downloadBtn img {
+      width: 18px;
+      height: 18px;
+    }
   </style>
 </head>
 <body>
@@ -37,16 +61,14 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script>
-
 const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
 // Lấy query param từ URL
 function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
   return {
-    from: params.get("from"),
-    to: params.get("to"),
-    kyhieu: params.get("kyhieu")  // ✔ thêm filter theo KY HIEU HD
+    from: params.get("from"), // dd/mm/yyyy
+    to: params.get("to")      // dd/mm/yyyy
   };
 }
 
@@ -61,27 +83,14 @@ function convertToISO(dateStr) {
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
+  // Tạo filter từ URL
   const params = getQueryParams();
-  let filterParts = [];
-
-  // --- Filter theo ngày ---
+  let filter = "";
   if (params.from && params.to) {
     const fromISO = convertToISO(params.from);
     const toISO = convertToISO(params.to);
-
-    filterParts.push(
-      `[NGAY XUAT HOA DON] >= DATE('${fromISO}')`,
-      `[NGAY XUAT HOA DON] <= DATE('${toISO}')`
-    );
+    filter = `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
   }
-
-  // --- Filter theo KY HIEU HD ---
-  if (params.kyhieu) {
-    filterParts.push(`[KY HIEU HD] = "${params.kyhieu}"`);
-  }
-
-  // Ghép FILTER lại
-  let filter = filterParts.length ? `AND(${filterParts.join(",")})` : "";
 
   const body = { Action: "Find", Filter: filter };
 
@@ -112,12 +121,12 @@ async function loadData() {
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
-    // Body
+    // Dữ liệu
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
           columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>`
+        "</tr>"
       ).join("");
 
   } catch (err) {
@@ -126,13 +135,18 @@ async function loadData() {
   }
 }
 
-// Xuất Excel giữ nguyên format text cho ngày
+// Xuất Excel với cột NGAY XUAT HOA DON giữ dd/mm/yyyy
 document.getElementById("downloadBtn").addEventListener("click", () => {
   const table = document.getElementById("dataTable");
 
   const dataRows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
     const tds = Array.from(tr.children);
-    return tds.map((td, i) => td.innerText.trim());
+    return tds.map((td, i) => {
+      const colName = columnsToShow[i];
+      let value = td.innerText.trim();
+      if (colName === "NGAY XUAT HOA DON") return value;
+      return value;
+    });
   });
 
   const wb = XLSX.utils.book_new();
@@ -142,7 +156,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
   const dateColIndex = columnsToShow.indexOf("NGAY XUAT HOA DON");
   dataRows.forEach((_, rowIndex) => {
     const cellRef = XLSX.utils.encode_cell({r: rowIndex + 1, c: dateColIndex});
-    if(ws[cellRef]) ws[cellRef].t = 's';
+    if(ws[cellRef]) ws[cellRef].t = 's'; // ép text
   });
 
   XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
