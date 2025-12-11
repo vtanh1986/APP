@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>AppSheet API - Chọn cột hiển thị</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    #loading { font-size: 18px; color: #555; }
+  </style>
+</head>
+<body>
+
+<h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
+
+<div id="loading">Đang tải dữ liệu...</div>
+
+<table id="dataTable" style="display:none;">
+  <thead id="thead"></thead>
+  <tbody id="tbody"></tbody>
+</table>
+
+<script>
+async function loadData() {
+  const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC SR/find";
+
+  // ⚡⚡⚡ CHỈNH CỘT MUỐN HIỂN THỊ TẠI ĐÂY ⚡⚡⚡
+  const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];  
+  // Thay bằng tên cột trong bảng AppSheet của bạn
+  
+  const body = {
+    "Action": "Find",
+    "Rows": [{ "Filter": "" }] // Lấy toàn bộ dữ liệu
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM
+",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  const data = await res.json();
+
+  document.getElementById("loading").style.display = "none";
+
+  if (!data || data.length === 0) {
+    document.getElementById("loading").innerText = "Không có dữ liệu!";
+    return;
+  }
+
+  document.getElementById("dataTable").style.display = "";
+
+  // === TẠO HEADER CHỈ CÁC CỘT CHỌN ===
+  document.getElementById("thead").innerHTML =
+    "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
+
+  // === TẠO ROW CHỈ CÁC CỘT CHỌN ===
+  document.getElementById("tbody").innerHTML =
+    data.map(row =>
+      "<tr>" +
+        columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
+      "</tr>"
+    ).join("");
+}
+
+loadData();
+</script>
+
+</body>
+</html>
