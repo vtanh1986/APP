@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>AppSheet API - Lọc dữ liệu</title>
+  <title>AppSheet API - Chọn cột hiển thị</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -13,7 +13,7 @@
 </head>
 <body>
 
-<h2>Hiển thị dữ liệu AppSheet (lọc bằng URL)</h2>
+<h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
 
 <div id="loading">Đang tải dữ liệu...</div>
 
@@ -25,43 +25,21 @@
 <script>
 async function loadData() {
 
-  /* ===============================
-        1. LẤY BIẾN TỪ URL
-     =============================== */
+  // ⭐ LẤY THAM SỐ TỪ URL: ?nvkd=06440
   const params = new URLSearchParams(window.location.search);
+  const nvkd = params.get("nvkd");  
+  console.log("NVKD trên URL:", nvkd);
 
-  const nvkd = params.get("nvkd") || "";
-  const tu = params.get("tu") || "";
-  const den = params.get("den") || "";
+  // ⭐ FILTER TỰ ĐỘNG NẾU CÓ nvkd
+  const filterCondition = nvkd ? `([NVKD] = "${nvkd}")` : "";
 
-  /* ===============================
-        2. TẠO FILTER ĐÚNG CHUẨN APPSHEET
-     =============================== */
-  let filters = [];
-
-  if (nvkd) filters.push(`[NVKD]="${nvkd}"`);
-  if (tu) filters.push(`[NGAY]>=DATE("${tu}")`);
-  if (den) filters.push(`[NGAY]<=DATE("${den}")`);
-
-  let filter = "";
-  if (filters.length === 1) {
-    filter = filters[0]; // 1 điều kiện -> không dùng AND()
-  } else if (filters.length > 1) {
-    filter = "AND(" + filters.join(",") + ")";
-  }
-
-  console.log("Filter gửi lên API:", filter);
-
-  /* ===============================
-        3. GỌI API APPSHEET
-     =============================== */
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
 
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
 
   const body = {
     "Action": "Find",
-    "Filter": filter
+    "Filter": filterCondition  // ⭐ THÊM FILTER VÀO ĐÚNG CHỖ
   };
 
   try {
@@ -76,10 +54,28 @@ async function loadData() {
 
     console.log("Status:", res.status);
 
-    const raw = await res.json();
+    const text = await res.text();
+    console.log("Raw text:", text);
+
+    if (!text) {
+      document.getElementById("loading").innerText = "API trả về rỗng!";
+      return;
+    }
+
+    let raw;
+    try {
+      raw = JSON.parse(text);
+    } catch (e) {
+      console.error("JSON parse lỗi:", e);
+      document.getElementById("loading").innerText = "Lỗi JSON!";
+      return;
+    }
+
     console.log("Raw:", raw);
 
+    // ⭐ AppSheet Find trả về MẢNG ROWS trực tiếp
     const data = raw.Rows ?? raw;
+    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
@@ -90,25 +86,18 @@ async function loadData() {
 
     document.getElementById("dataTable").style.display = "";
 
-    /* ===============================
-          4. HEADER BẢNG
-       =============================== */
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
-    /* ===============================
-          5. BODY BẢNG
-       =============================== */
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
           columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>"
+        "</tr>`
       ).join("");
 
   } catch (err) {
     console.error("Lỗi fetch:", err);
-    document.getElementById("loading").innerText = "Lỗi khi load dữ liệu!";
   }
 }
 
