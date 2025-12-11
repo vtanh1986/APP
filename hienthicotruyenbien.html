@@ -9,7 +9,6 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
     #loading { font-size: 18px; color: #555; margin-bottom: 10px; }
-    .error { color: red; font-weight: bold; }
 
     .table-container {
       display: flex;
@@ -46,7 +45,6 @@
 <h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
 
 <div id="loading">Đang tải dữ liệu...</div>
-<div id="errorMsg" class="error" style="display:none;"></div>
 
 <div class="table-container">
   <div style="flex:1">
@@ -74,49 +72,11 @@ function getQueryParams() {
   };
 }
 
-// Chuyển dd/mm/yyyy -> yyyy-mm-dd (cho filter)
+// Chuyển dd/mm/yyyy -> yyyy-mm-dd
 function convertToISO(dateStr) {
-  if (!dateStr) return null;
-  
   const parts = dateStr.split("/");
   if (parts.length !== 3) return null;
-  
-  const day = parts[0].padStart(2, '0');
-  const month = parts[1].padStart(2, '0');
-  const year = parts[2];
-  
-  return `${year}-${month}-${day}`;
-}
-
-// Chuyển dd/mm/yyyy -> đối tượng Date để so sánh
-function parseDateDMY(dateStr) {
-  if (!dateStr) return null;
-  
-  const parts = dateStr.split("/");
-  if (parts.length !== 3) return null;
-  
-  return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-}
-
-// Lọc dữ liệu phía client nếu API không filter đúng
-function filterDataByDate(data, fromStr, toStr) {
-  if (!fromStr || !toStr) return data;
-  
-  const fromDate = parseDateDMY(fromStr);
-  const toDate = parseDateDMY(toStr);
-  
-  if (!fromDate || !toDate) return data;
-  
-  return data.filter(row => {
-    const dateStr = row["NGAY XUAT HOA DON"];
-    if (!dateStr) return false;
-    
-    const rowDate = parseDateDMY(dateStr);
-    if (!rowDate) return false;
-    
-    // So sánh ngày (bỏ qua giờ phút)
-    return rowDate >= fromDate && rowDate <= toDate;
-  });
+  return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
 }
 
 // Load dữ liệu từ AppSheet
@@ -126,30 +86,13 @@ async function loadData() {
   // Tạo filter từ URL
   const params = getQueryParams();
   let filter = "";
-  
-  // Kiểm tra nếu có tham số ngày
-  const hasDateFilter = params.from && params.to;
-  
-  if (hasDateFilter) {
+  if (params.from && params.to) {
     const fromISO = convertToISO(params.from);
     const toISO = convertToISO(params.to);
-    
-    if (fromISO && toISO) {
-      // Filter bằng API
-      filter = `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
-      document.getElementById("loading").innerHTML = `Đang tải dữ liệu từ ${params.from} đến ${params.to}...`;
-    } else {
-      document.getElementById("errorMsg").innerText = "Định dạng ngày không hợp lệ. Sử dụng dd/mm/yyyy";
-      document.getElementById("errorMsg").style.display = "block";
-    }
+    filter = `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
   }
 
-  const body = { 
-    Action: "Find", 
-    Filter: filter,
-    // Lấy tất cả dữ liệu nếu filter không hoạt động
-    Properties: { "SelectColumns": columnsToShow }
-  };
+  const body = { Action: "Find", Filter: filter };
 
   try {
     const res = await fetch(url, {
@@ -161,23 +104,13 @@ async function loadData() {
       body: JSON.stringify(body)
     });
 
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
     const raw = await res.json();
-    let data = raw.Rows || raw || [];
-
-    // Nếu có filter ngày, lọc thêm phía client
-    if (hasDateFilter && data.length > 0) {
-      data = filterDataByDate(data, params.from, params.to);
-    }
+    const data = raw.Rows ?? raw;
 
     document.getElementById("loading").style.display = "none";
 
     if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu trong khoảng thời gian này!";
-      document.getElementById("loading").style.display = "block";
+      document.getElementById("loading").innerText = "Không có dữ liệu!";
       return;
     }
 
@@ -198,9 +131,7 @@ async function loadData() {
 
   } catch (err) {
     console.error("Lỗi fetch:", err);
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("errorMsg").innerText = "Lỗi tải dữ liệu: " + err.message;
-    document.getElementById("errorMsg").style.display = "block";
+    document.getElementById("loading").innerText = "Lỗi tải dữ liệu!";
   }
 }
 
@@ -229,23 +160,8 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
   });
 
   XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
-  
-  // Thêm ngày vào tên file nếu có filter
-  const params = getQueryParams();
-  let fileName = "AppSheet_Data";
-  if (params.from && params.to) {
-    fileName += `_${params.from.replace(/\//g, '-')}_${params.to.replace(/\//g, '-')}`;
-  }
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+  XLSX.writeFile(wb, "AppSheet_Data.xlsx");
 });
-
-// Kiểm tra URL có tham số không
-const params = getQueryParams();
-if (!params.from || !params.to) {
-  document.getElementById("loading").innerHTML = 
-    "Vui lòng thêm tham số URL: ?from=dd/mm/yyyy&to=dd/mm/yyyy<br>" +
-    "Ví dụ: ?from=01/01/2024&to=31/12/2024";
-}
 
 loadData();
 </script>
