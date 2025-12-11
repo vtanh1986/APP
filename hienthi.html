@@ -26,13 +26,11 @@
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC SR/find";
 
-  const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];  
+  const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
 
   const body = {
     "Action": "Find",
-    "Rows": [
-      { "Filter": "" }
-    ]
+    "Rows": [ { "Filter": "" } ]
   };
 
   try {
@@ -47,8 +45,12 @@ async function loadData() {
 
     console.log("Status:", res.status);
 
-    const data = await res.json();
-    console.log("Data:", data);
+    const raw = await res.json();
+    console.log("Raw:", raw);
+
+    // FIX QUAN TRỌNG
+    const data = raw.Rows ?? raw;
+    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
@@ -59,11 +61,9 @@ async function loadData() {
 
     document.getElementById("dataTable").style.display = "";
 
-    // Header
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
-    // Body
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
@@ -71,14 +71,14 @@ async function loadData() {
         "</tr>"
       ).join("");
 
-  } catch (e) {
-    console.error("Fetch error:", e);
-    document.getElementById("loading").innerText = "Lỗi kết nối API!";
+  } catch (err) {
+    console.error("Lỗi fetch:", err);
   }
 }
 
 loadData();
 </script>
+
 
 
 </body>
