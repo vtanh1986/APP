@@ -24,9 +24,9 @@
 
 <script>
 async function loadData() {
-  const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
+  const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
-  const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
+  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON];
 
 const body = {
   "Action": "Find",
@@ -37,7 +37,7 @@ const body = {
     const res = await fetch(url, {
       method: "POST",
       headers: {
-        "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM",
+        "ApplicationAccessKey": "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr",
         "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
