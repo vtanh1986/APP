@@ -24,14 +24,40 @@
 
 <script>
 async function loadData() {
+
+  // --- Lấy biến từ URL ---
+  const params = new URLSearchParams(window.location.search);
+  const nvkd = params.get("nvkd") || "";
+  const tu = params.get("tu") || "";
+  const den = params.get("den") || "";
+
+  // --- Tạo filter ---
+  let filter = "";
+
+  if (nvkd) filter += `[NVKD]="${nvkd}"`;
+
+  if (tu) {
+    if (filter) filter += " AND ";
+    filter += `[NGAY]>=DATE("${tu}")`;
+  }
+
+  if (den) {
+    if (filter) filter += " AND ";
+    filter += `[NGAY]<=DATE("${den}")`;
+  }
+
+  if (filter) filter = "AND(" + filter + ")";
+
+  console.log("Filter gửi lên API:", filter);
+
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
 
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
 
-const body = {
-  "Action": "Find",
-  "Filter": ""
-};
+  const body = {
+    "Action": "Find",
+    "Filter": filter
+  };
 
   try {
     const res = await fetch(url, {
@@ -46,11 +72,7 @@ const body = {
     console.log("Status:", res.status);
 
     const raw = await res.json();
-    console.log("Raw:", raw);
-
-    // FIX QUAN TRỌNG
     const data = raw.Rows ?? raw;
-    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
@@ -78,6 +100,7 @@ const body = {
 
 loadData();
 </script>
+
 
 
 
