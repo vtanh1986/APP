@@ -25,13 +25,18 @@
 <script>
 async function loadData() {
 
-  // --- Lấy biến từ URL ---
+  /* ===============================
+        1. LẤY BIẾN TỪ URL
+     =============================== */
   const params = new URLSearchParams(window.location.search);
-  const nvkd = params.get("nvkd") || "";
+
+  const nvkd = params.get("nvkd") || ""; 
   const tu = params.get("tu") || "";
   const den = params.get("den") || "";
 
-  // --- Tạo filter ---
+  /* ===============================
+        2. TẠO FILTER APPHEET
+     =============================== */
   let filter = "";
 
   if (nvkd) filter += `[NVKD]="${nvkd}"`;
@@ -50,6 +55,10 @@ async function loadData() {
 
   console.log("Filter gửi lên API:", filter);
 
+
+  /* ===============================
+        3. GỌI API APPSHEET
+     =============================== */
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
 
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
@@ -72,7 +81,10 @@ async function loadData() {
     console.log("Status:", res.status);
 
     const raw = await res.json();
+    console.log("Raw:", raw);
+
     const data = raw.Rows ?? raw;
+    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
@@ -83,9 +95,15 @@ async function loadData() {
 
     document.getElementById("dataTable").style.display = "";
 
+    /* ===============================
+          4. TẠO HEADER BẢNG
+       =============================== */
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
+    /* ===============================
+          5. TẠO DATA BẢNG
+       =============================== */
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
@@ -95,14 +113,12 @@ async function loadData() {
 
   } catch (err) {
     console.error("Lỗi fetch:", err);
+    document.getElementById("loading").innerText = "Lỗi khi load dữ liệu!";
   }
 }
 
 loadData();
 </script>
-
-
-
 
 </body>
 </html>
