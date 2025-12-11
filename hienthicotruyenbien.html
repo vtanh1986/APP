@@ -2,36 +2,13 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>AppSheet API - Chọn cột hiển thị</title>
+  <title>AppSheet API - Lọc ngày</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
     #loading { font-size: 18px; color: #555; margin-bottom: 10px; }
-
-    .table-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-top: 20px;
-    }
-
-    #downloadBtn {
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background-color: #107C41;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-
-    #downloadBtn:hover { background-color: #0E6633; }
-    #downloadBtn img { width: 18px; height: 18px; }
   </style>
 </head>
 
@@ -39,7 +16,6 @@
 
 <h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
 
-<!-- Bộ lọc ngày -->
 <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
   <label>Từ ngày:</label>
   <input type="date" id="fromDate">
@@ -54,142 +30,70 @@
 
 <div id="loading">Đang tải dữ liệu...</div>
 
-<div class="table-container">
-  <div style="flex: 1">
-    <table id="dataTable" style="display:none;">
-      <thead id="thead"></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-
-  <button id="downloadBtn" style="display:none;">
-    <img src="https://cdn-icons-png.flaticon.com/512/732/732225.png">
-    Tải Excel
-  </button>
-</div>
-
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<table id="dataTable" style="display:none;">
+  <thead id="thead"></thead>
+  <tbody id="tbody"></tbody>
+</table>
 
 <script>
-// ==========================
-// 1. TỰ ĐIỀN LẠI INPUT TỪ URL
-// ==========================
-const params = new URLSearchParams(window.location.search);
-if (params.get("from")) document.getElementById("fromDate").value = params.get("from");
-if (params.get("to"))   document.getElementById("toDate").value   = params.get("to");
-
-
-// ==========================
-// 2. NÚT LỌC → TẠO URL MỚI
-// ==========================
-document.getElementById("filterBtn").addEventListener("click", () => {
-  const from = document.getElementById("fromDate").value;
-  const to   = document.getElementById("toDate").value;
-
-  let newUrl = window.location.pathname + "?";
-  let arr = [];
-
-  if (from) arr.push("from=" + from);
-  if (to)   arr.push("to=" + to);
-
-  newUrl += arr.join("&");
-  window.location.href = newUrl;
-});
-
-
-// ==========================
-// 3. CHUẨN HOÁ NGÀY → YYYY-MM-DD (format AppSheet chấp nhận)
-// ==========================
-function parseDate(d) {
-  if (!d) return null;
-  // d là yyyy-mm-dd từ input date
-  return d;  
+// Chuyển dd/mm/yyyy → Date object
+function toDateObject(str) {
+  if (!str) return null;
+  const [day, month, year] = str.split("/");
+  return new Date(`${year}-${month}-${day}`);
 }
 
+document.getElementById("filterBtn").addEventListener("click", loadData);
 
-// ==========================
-// 4. LOAD DỮ LIỆU APPSHEET FIND API
-// ==========================
 async function loadData() {
 
-  const from = parseDate(new URLSearchParams(window.location.search).get("from"));
-  const to   = parseDate(new URLSearchParams(window.location.search).get("to"));
+  const fromInput = document.getElementById("fromDate").value;
+  const toInput   = document.getElementById("toDate").value;
 
-  let filter = "";
+  const from = fromInput ? new Date(fromInput) : null;
+  const to   = toInput ? new Date(toInput) : null;
 
-  if (from) filter += `[NGAY XUAT HOA DON] >= DATE("${from}")`;
-  if (from && to) filter += " AND ";
-  if (to) filter += `[NGAY XUAT HOA DON] <= DATE("${to}")`;
-
-  console.log("Filter gửi API:", filter);
+  document.getElementById("loading").innerText = "Đang tải dữ liệu...";
 
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
-  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
+  const key = "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr";
 
-  const body = { 
-    "Action": "Find",
-    "Filter": filter 
-  };
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "ApplicationAccessKey": "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
-
-    const raw = await res.json();
-    const data = raw.Rows ?? raw;
-
-    document.getElementById("loading").style.display = "none";
-
-    if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu!";
-      return;
-    }
-
-    document.getElementById("dataTable").style.display = "";
-    document.getElementById("downloadBtn").style.display = "inline-flex";
-
-    document.getElementById("thead").innerHTML =
-      "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
-
-    document.getElementById("tbody").innerHTML =
-      data.map(row =>
-        "<tr>" +
-          columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>"
-      ).join("");
-
-  } catch (err) {
-    console.error("Lỗi fetch:", err);
-    document.getElementById("loading").innerText = "Lỗi tải dữ liệu!";
-  }
-}
-
-
-// ==========================
-// 5. EXPORT EXCEL
-// ==========================
-document.getElementById("downloadBtn").addEventListener("click", () => {
-  const table = document.getElementById("dataTable");
-  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
-
-  const dataRows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-    const tds = Array.from(tr.children);
-    return tds.map((td, i) => td.innerText.trim());
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "ApplicationAccessKey": key,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ "Action": "Find" }) // không dùng filter nữa
   });
 
-  const wb = XLSX.utils.book_new();
-  const wsData = [columnsToShow, ...dataRows];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const raw = await res.json();
+  const rows = raw.Rows ?? raw;
 
-  XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
-  XLSX.writeFile(wb, "AppSheet_Data.xlsx");
-});
+  // LỌC NGÀY BẰNG JS
+  const filtered = rows.filter(r => {
+    const d = toDateObject(r["NGAY XUAT HOA DON"]);
+    if (!d) return false;
+
+    return (!from || d >= from) && (!to || d <= to);
+  });
+
+  // Hiển thị bảng
+  const columns = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
+
+  document.getElementById("thead").innerHTML =
+    "<tr>" + columns.map(c => `<th>${c}</th>`).join("") + "</tr>";
+
+  document.getElementById("tbody").innerHTML =
+    filtered.map(row =>
+      "<tr>" +
+        columns.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
+      "</tr>`
+    ).join("");
+
+  document.getElementById("dataTable").style.display = "";
+  document.getElementById("loading").innerText = `Đã tải (${filtered.length}) dòng`;
+}
 
 loadData();
 </script>
