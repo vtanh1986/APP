@@ -61,7 +61,6 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script>
-
 const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
 // Lấy query param từ URL
@@ -84,20 +83,13 @@ function convertToISO(dateStr) {
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
+  // Tạo filter từ URL
   const params = getQueryParams();
   let filter = "";
-
-  // 🔥 FILTER SỬA LẠI ĐỂ LỌC NGÀY DẠNG TEXT dd/mm/yyyy
   if (params.from && params.to) {
     const fromISO = convertToISO(params.from);
     const toISO = convertToISO(params.to);
-
-    filter = `
-      AND(
-        TEXT(SUBSTITUTE([NGAY XUAT HOA DON], "/", "-")) >= "${fromISO}",
-        TEXT(SUBSTITUTE([NGAY XUAT HOA DON], "/", "-")) <= "${toISO}"
-      )
-    `;
+    filter = `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
   }
 
   const body = { Action: "Find", Filter: filter };
@@ -129,7 +121,7 @@ async function loadData() {
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
-    // Table data
+    // Dữ liệu
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
@@ -143,7 +135,7 @@ async function loadData() {
   }
 }
 
-// Xuất Excel và giữ nguyên dd/mm/yyyy
+// Xuất Excel với cột NGAY XUAT HOA DON giữ dd/mm/yyyy
 document.getElementById("downloadBtn").addEventListener("click", () => {
   const table = document.getElementById("dataTable");
 
@@ -152,7 +144,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
     return tds.map((td, i) => {
       const colName = columnsToShow[i];
       let value = td.innerText.trim();
-      if (colName === "NGAY XUAT HOA DON") return value; // giữ text
+      if (colName === "NGAY XUAT HOA DON") return value;
       return value;
     });
   });
@@ -164,7 +156,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
   const dateColIndex = columnsToShow.indexOf("NGAY XUAT HOA DON");
   dataRows.forEach((_, rowIndex) => {
     const cellRef = XLSX.utils.encode_cell({r: rowIndex + 1, c: dateColIndex});
-    if(ws[cellRef]) ws[cellRef].t = 's';
+    if(ws[cellRef]) ws[cellRef].t = 's'; // ép text
   });
 
   XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
