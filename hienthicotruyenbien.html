@@ -28,6 +28,7 @@
       color: white;
       border: none;
       border-radius: 4px;
+      margin-left: 10px;
     }
 
     #downloadBtn:hover {
@@ -38,6 +39,24 @@
       width: 18px;
       height: 18px;
     }
+
+    .error {
+      color: #d32f2f;
+      background-color: #ffebee;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .info {
+      color: #1976d2;
+      background-color: #e3f2fd;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -45,6 +64,8 @@
 <h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
 
 <div id="loading">Đang tải dữ liệu...</div>
+<div id="errorMessage" class="error"></div>
+<div id="infoMessage" class="info"></div>
 
 <div class="table-container">
   <div style="flex:1">
@@ -61,6 +82,7 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script>
+// Các cột cần hiển thị
 const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
 // Lấy query param từ URL
@@ -72,30 +94,111 @@ function getQueryParams() {
   };
 }
 
-// Chuyển dd/mm/yyyy -> yyyy-mm-dd
-function convertToISO(dateStr) {
-  const parts = dateStr.split("/");
-  if (parts.length !== 3) return null;
-  return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+// Hàm chuyển đổi ngày từ dd/mm/yyyy sang yyyy-mm-dd
+function convertDateToISO(dateStr) {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  
+  const trimmed = dateStr.trim();
+  
+  // Xử lý định dạng dd/mm/yyyy
+  const parts = trimmed.split('/');
+  if (parts.length === 3) {
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2];
+    
+    // Kiểm tra tính hợp lệ
+    if (day.length === 2 && month.length === 2 && year.length === 4) {
+      return `${year}-${month}-${day}`;
+    }
+  }
+  
+  // Nếu đã là yyyy-mm-dd thì giữ nguyên
+  const isoPattern = /^\d{4}-\d{2}-\d{2}$/;
+  if (isoPattern.test(trimmed)) {
+    return trimmed;
+  }
+  
+  return null;
 }
 
-// Load dữ liệu từ AppSheet
+// Hàm tạo filter cho AppSheet API
+function createAppSheetFilter(from, to) {
+  const fromISO = convertDateToISO(from);
+  const toISO = convertDateToISO(to);
+  
+  if (!fromISO || !toISO) {
+    console.warn("Không thể chuyển đổi ngày:", from, to);
+    return "";
+  }
+  
+  // AppSheet yêu cầu format: AND([NGAY XUAT HOA DON] >= DATE('yyyy-mm-dd'), [NGAY XUAT HOA DON] <= DATE('yyyy-mm-dd'))
+  return `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
+}
+
+// Hàm xử lý và hiển thị dữ liệu
+function displayData(data) {
+  if (!data || data.length === 0) {
+    document.getElementById("loading").innerText = "Không có dữ liệu!";
+    return;
+  }
+
+  // Hiển thị số lượng bản ghi
+  document.getElementById("infoMessage").innerText = `Tìm thấy ${data.length} bản ghi`;
+  document.getElementById("infoMessage").style.display = "block";
+
+  // Hiển thị bảng
+  document.getElementById("dataTable").style.display = "";
+  document.getElementById("downloadBtn").style.display = "inline-flex";
+
+  // Tạo header
+  const headerHTML = "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
+  document.getElementById("thead").innerHTML = headerHTML;
+
+  // Tạo body
+  const bodyHTML = data.map(row => {
+    return "<tr>" + columnsToShow.map(col => {
+      const value = row[col] || "";
+      // Giữ nguyên định dạng ngày gốc
+      return `<td>${value}</td>`;
+    }).join("") + "</tr>";
+  }).join("");
+
+  document.getElementById("tbody").innerHTML = bodyHTML;
+}
+
+// Hàm lấy dữ liệu từ AppSheet API
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
-  // Tạo filter từ URL
   const params = getQueryParams();
-  let filter = "";
-  if (params.from && params.to) {
-    const fromISO = convertToISO(params.from);
-    const toISO = convertToISO(params.to);
-    filter = `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
+  
+  // Kiểm tra tham số URL
+  if (!params.from || !params.to) {
+    document.getElementById("loading").innerText = "Vui lòng cung cấp tham số from và to trong URL (ví dụ: ?from=01/01/2024&to=31/12/2024)";
+    return;
   }
 
-  const body = { Action: "Find", Filter: filter };
+  // Tạo filter
+  const filter = createAppSheetFilter(params.from, params.to);
+  
+  // Kiểm tra xem filter có hợp lệ không
+  if (!filter) {
+    document.getElementById("errorMessage").innerText = "Định dạng ngày không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy";
+    document.getElementById("errorMessage").style.display = "block";
+    document.getElementById("loading").style.display = "none";
+    return;
+  }
+
+  // Tạo body request
+  const body = {
+    Action: "Find",
+    Filter: filter,
+    Select: columnsToShow.map(col => `[${col}]`)
+  };
 
   try {
-    const res = await fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "ApplicationAccessKey": "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr",
@@ -104,66 +207,82 @@ async function loadData() {
       body: JSON.stringify(body)
     });
 
-    const raw = await res.json();
-    const data = raw.Rows ?? raw;
-
-    document.getElementById("loading").style.display = "none";
-
-    if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu!";
-      return;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    document.getElementById("dataTable").style.display = "";
-    document.getElementById("downloadBtn").style.display = "inline-flex";
+    const result = await response.json();
+    const data = result.Rows || result || [];
+    
+    document.getElementById("loading").style.display = "none";
+    displayData(data);
 
-    // Header
-    document.getElementById("thead").innerHTML =
-      "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
-
-    // Dữ liệu
-    document.getElementById("tbody").innerHTML =
-      data.map(row =>
-        "<tr>" +
-          columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>"
-      ).join("");
-
-  } catch (err) {
-    console.error("Lỗi fetch:", err);
-    document.getElementById("loading").innerText = "Lỗi tải dữ liệu!";
+  } catch (error) {
+    console.error("Lỗi khi tải dữ liệu:", error);
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("errorMessage").innerText = `Lỗi tải dữ liệu: ${error.message}`;
+    document.getElementById("errorMessage").style.display = "block";
   }
 }
 
-// Xuất Excel với cột NGAY XUAT HOA DON giữ dd/mm/yyyy
-document.getElementById("downloadBtn").addEventListener("click", () => {
+// Hàm xuất dữ liệu ra Excel
+function exportToExcel() {
   const table = document.getElementById("dataTable");
-
+  
+  // Lấy dữ liệu từ table
   const dataRows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
     const tds = Array.from(tr.children);
-    return tds.map((td, i) => {
-      const colName = columnsToShow[i];
-      let value = td.innerText.trim();
-      if (colName === "NGAY XUAT HOA DON") return value;
-      return value;
-    });
+    return tds.map(td => td.innerText.trim());
   });
 
+  // Tạo workbook
   const wb = XLSX.utils.book_new();
   const wsData = [columnsToShow, ...dataRows];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
 
+  // Xử lý cột ngày để giữ định dạng dd/mm/yyyy
   const dateColIndex = columnsToShow.indexOf("NGAY XUAT HOA DON");
-  dataRows.forEach((_, rowIndex) => {
-    const cellRef = XLSX.utils.encode_cell({r: rowIndex + 1, c: dateColIndex});
-    if(ws[cellRef]) ws[cellRef].t = 's'; // ép text
+  if (dateColIndex >= 0) {
+    // Đặt độ rộng cột
+    ws['!cols'] = ws['!cols'] || [];
+    ws['!cols'][dateColIndex] = { wch: 15 }; // Độ rộng cột
+    
+    // Ép kiểu text cho tất cả ô trong cột ngày
+    for (let i = 1; i <= dataRows.length; i++) {
+      const cellRef = XLSX.utils.encode_cell({ r: i, c: dateColIndex });
+      if (ws[cellRef]) {
+        ws[cellRef].t = 's'; // string type
+      }
+    }
+  }
+
+  // Đặt độ rộng cho các cột khác
+  columnsToShow.forEach((col, index) => {
+    if (index !== dateColIndex) {
+      ws['!cols'] = ws['!cols'] || [];
+      ws['!cols'][index] = { wch: 20 }; // Độ rộng mặc định
+    }
   });
 
-  XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
-  XLSX.writeFile(wb, "AppSheet_Data.xlsx");
-});
+  // Thêm sheet vào workbook và xuất file
+  XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu hóa đơn");
+  
+  // Tạo tên file với ngày hiện tại
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  const fileName = `HoaDon_${dateStr}.xlsx`;
+  
+  XLSX.writeFile(wb, fileName);
+}
 
-loadData();
+// Sự kiện khi trang được tải
+document.addEventListener('DOMContentLoaded', function() {
+  // Gắn sự kiện cho nút tải Excel
+  document.getElementById("downloadBtn").addEventListener("click", exportToExcel);
+  
+  // Tải dữ liệu khi trang được tải
+  loadData();
+});
 </script>
 
 </body>
