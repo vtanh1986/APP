@@ -2,215 +2,205 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>AppSheet API - Lọc ngày (debug)</title>
+  <title>AppSheet API - Chọn cột hiển thị</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
-    #loading { font-size: 14px; color: #555; margin-bottom: 10px; }
-    #error { color: #b00020; margin-top: 6px; }
-    #debug { font-size:12px; color:#666; white-space:pre-wrap; margin-top:10px; }
-    #downloadBtn { margin-top:12px; padding:6px 10px; }
+    #loading { font-size: 18px; color: #555; margin-bottom: 10px; }
+
+    .table-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 20px;
+    }
+
+    #downloadBtn {
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #107C41;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    #downloadBtn:hover { background-color: #0E6633; }
+    #downloadBtn img { width: 18px; height: 18px; }
   </style>
 </head>
+
 <body>
 
-<h2>Hiển thị dữ liệu AppSheet (chọn cột) — bản debug</h2>
+<h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
 
-<div style="margin-bottom: 12px; display:flex; gap:10px; align-items:center;">
+<!-- Bộ lọc ngày -->
+<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
   <label>Từ ngày:</label>
   <input type="date" id="fromDate">
 
   <label>Đến ngày:</label>
   <input type="date" id="toDate">
 
-  <button id="filterBtn" style="padding:6px 12px; cursor:pointer;">Lọc dữ liệu</button>
-  <button id="refreshBtn" style="padding:6px 12px; cursor:pointer;">Tải lại (refresh)</button>
+  <button id="filterBtn" style="padding: 6px 12px; cursor:pointer;">
+    Lọc dữ liệu
+  </button>
 </div>
 
-<div id="loading">Chưa tải.</div>
-<div id="error"></div>
-<div id="debug"></div>
+<div id="loading">Đang tải dữ liệu...</div>
 
-<table id="dataTable" style="display:none;">
-  <thead id="thead"></thead>
-  <tbody id="tbody"></tbody>
-</table>
+<div class="table-container">
+  <div style="flex: 1">
+    <table id="dataTable" style="display:none;">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 
-<button id="downloadBtn" style="display:none;">Tải Excel</button>
+  <button id="downloadBtn" style="display:none;">
+    <img src="https://cdn-icons-png.flaticon.com/512/732/732225.png">
+    Tải Excel
+  </button>
+</div>
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
 <script>
-/*
-  Bản này:
-  - lấy toàn bộ Rows bằng Action Find (không dùng Filter của AppSheet, vì đôi khi ngày là TEXT)
-  - lọc bằng JS dựa trên format dd/mm/yyyy như bạn có
-  - hiển thị lỗi chi tiết (CORS / 401 / JSON) trong #error và console
-*/
+// ==========================
+// 1. TỰ ĐIỀN LẠI INPUT TỪ URL
+// ==========================
+const params = new URLSearchParams(window.location.search);
+if (params.get("from")) document.getElementById("fromDate").value = params.get("from");
+if (params.get("to"))   document.getElementById("toDate").value   = params.get("to");
 
-// Cấu hình
-const APPSHEET_URL = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
-const APPSHEET_KEY = "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr";
-const COLUMNS = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
-// Elements
-const loadingEl = document.getElementById("loading");
-const errorEl = document.getElementById("error");
-const debugEl = document.getElementById("debug");
-const tableEl = document.getElementById("dataTable");
-const theadEl = document.getElementById("thead");
-const tbodyEl = document.getElementById("tbody");
-const downloadBtn = document.getElementById("downloadBtn");
+// ==========================
+// 2. NÚT LỌC → TẠO URL MỚI
+// ==========================
+document.getElementById("filterBtn").addEventListener("click", () => {
+  const from = document.getElementById("fromDate").value;
+  const to   = document.getElementById("toDate").value;
 
-function debugLog(...args) {
-  console.log(...args);
-  debugEl.innerText += args.map(a => (typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a))).join(" ") + "\n";
+  let newUrl = window.location.pathname + "?";
+  let query = [];
+
+  if (from) query.push("from=" + from);
+  if (to)   query.push("to=" + to);
+
+  newUrl += query.join("&");
+
+  window.location.href = newUrl;
+});
+
+
+// ==========================
+// CHUYỂN yyyy-mm-dd → dd/mm/yyyy (để phù hợp AppSheet)
+// ==========================
+function toDDMMYYYY(d) {
+  if (!d) return "";
+  const [y, m, day] = d.split("-");
+  return `${day}/${m}/${y}`;
 }
 
-function showError(msg) {
-  errorEl.innerText = msg;
-  loadingEl.innerText = "Lỗi: " + msg;
-  debugLog("ERROR:", msg);
-}
 
-// chuyển dd/mm/yyyy => Date (local midnight)
-function parseDMYtoDate(dmy) {
-  if (!dmy) return null;
-  const s = String(dmy).trim();
-  if (!s) return null;
-  // nếu đã là YYYY-MM-DD (từ input date) thì new Date trực tiếp
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s + "T00:00:00");
-  // nếu là dd/mm/yyyy
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-    const [day, month, year] = s.split("/").map(x => parseInt(x,10));
-    return new Date(year, month-1, day, 0,0,0);
-  }
-  // fallback: thử parse chung
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
+// ==========================
+// 4. LOAD DỮ LIỆU APPSHEET FIND API
+// ==========================
+async function loadData() {
 
-// tạo bảng từ rows đã lọc
-function renderTable(rows) {
-  theadEl.innerHTML = "<tr>" + COLUMNS.map(c => `<th>${c}</th>`).join("") + "</tr>";
-  tbodyEl.innerHTML = rows.map(r =>
-    "<tr>" + COLUMNS.map(c => `<td>${(r[c] !== undefined && r[c] !== null) ? String(r[c]) : ""}</td>`).join("") + "</tr>"
-  ).join("");
-  tableEl.style.display = rows.length ? "" : "none";
-  downloadBtn.style.display = rows.length ? "inline-block" : "none";
-}
+  let from = new URLSearchParams(window.location.search).get("from");
+  let to   = new URLSearchParams(window.location.search).get("to");
 
-// tải dữ liệu và lọc ở client
-async function fetchAndFilter() {
-  errorEl.innerText = "";
-  debugEl.innerText = "";
-  loadingEl.innerText = "Đang gọi AppSheet API... (xem console nếu chậm)";
-  debugLog("POST", APPSHEET_URL, "Body:", { Action: "Find" });
+  let fromTxt = from ? toDDMMYYYY(from) : "";
+  let toTxt   = to ? toDDMMYYYY(to) : "";
+
+  // QUAN TRỌNG → AppSheet column type TEXT nên phải filter theo TEXT
+  let filter = "";
+  if (fromTxt) filter += `[NGAY XUAT HOA DON] >= "${fromTxt}"`;
+  if (fromTxt && toTxt) filter += " AND ";
+  if (toTxt) filter += `[NGAY XUAT HOA DON] <= "${toTxt}"`;
+
+  console.log("Filter gửi API:", filter);
+
+  const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
+  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
+  const body = { Action: "Find", Filter: filter };
 
   try {
-    const resp = await fetch(APPSHEET_URL, {
+    const res = await fetch(url, {
       method: "POST",
       headers: {
-        "ApplicationAccessKey": APPSHEET_KEY,
+        "ApplicationAccessKey": "V2-NnuYn-V6SPQ-VURvK-8meBu-hOmsl-3Ux7X-YlOzG-iMEOr",
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ Action: "Find" })
+      body: JSON.stringify(body)
     });
 
-    debugLog("HTTP status:", resp.status, resp.statusText);
+    const raw = await res.json();
+    const data = raw.Rows ?? raw;
 
-    if (!resp.ok) {
-      // lỗi HTTP (401/403/CORS...), đọc body nếu có
-      let txt = await resp.text().catch(()=>"");
-      showError(`HTTP ${resp.status} ${resp.statusText}. Body: ${txt}`);
-      // Nếu là CORS, thường resp.status = 0 and fetch throws — but some browsers show 0
-      return null;
+    console.log("Một dòng mẫu API:", data[0]);
+
+    document.getElementById("loading").style.display = "none";
+
+    if (!data || data.length === 0) {
+      document.getElementById("loading").innerText = "Không có dữ liệu!";
+      return;
     }
 
-    // parse JSON
-    let raw;
-    try {
-      raw = await resp.json();
-    } catch (e) {
-      const text = await resp.text().catch(()=>"<no body>");
-      showError("Không thể parse JSON từ API. Body:\n" + text);
-      return null;
-    }
+    document.getElementById("dataTable").style.display = "";
+    document.getElementById("downloadBtn").style.display = "inline-flex";
 
-    debugLog("Raw response:", raw);
+    document.getElementById("thead").innerHTML =
+      "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
 
-    // AppSheet trả { Rows: [...] } hoặc mảng trực tiếp
-    const rows = raw && Array.isArray(raw.Rows) ? raw.Rows : (Array.isArray(raw) ? raw : (raw.Rows ?? []));
-    debugLog("Số dòng trả về:", rows.length);
-
-    return rows;
+    document.getElementById("tbody").innerHTML =
+      data.map(row =>
+        "<tr>" +
+          columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
+        "</tr>"
+      ).join("");
 
   } catch (err) {
-    // lỗi mạng hoặc CORS blocked (TypeError)
-    debugLog("Fetch exception:", err);
-    // Nếu CORS blocked, thông thường là TypeError với message 'Failed to fetch'
-    showError("Lỗi fetch (mạng hoặc CORS). Kiểm tra console (F12). Chi tiết: " + (err && err.message ? err.message : String(err)));
-    return null;
+    console.error("Lỗi fetch:", err);
+    document.getElementById("loading").innerText = "Lỗi tải dữ liệu!";
   }
 }
 
-async function loadAndShow() {
-  const fromInput = document.getElementById("fromDate").value;
-  const toInput   = document.getElementById("toDate").value;
 
-  const from = fromInput ? new Date(fromInput + "T00:00:00") : null;
-  const to   = toInput ? new Date(toInput + "T23:59:59") : null;
+// ==========================
+// 5. EXPORT EXCEL
+// ==========================
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  const table = document.getElementById("dataTable");
+  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
-  debugLog("Filter client from:", fromInput, "to:", toInput);
-  if (from) debugLog("-> parsed from:", from.toISOString());
-  if (to)   debugLog("-> parsed to:", to.toISOString());
-
-  const rows = await fetchAndFilter();
-  if (!rows) return;
-
-  // Lọc bằng JS: NGAY XUAT HOA DON ở dạng dd/mm/yyyy (theo hình bạn gửi)
-  const filtered = rows.filter(r => {
-    const rawDate = r["NGAY XUAT HOA DON"];
-    const d = parseDMYtoDate(rawDate);
-    if (!d) return false;
-    if (from && d < from) return false;
-    if (to && d > to) return false;
-    return true;
+  const dataRows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+    const tds = Array.from(tr.children);
+    return tds.map((td, i) => td.innerText.trim());
   });
 
-  loadingEl.innerText = `Hoàn tất. Tổng trả về: ${rows.length}. Sau lọc: ${filtered.length}.`;
-  renderTable(filtered);
-}
-
-// EXPORT EXCEL
-downloadBtn.addEventListener("click", () => {
-  const rows = Array.from(tbodyEl.querySelectorAll("tr")).map(tr =>
-    Array.from(tr.children).map(td => td.innerText.trim())
-  );
-  const wsData = [COLUMNS, ...rows];
   const wb = XLSX.utils.book_new();
+  const wsData = [columnsToShow, ...dataRows];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Giữ nguyên số hóa đơn dạng text (không tự đổi kiểu)
+  const soHDIndex = columnsToShow.indexOf("SO HOA DON");
+  dataRows.forEach((_, rowIndex) => {
+    const cellRef = XLSX.utils.encode_cell({ r: rowIndex + 1, c: soHDIndex });
+    if(ws[cellRef]) ws[cellRef].t = "s";
+  });
+
   XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu");
   XLSX.writeFile(wb, "AppSheet_Data.xlsx");
 });
 
-// Nút
-document.getElementById("filterBtn").addEventListener("click", loadAndShow);
-document.getElementById("refreshBtn").addEventListener("click", loadAndShow);
-
-// Tự load lần đầu nếu url có from/to (giống trước)
-(function autoLoadFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("from")) document.getElementById("fromDate").value = params.get("from");
-  if (params.get("to"))   document.getElementById("toDate").value   = params.get("to");
-  // nếu có from hoặc to thì tự gọi
-  if (params.get("from") || params.get("to")) {
-    loadAndShow();
-  } else {
-    loadingEl.innerText = "Nhập từ/ngày rồi nhấn 'Lọc dữ liệu' hoặc mở console để debug.";
-  }
-})();
+loadData();
 </script>
 
 </body>
