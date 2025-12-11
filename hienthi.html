@@ -5,11 +5,20 @@
   <title>AppSheet API - Chọn cột hiển thị</title>
   <style>
     body { font-family: Arial; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
-    #loading { font-size: 18px; color: #555; }
-    #downloadBtn { margin-top: 10px; padding: 8px 12px; font-size: 14px; cursor: pointer; }
+    #loading { font-size: 18px; color: #555; margin-bottom: 10px; }
+
+    /* Container cho bảng và nút */
+    .table-container {
+      display: flex;
+      justify-content: space-between; /* nút sang phải */
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    #downloadBtn { padding: 8px 12px; font-size: 14px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -18,14 +27,16 @@
 
 <div id="loading">Đang tải dữ liệu...</div>
 
-<table id="dataTable" style="display:none;">
-  <thead id="thead"></thead>
-  <tbody id="tbody"></tbody>
-</table>
+<div class="table-container">
+  <div style="flex:1">
+    <table id="dataTable" style="display:none;">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <button id="downloadBtn" style="display:none;">Tải Excel</button>
+</div>
 
-<button id="downloadBtn" style="display:none;">Tải Excel</button>
-
-<!-- Thư viện SheetJS để xuất Excel -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
@@ -34,10 +45,7 @@ async function loadData() {
 
   const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
-  const body = {
-    "Action": "Find",
-    "Filter": ""
-  };
+  const body = { "Action": "Find", "Filter": "" };
 
   try {
     const res = await fetch(url, {
@@ -49,13 +57,8 @@ async function loadData() {
       body: JSON.stringify(body)
     });
 
-    console.log("Status:", res.status);
-
     const raw = await res.json();
-    console.log("Raw:", raw);
-
     const data = raw.Rows ?? raw;
-    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
@@ -83,7 +86,6 @@ async function loadData() {
   }
 }
 
-// Tải Excel
 document.getElementById("downloadBtn").addEventListener("click", () => {
   const table = document.getElementById("dataTable");
   const wb = XLSX.utils.table_to_book(table, { sheet: "Dữ liệu" });
