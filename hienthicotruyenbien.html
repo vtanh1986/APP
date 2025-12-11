@@ -57,12 +57,21 @@
       margin-top: 10px;
       display: none;
     }
+    
+    .filter-info {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
 <h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
 
+<div id="filterInfo" class="filter-info" style="display:none;"></div>
 <div id="loading">Đang tải dữ liệu...</div>
 <div id="errorMessage" class="error"></div>
 <div id="infoMessage" class="info"></div>
@@ -84,6 +93,8 @@
 <script>
 // Các cột cần hiển thị
 const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
+let allData = []; // Lưu toàn bộ dữ liệu
+let filteredData = []; // Lưu dữ liệu đã lọc
 
 // Lấy query param từ URL
 function getQueryParams() {
@@ -94,57 +105,76 @@ function getQueryParams() {
   };
 }
 
-// Hàm chuyển đổi ngày từ dd/mm/yyyy sang yyyy-mm-dd
-function convertDateToISO(dateStr) {
-  if (!dateStr || typeof dateStr !== 'string') return null;
+// Chuyển ngày dd/mm/yyyy thành đối tượng Date để so sánh
+function parseDateFromText(dateText) {
+  if (!dateText || typeof dateText !== 'string') return null;
   
-  const trimmed = dateStr.trim();
-  
-  // Xử lý định dạng dd/mm/yyyy
+  const trimmed = dateText.trim();
   const parts = trimmed.split('/');
+  
   if (parts.length === 3) {
-    const day = parts[0].padStart(2, '0');
-    const month = parts[1].padStart(2, '0');
-    const year = parts[2];
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Tháng trong JS là 0-11
+    const year = parseInt(parts[2], 10);
     
     // Kiểm tra tính hợp lệ
-    if (day.length === 2 && month.length === 2 && year.length === 4) {
-      return `${year}-${month}-${day}`;
+    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+      return new Date(year, month, day);
     }
-  }
-  
-  // Nếu đã là yyyy-mm-dd thì giữ nguyên
-  const isoPattern = /^\d{4}-\d{2}-\d{2}$/;
-  if (isoPattern.test(trimmed)) {
-    return trimmed;
   }
   
   return null;
 }
 
-// Hàm tạo filter cho AppSheet API
-function createAppSheetFilter(from, to) {
-  const fromISO = convertDateToISO(from);
-  const toISO = convertDateToISO(to);
+// Lọc dữ liệu theo ngày (phía client)
+function filterDataByDate(data, fromDate, toDate) {
+  if (!fromDate || !toDate) return data;
   
-  if (!fromISO || !toISO) {
-    console.warn("Không thể chuyển đổi ngày:", from, to);
-    return "";
-  }
+  const from = parseDateFromText(fromDate);
+  const to = parseDateFromText(toDate);
   
-  // AppSheet yêu cầu format: AND([NGAY XUAT HOA DON] >= DATE('yyyy-mm-dd'), [NGAY XUAT HOA DON] <= DATE('yyyy-mm-dd'))
-  return `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
+  if (!from || !to) return data;
+  
+  // Thêm 1 ngày vào toDate để bao gồm cả ngày cuối cùng
+  const toEndOfDay = new Date(to);
+  toEndOfDay.setHours(23, 59, 59, 999);
+  
+  return data.filter(item => {
+    const itemDateText = item["NGAY XUAT HOA DON"];
+    if (!itemDateText) return false;
+    
+    const itemDate = parseDateFromText(itemDateText);
+    if (!itemDate) return false;
+    
+    // Kiểm tra xem itemDate có nằm trong khoảng không
+    return itemDate >= from && itemDate <= toEndOfDay;
+  });
 }
 
 // Hàm xử lý và hiển thị dữ liệu
 function displayData(data) {
   if (!data || data.length === 0) {
-    document.getElementById("loading").innerText = "Không có dữ liệu!";
+    document.getElementById("infoMessage").innerText = "Không có dữ liệu!";
+    document.getElementById("infoMessage").style.display = "block";
+    document.getElementById("dataTable").style.display = "none";
+    document.getElementById("downloadBtn").style.display = "none";
     return;
   }
 
   // Hiển thị số lượng bản ghi
-  document.getElementById("infoMessage").innerText = `Tìm thấy ${data.length} bản ghi`;
+  const params = getQueryParams();
+  let filterText = `Tổng: ${allData.length} bản ghi`;
+  
+  if (params.from && params.to) {
+    filterText += ` | Đã lọc: ${data.length} bản ghi (${params.from} đến ${params.to})`;
+    document.getElementById("filterInfo").innerHTML = `
+      <strong>Bộ lọc:</strong> Từ ${params.from} đến ${params.to}<br>
+      <strong>Kết quả:</strong> ${data.length} bản ghi (trên tổng số ${allData.length})
+    `;
+    document.getElementById("filterInfo").style.display = "block";
+  }
+  
+  document.getElementById("infoMessage").innerText = filterText;
   document.getElementById("infoMessage").style.display = "block";
 
   // Hiển thị bảng
@@ -167,37 +197,24 @@ function displayData(data) {
   document.getElementById("tbody").innerHTML = bodyHTML;
 }
 
-// Hàm lấy dữ liệu từ AppSheet API
+// Hàm lấy dữ liệu từ AppSheet API (lấy tất cả, không filter)
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
+  // Lấy tham số từ URL
   const params = getQueryParams();
   
-  // Kiểm tra tham số URL
-  if (!params.from || !params.to) {
-    document.getElementById("loading").innerText = "Vui lòng cung cấp tham số from và to trong URL (ví dụ: ?from=01/01/2024&to=31/12/2024)";
-    return;
-  }
-
-  // Tạo filter
-  const filter = createAppSheetFilter(params.from, params.to);
-  
-  // Kiểm tra xem filter có hợp lệ không
-  if (!filter) {
-    document.getElementById("errorMessage").innerText = "Định dạng ngày không hợp lệ. Vui lòng sử dụng định dạng dd/mm/yyyy";
-    document.getElementById("errorMessage").style.display = "block";
-    document.getElementById("loading").style.display = "none";
-    return;
-  }
-
-  // Tạo body request
+  // Tạo body request - KHÔNG dùng filter, lấy tất cả
   const body = {
     Action: "Find",
-    Filter: filter,
-    Select: columnsToShow.map(col => `[${col}]`)
+    Select: columnsToShow.map(col => `[${col}]`),
+    // Lấy tối đa 5000 bản ghi (có thể điều chỉnh)
+    "MaxRecords": 5000
   };
 
   try {
+    document.getElementById("loading").innerText = "Đang tải dữ liệu từ AppSheet...";
+    
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -212,10 +229,27 @@ async function loadData() {
     }
 
     const result = await response.json();
-    const data = result.Rows || result || [];
+    allData = result.Rows || result || [];
     
     document.getElementById("loading").style.display = "none";
-    displayData(data);
+    
+    if (allData.length === 0) {
+      document.getElementById("infoMessage").innerText = "Không có dữ liệu trong AppSheet!";
+      document.getElementById("infoMessage").style.display = "block";
+      return;
+    }
+    
+    // Lọc dữ liệu nếu có tham số from/to
+    if (params.from && params.to) {
+      document.getElementById("loading").innerText = `Đang lọc dữ liệu (${params.from} - ${params.to})...`;
+      filteredData = filterDataByDate(allData, params.from, params.to);
+      document.getElementById("loading").style.display = "none";
+      displayData(filteredData);
+    } else {
+      // Hiển thị tất cả nếu không có filter
+      filteredData = allData;
+      displayData(allData);
+    }
 
   } catch (error) {
     console.error("Lỗi khi tải dữ liệu:", error);
@@ -227,51 +261,45 @@ async function loadData() {
 
 // Hàm xuất dữ liệu ra Excel
 function exportToExcel() {
-  const table = document.getElementById("dataTable");
+  const dataToExport = filteredData.length > 0 ? filteredData : allData;
   
-  // Lấy dữ liệu từ table
-  const dataRows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-    const tds = Array.from(tr.children);
-    return tds.map(td => td.innerText.trim());
+  if (!dataToExport || dataToExport.length === 0) {
+    alert("Không có dữ liệu để xuất!");
+    return;
+  }
+
+  // Chuẩn bị dữ liệu cho Excel
+  const excelData = dataToExport.map(row => {
+    return columnsToShow.map(col => row[col] || "");
   });
+
+  // Thêm header
+  excelData.unshift(columnsToShow);
 
   // Tạo workbook
   const wb = XLSX.utils.book_new();
-  const wsData = [columnsToShow, ...dataRows];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const ws = XLSX.utils.aoa_to_sheet(excelData);
 
-  // Xử lý cột ngày để giữ định dạng dd/mm/yyyy
-  const dateColIndex = columnsToShow.indexOf("NGAY XUAT HOA DON");
-  if (dateColIndex >= 0) {
-    // Đặt độ rộng cột
-    ws['!cols'] = ws['!cols'] || [];
-    ws['!cols'][dateColIndex] = { wch: 15 }; // Độ rộng cột
-    
-    // Ép kiểu text cho tất cả ô trong cột ngày
-    for (let i = 1; i <= dataRows.length; i++) {
-      const cellRef = XLSX.utils.encode_cell({ r: i, c: dateColIndex });
-      if (ws[cellRef]) {
-        ws[cellRef].t = 's'; // string type
-      }
-    }
+  // Đặt độ rộng cột
+  ws['!cols'] = columnsToShow.map(() => ({ wch: 20 }));
+
+  // Tên sheet
+  const params = getQueryParams();
+  let sheetName = "HoaDon";
+  if (params.from && params.to) {
+    sheetName = `HoaDon_${params.from.replace(/\//g, '-')}_${params.to.replace(/\//g, '-')}`;
   }
 
-  // Đặt độ rộng cho các cột khác
-  columnsToShow.forEach((col, index) => {
-    if (index !== dateColIndex) {
-      ws['!cols'] = ws['!cols'] || [];
-      ws['!cols'][index] = { wch: 20 }; // Độ rộng mặc định
-    }
-  });
+  // Thêm sheet vào workbook
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-  // Thêm sheet vào workbook và xuất file
-  XLSX.utils.book_append_sheet(wb, ws, "Dữ liệu hóa đơn");
-  
-  // Tạo tên file với ngày hiện tại
-  const today = new Date();
-  const dateStr = today.toISOString().split('T')[0];
-  const fileName = `HoaDon_${dateStr}.xlsx`;
-  
+  // Tạo tên file
+  let fileName = "HoaDon.xlsx";
+  if (params.from && params.to) {
+    fileName = `HoaDon_${params.from.replace(/\//g, '-')}_den_${params.to.replace(/\//g, '-')}.xlsx`;
+  }
+
+  // Xuất file
   XLSX.writeFile(wb, fileName);
 }
 
