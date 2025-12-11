@@ -9,6 +9,7 @@
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
     #loading { font-size: 18px; color: #555; }
+    #downloadBtn { margin-top: 10px; padding: 8px 12px; font-size: 14px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -22,37 +23,20 @@
   <tbody id="tbody"></tbody>
 </table>
 
+<button id="downloadBtn" style="display:none;">Tải Excel</button>
+
+<!-- Thư viện SheetJS để xuất Excel -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
 <script>
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
-  const params = new URLSearchParams(window.location.search);
-
-  // Lấy biến từ URL
-  const sohd = params.get("sohd");
-  const kyhieu = params.get("kyhieu");
-  const ngay = params.get("ngay");
-  const min = params.get("min");
-  const max = params.get("max");
-
-  // Mảng điều kiện filter
-  let cond = [];
-
-  if (sohd)   cond.push(`[SO HOA DON] = "${sohd}"`);
-  if (kyhieu) cond.push(`[KY HIEU HD] = "${kyhieu}"`);
-  if (ngay)   cond.push(`[NGAY XUAT HOA DON] = DATE("${ngay}")`);
-
-  if (min)    cond.push(`[SO TIEN] >= ${min}`);
-  if (max)    cond.push(`[SO TIEN] <= ${max}`);
-
-  // Nếu không có biến => filter rỗng
-  const filter = cond.length ? cond.join(" AND ") : "";
-
-  console.log("Filter gửi lên AppSheet:", filter);
+  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
   const body = {
     "Action": "Find",
-    "Filter": filter
+    "Filter": ""
   };
 
   try {
@@ -65,20 +49,23 @@ async function loadData() {
       body: JSON.stringify(body)
     });
 
+    console.log("Status:", res.status);
+
     const raw = await res.json();
+    console.log("Raw:", raw);
 
     const data = raw.Rows ?? raw;
+    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
     if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu phù hợp!";
+      document.getElementById("loading").innerText = "Không có dữ liệu!";
       return;
     }
 
     document.getElementById("dataTable").style.display = "";
-
-    const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
+    document.getElementById("downloadBtn").style.display = "inline-block";
 
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
@@ -90,16 +77,21 @@ async function loadData() {
         "</tr>"
       ).join("");
 
-  } catch(err) {
-    console.error(err);
+  } catch (err) {
+    console.error("Lỗi fetch:", err);
+    document.getElementById("loading").innerText = "Lỗi tải dữ liệu!";
   }
 }
 
+// Tải Excel
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  const table = document.getElementById("dataTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Dữ liệu" });
+  XLSX.writeFile(wb, "AppSheet_Data.xlsx");
+});
+
 loadData();
-
 </script>
-
-
 
 </body>
 </html>
