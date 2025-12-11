@@ -26,12 +26,34 @@
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
-  const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
+  const params = new URLSearchParams(window.location.search);
 
-const body = {
-  "Action": "Find",
-  "Filter": ""
-};
+  // Lấy biến từ URL
+  const sohd = params.get("sohd");
+  const kyhieu = params.get("kyhieu");
+  const ngay = params.get("ngay");
+  const min = params.get("min");
+  const max = params.get("max");
+
+  // Mảng điều kiện filter
+  let cond = [];
+
+  if (sohd)   cond.push(`[SO HOA DON] = "${sohd}"`);
+  if (kyhieu) cond.push(`[KY HIEU HD] = "${kyhieu}"`);
+  if (ngay)   cond.push(`[NGAY XUAT HOA DON] = DATE("${ngay}")`);
+
+  if (min)    cond.push(`[SO TIEN] >= ${min}`);
+  if (max)    cond.push(`[SO TIEN] <= ${max}`);
+
+  // Nếu không có biến => filter rỗng
+  const filter = cond.length ? cond.join(" AND ") : "";
+
+  console.log("Filter gửi lên AppSheet:", filter);
+
+  const body = {
+    "Action": "Find",
+    "Filter": filter
+  };
 
   try {
     const res = await fetch(url, {
@@ -43,23 +65,20 @@ const body = {
       body: JSON.stringify(body)
     });
 
-    console.log("Status:", res.status);
-
     const raw = await res.json();
-    console.log("Raw:", raw);
 
-    // FIX QUAN TRỌNG
     const data = raw.Rows ?? raw;
-    console.log("Data dùng để hiển thị:", data);
 
     document.getElementById("loading").style.display = "none";
 
     if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu!";
+      document.getElementById("loading").innerText = "Không có dữ liệu phù hợp!";
       return;
     }
 
     document.getElementById("dataTable").style.display = "";
+
+    const columnsToShow = ["KY HIEU HD", "SO HOA DON", "NGAY XUAT HOA DON"];
 
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
@@ -71,12 +90,13 @@ const body = {
         "</tr>"
       ).join("");
 
-  } catch (err) {
-    console.error("Lỗi fetch:", err);
+  } catch(err) {
+    console.error(err);
   }
 }
 
 loadData();
+
 </script>
 
 
