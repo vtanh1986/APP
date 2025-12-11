@@ -56,6 +56,9 @@ function buildFilterFromURL() {
   const conditions = [];
   
   params.forEach((value, key) => {
+    // Chuyển key thành chữ HOA để khớp với tên cột AppSheet
+    key = key.toUpperCase();
+    
     // Xử lý các toán tử so sánh
     let operator = "=";
     let column = key;
