@@ -29,6 +29,7 @@
       border: none;
       border-radius: 4px;
     }
+
     #downloadBtn:hover { background-color: #0E6633; }
     #downloadBtn img { width: 18px; height: 18px; }
   </style>
@@ -69,7 +70,6 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-
 <script>
 // ==========================
 // 1. TỰ ĐIỀN LẠI INPUT TỪ URL
@@ -103,7 +103,6 @@ document.getElementById("filterBtn").addEventListener("click", () => {
 // ==========================
 function parseDate(d) {
   if (!d) return null;
-
   d = d.trim();
   if (d.includes("/")) {
     const [day, month, year] = d.split("/");
@@ -114,7 +113,7 @@ function parseDate(d) {
 
 
 // ==========================
-// 4. LOAD DỮ LIỆU APPSEET FIND API
+// 4. LOAD DỮ LIỆU APPSHEET FIND API
 // ==========================
 async function loadData() {
 
@@ -162,7 +161,7 @@ async function loadData() {
       data.map(row =>
         "<tr>" +
           columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>`
+        "</tr>"
       ).join("");
 
   } catch (err) {
