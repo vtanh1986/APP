@@ -72,27 +72,32 @@ function getQueryParams() {
   };
 }
 
-// Chuyển dd/mm/yyyy -> yyyy-mm-dd
-function convertToISO(dateStr) {
+// Chuyển dd/mm/yyyy -> Date object
+function parseDate(dateStr) {
   const parts = dateStr.split("/");
   if (parts.length !== 3) return null;
-  return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+  // dd/mm/yyyy -> yyyy, mm-1, dd
+  return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+}
+
+// So sánh ngày
+function isInDateRange(dateStr, fromStr, toStr) {
+  if (!fromStr || !toStr || !dateStr) return true;
+  
+  const date = parseDate(dateStr);
+  const from = parseDate(fromStr);
+  const to = parseDate(toStr);
+  
+  if (!date || !from || !to) return true;
+  
+  return date >= from && date <= to;
 }
 
 // Load dữ liệu từ AppSheet
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/09960054-a6f1-4b69-a252-b813ca3d8b3c/tables/THANH%20TOAN/find";
 
-  // Tạo filter từ URL
-  const params = getQueryParams();
-  let filter = "";
-  if (params.from && params.to) {
-    const fromISO = convertToISO(params.from);
-    const toISO = convertToISO(params.to);
-    filter = `AND([NGAY XUAT HOA DON] >= DATE('${fromISO}'), [NGAY XUAT HOA DON] <= DATE('${toISO}'))`;
-  }
-
-  const body = { Action: "Find", Filter: filter };
+  const body = { Action: "Find" };
 
   try {
     const res = await fetch(url, {
@@ -105,12 +110,22 @@ async function loadData() {
     });
 
     const raw = await res.json();
-    const data = raw.Rows ?? raw;
+    let data = raw.Rows ?? raw;
+
+    // Lọc theo ngày từ URL params
+    const params = getQueryParams();
+    if (params.from && params.to) {
+      data = data.filter(row => 
+        isInDateRange(row["NGAY XUAT HOA DON"], params.from, params.to)
+      );
+      document.getElementById("loading").innerText = `Đang lọc từ ${params.from} đến ${params.to}...`;
+    }
 
     document.getElementById("loading").style.display = "none";
 
     if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu!";
+      document.getElementById("loading").style.display = "";
+      document.getElementById("loading").innerText = "Không có dữ liệu trong khoảng thời gian này!";
       return;
     }
 
