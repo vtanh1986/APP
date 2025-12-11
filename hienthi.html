@@ -24,23 +24,14 @@
 
 <script>
 async function loadData() {
-
-  // ⭐ LẤY THAM SỐ TỪ URL: ?nvkd=06440
-  const params = new URLSearchParams(window.location.search);
-  const nvkd = params.get("nvkd");  
-  console.log("NVKD trên URL:", nvkd);
-
-  // ⭐ FILTER TỰ ĐỘNG NẾU CÓ nvkd
-  const filterCondition = nvkd ? `([NVKD] = "${nvkd}")` : "";
-
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
 
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
 
-  const body = {
-    "Action": "Find",
-    "Filter": filterCondition  // ⭐ THÊM FILTER VÀO ĐÚNG CHỖ
-  };
+const body = {
+  "Action": "Find",
+  "Filter": ""
+};
 
   try {
     const res = await fetch(url, {
@@ -54,26 +45,10 @@ async function loadData() {
 
     console.log("Status:", res.status);
 
-    const text = await res.text();
-    console.log("Raw text:", text);
-
-    if (!text) {
-      document.getElementById("loading").innerText = "API trả về rỗng!";
-      return;
-    }
-
-    let raw;
-    try {
-      raw = JSON.parse(text);
-    } catch (e) {
-      console.error("JSON parse lỗi:", e);
-      document.getElementById("loading").innerText = "Lỗi JSON!";
-      return;
-    }
-
+    const raw = await res.json();
     console.log("Raw:", raw);
 
-    // ⭐ AppSheet Find trả về MẢNG ROWS trực tiếp
+    // FIX QUAN TRỌNG
     const data = raw.Rows ?? raw;
     console.log("Data dùng để hiển thị:", data);
 
@@ -93,7 +68,7 @@ async function loadData() {
       data.map(row =>
         "<tr>" +
           columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>`
+        "</tr>"
       ).join("");
 
   } catch (err) {
@@ -103,6 +78,8 @@ async function loadData() {
 
 loadData();
 </script>
+
+
 
 </body>
 </html>
