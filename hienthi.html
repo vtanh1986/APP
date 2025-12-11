@@ -31,15 +31,16 @@ async function loadData() {
   // Thay bằng tên cột trong bảng AppSheet của bạn
   
   const body = {
-    "Action": "Find",
-    "Rows": [{ "Filter": "" }] // Lấy toàn bộ dữ liệu
-  };
+  "Action": "Find",
+  "Rows": [
+    { "Filter": "" }
+  ]
+};
 
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM
-",
+      "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM",
       "Content-Type": "application/json"
     },
     body: JSON.stringify(body)
