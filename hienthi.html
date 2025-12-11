@@ -26,52 +26,60 @@
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC SR/find";
 
-  // ⚡⚡⚡ CHỈNH CỘT MUỐN HIỂN THỊ TẠI ĐÂY ⚡⚡⚡
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];  
-  // Thay bằng tên cột trong bảng AppSheet của bạn
-  
+
   const body = {
-  "Action": "Find",
-  "Rows": [
-    { "Filter": "" }
-  ]
-};
+    "Action": "Find",
+    "Rows": [
+      { "Filter": "" }
+    ]
+  };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(body)
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
 
-  const data = await res.json();
+    console.log("Status:", res.status);
 
-  document.getElementById("loading").style.display = "none";
+    const data = await res.json();
+    console.log("Data:", data);
 
-  if (!data || data.length === 0) {
-    document.getElementById("loading").innerText = "Không có dữ liệu!";
-    return;
+    document.getElementById("loading").style.display = "none";
+
+    if (!data || data.length === 0) {
+      document.getElementById("loading").innerText = "Không có dữ liệu!";
+      return;
+    }
+
+    document.getElementById("dataTable").style.display = "";
+
+    // Header
+    document.getElementById("thead").innerHTML =
+      "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
+
+    // Body
+    document.getElementById("tbody").innerHTML =
+      data.map(row =>
+        "<tr>" +
+          columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
+        "</tr>"
+      ).join("");
+
+  } catch (e) {
+    console.error("Fetch error:", e);
+    document.getElementById("loading").innerText = "Lỗi kết nối API!";
   }
-
-  document.getElementById("dataTable").style.display = "";
-
-  // === TẠO HEADER CHỈ CÁC CỘT CHỌN ===
-  document.getElementById("thead").innerHTML =
-    "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
-
-  // === TẠO ROW CHỈ CÁC CỘT CHỌN ===
-  document.getElementById("tbody").innerHTML =
-    data.map(row =>
-      "<tr>" +
-        columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-      "</tr>"
-    ).join("");
 }
 
 loadData();
 </script>
+
 
 </body>
 </html>
