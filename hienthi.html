@@ -5,34 +5,104 @@
   <title>AppSheet API - Chọn cột hiển thị</title>
   <style>
     body { font-family: Arial; padding: 20px; }
+    .info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    .info h3 { margin-top: 0; color: #1976d2; }
+    .info code { background: #fff; padding: 2px 6px; border-radius: 3px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #f0f0f0; }
     #loading { font-size: 18px; color: #555; }
+    .filter-info { margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; }
   </style>
 </head>
 <body>
+<h2>Hiển thị dữ liệu AppSheet (lọc qua URL)</h2>
 
-<h2>Hiển thị dữ liệu AppSheet (chọn cột)</h2>
+<div class="info">
+  <h3>📝 Hướng dẫn sử dụng</h3>
+  <p><strong>Cách truyền điều kiện lọc qua URL:</strong></p>
+  <ul>
+    <li><strong>1 điều kiện:</strong><br>
+      <code>?NGAY=2024-01-15</code><br>
+      <code>?NVKD=NV001</code>
+    </li>
+    <li><strong>Nhiều điều kiện (AND):</strong><br>
+      <code>?NGAY=2024-01-15&NVKD=NV001</code><br>
+      <code>?NVKD=NV001&TEN_NVKD=Nguyen Van A</code>
+    </li>
+    <li><strong>So sánh:</strong><br>
+      <code>?NGAY_gt=2024-01-01</code> (lớn hơn)<br>
+      <code>?NGAY_lt=2024-12-31</code> (nhỏ hơn)<br>
+      <code>?NGAY_gte=2024-01-01&NGAY_lte=2024-12-31</code> (từ...đến...)
+    </li>
+  </ul>
+  <p><strong>Các toán tử hỗ trợ:</strong> <code>_eq</code> (bằng), <code>_gt</code> (lớn hơn), <code>_gte</code> (lớn hơn hoặc bằng), <code>_lt</code> (nhỏ hơn), <code>_lte</code> (nhỏ hơn hoặc bằng)</p>
+</div>
+
+<div class="filter-info" id="filterInfo">
+  <strong>Điều kiện lọc hiện tại:</strong> <span id="currentFilter">Không có</span>
+</div>
 
 <div id="loading">Đang tải dữ liệu...</div>
-
 <table id="dataTable" style="display:none;">
   <thead id="thead"></thead>
   <tbody id="tbody"></tbody>
 </table>
 
 <script>
+// Hàm đọc URL parameters và tạo filter AppSheet
+function buildFilterFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const conditions = [];
+  
+  params.forEach((value, key) => {
+    // Xử lý các toán tử so sánh
+    let operator = "=";
+    let column = key;
+    
+    if (key.endsWith("_gt")) {
+      operator = ">";
+      column = key.replace("_gt", "");
+    } else if (key.endsWith("_gte")) {
+      operator = ">=";
+      column = key.replace("_gte", "");
+    } else if (key.endsWith("_lt")) {
+      operator = "<";
+      column = key.replace("_lt", "");
+    } else if (key.endsWith("_lte")) {
+      operator = "<=";
+      column = key.replace("_lte", "");
+    } else if (key.endsWith("_eq")) {
+      operator = "=";
+      column = key.replace("_eq", "");
+    }
+    
+    // Thêm dấu ngoặc kép cho giá trị text
+    const formattedValue = isNaN(value) ? `"${value}"` : value;
+    conditions.push(`[${column}]${operator}${formattedValue}`);
+  });
+  
+  // Nối các điều kiện bằng AND
+  return conditions.length > 0 ? conditions.join(" AND ") : "";
+}
+
 async function loadData() {
   const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
-
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
-
-const body = {
-  "Action": "Find",
-  "Filter": ""
-};
-
+  
+  // Tạo filter từ URL
+  const filterExpression = buildFilterFromURL();
+  
+  // Hiển thị filter hiện tại
+  document.getElementById("currentFilter").innerText = filterExpression || "Không có (hiển thị tất cả)";
+  
+  const body = {
+    "Action": "Find",
+    "Filter": filterExpression
+  };
+  
+  console.log("Filter được gửi:", filterExpression);
+  
   try {
     const res = await fetch(url, {
       method: "POST",
@@ -42,44 +112,39 @@ const body = {
       },
       body: JSON.stringify(body)
     });
-
+    
     console.log("Status:", res.status);
-
     const raw = await res.json();
     console.log("Raw:", raw);
-
-    // FIX QUAN TRỌNG
+    
     const data = raw.Rows ?? raw;
     console.log("Data dùng để hiển thị:", data);
-
+    
     document.getElementById("loading").style.display = "none";
-
+    
     if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu!";
+      document.getElementById("loading").innerText = "Không có dữ liệu phù hợp!";
+      document.getElementById("loading").style.display = "block";
       return;
     }
-
+    
     document.getElementById("dataTable").style.display = "";
-
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
-
     document.getElementById("tbody").innerHTML =
       data.map(row =>
         "<tr>" +
           columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
         "</tr>"
       ).join("");
-
   } catch (err) {
     console.error("Lỗi fetch:", err);
+    document.getElementById("loading").innerText = "Lỗi: " + err.message;
+    document.getElementById("loading").style.display = "block";
   }
 }
 
 loadData();
 </script>
-
-
-
 </body>
 </html>
