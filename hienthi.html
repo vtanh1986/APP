@@ -2,152 +2,158 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>AppSheet API - Chọn cột hiển thị</title>
+  <title>AppSheet API - Lọc dữ liệu từ URL</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    .info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-    .info h3 { margin-top: 0; color: #1976d2; }
-    .info code { background: #fff; padding: 2px 6px; border-radius: 3px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    #loading { font-size: 18px; color: #555; }
-    .filter-info { margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #4CAF50; color: white; }
+    #loading { font-size: 18px; color: #666; margin: 20px 0; }
+    .filter-info { background: #e7f3ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
-<h2>Hiển thị dữ liệu AppSheet (lọc qua URL)</h2>
 
-<div class="info">
-  <h3>📝 Hướng dẫn sử dụng</h3>
-  <p><strong>Cách truyền điều kiện lọc qua URL:</strong></p>
-  <ul>
-    <li><strong>1 điều kiện:</strong><br>
-      <code>?NGAY=2024-01-15</code><br>
-      <code>?NVKD=NV001</code>
-    </li>
-    <li><strong>Nhiều điều kiện (AND):</strong><br>
-      <code>?NGAY=2024-01-15&NVKD=NV001</code><br>
-      <code>?NVKD=NV001&TEN_NVKD=Nguyen Van A</code>
-    </li>
-    <li><strong>So sánh:</strong><br>
-      <code>?NGAY_gt=2024-01-01</code> (lớn hơn)<br>
-      <code>?NGAY_lt=2024-12-31</code> (nhỏ hơn)<br>
-      <code>?NGAY_gte=2024-01-01&NGAY_lte=2024-12-31</code> (từ...đến...)
-    </li>
-  </ul>
-  <p><strong>Các toán tử hỗ trợ:</strong> <code>_eq</code> (bằng), <code>_gt</code> (lớn hơn), <code>_gte</code> (lớn hơn hoặc bằng), <code>_lt</code> (nhỏ hơn), <code>_lte</code> (nhỏ hơn hoặc bằng)</p>
+<h2>Dữ liệu trực SR - AppSheet (lọc từ URL)</h2>
+
+<div id="filterInfo" class="filter-info" style="display:none;">
+  <strong>Đang lọc theo:</strong> <span id="filterText"></span>
 </div>
 
-<div class="filter-info" id="filterInfo">
-  <strong>Điều kiện lọc hiện tại:</strong> <span id="currentFilter">Không có</span>
-</div>
+<div>
 
 <div id="loading">Đang tải dữ liệu...</div>
+
 <table id="dataTable" style="display:none;">
   <thead id="thead"></thead>
   <tbody id="tbody"></tbody>
 </table>
 
 <script>
-// Hàm đọc URL parameters và tạo filter AppSheet
-function buildFilterFromURL() {
+// === CẤU HÌNH ===
+const APP_ID = "85c13c41-63da-48b2-9cdd-034cd61f2373";
+const TABLE_NAME = "TRUC SR";
+const ACCESS_KEY = "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM";
+
+// Các cột bạn muốn hiển thị
+const columnsToShow = ["NGAY", "NVKD", "TEN NVKD", "KHACH HANG", "TRUC", "GHI CHU"];
+
+// Hàm lấy tham số từ URL
+function getQueryParams() {
   const params = new URLSearchParams(window.location.search);
-  const conditions = [];
+  const filters = {};
   
-  params.forEach((value, key) => {
-    // Chuyển key thành chữ HOA để khớp với tên cột AppSheet
-    key = key.toUpperCase();
-    
-    // Xử lý các toán tử so sánh
-    let operator = "=";
-    let column = key;
-    
-    if (key.endsWith("_gt")) {
-      operator = ">";
-      column = key.replace("_gt", "");
-    } else if (key.endsWith("_gte")) {
-      operator = ">=";
-      column = key.replace("_gte", "");
-    } else if (key.endsWith("_lt")) {
-      operator = "<";
-      column = key.replace("_lt", "");
-    } else if (key.endsWith("_lte")) {
-      operator = "<=";
-      column = key.replace("_lte", "");
-    } else if (key.endsWith("_eq")) {
-      operator = "=";
-      column = key.replace("_eq", "");
+  for (const [key, value] of params) {
+    if (value !== "") {
+      // Hỗ trợ nhiều giá trị cho cùng 1 key: ?NVKD=A&NVKD=B
+      if (filters[key]) {
+        if (Array.isArray(filters[key])) {
+          filters[key].push(value);
+        } else {
+          filters[key] = [filters[key], value];
+        }
+      } else {
+        filters[key] = value;
+      }
     }
-    
-    // Thêm dấu ngoặc kép cho giá trị text
-    const formattedValue = isNaN(value) ? `"${value}"` : value;
-    conditions.push(`[${column}]${operator}${formattedValue}`);
-  });
-  
-  // Nối các điều kiện bằng AND
+  }
+  return filters;
+}
+
+// Hàm tạo chuỗi Filter cho AppSheet (dùng AND, hỗ trợ IN cho nhiều giá trị)
+function buildFilterExpression(filters) {
+  const conditions = [];
+
+  for (const [column, value] of Object.entries(filters)) {
+    if (Array.isArray(value)) {
+      // Nếu có nhiều giá trị → dùng IN(...)
+      const escapedValues = value.map(v => `"${v.replace(/"/g, '\\"')}"`);
+      conditions.push(`IN([${column}], {${escapedValues.join(", ")}})`);
+    } else {
+      // Giá trị đơn
+      const escaped = value.replace(/"/g, '\\"');
+      conditions.push(`[${column}] = "${escaped}"`);
+    }
+  }
+
   return conditions.length > 0 ? conditions.join(" AND ") : "";
 }
 
 async function loadData() {
-  const url = "https://api.appsheet.com/api/v2/apps/85c13c41-63da-48b2-9cdd-034cd61f2373/tables/TRUC%20SR/find";
-  const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
-  
-  // Tạo filter từ URL
-  const filterExpression = buildFilterFromURL();
-  
-  // Hiển thị filter hiện tại
-  document.getElementById("currentFilter").innerText = filterExpression || "Không có (hiển thị tất cả)";
-  
+  const url = `https://api.appsheet.com/api/v2/apps/${APP_ID}/tables/${encodeURIComponent(TABLE_NAME)}/Find`;
+
+  // Lấy filter từ URL
+  const filters = getQueryParams();
+  const filterExpression = buildFilterExpression(filters);
+
   const body = {
     "Action": "Find",
-    "Filter": filterExpression
+    "Properties": {},
+    "Rows": {}
   };
-  
-  console.log("Filter được gửi:", filterExpression);
-  
+
+  // Nếu có filter thì thêm vào
+  if (filterExpression) {
+    body.Filter = filterExpression;
+    // Hiển thị thông tin lọc
+    document.getElementById("filterInfo").style.display = "block";
+    document.getElementById("filterText").textContent = filterExpression;
+  }
+
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: {
-        "ApplicationAccessKey": "V2-r9P4X-JGq69-InVwk-jHWX0-wlkrU-JS3kU-0qrmK-P1tnM",
+        "ApplicationAccessKey": ACCESS_KEY,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
     });
-    
-    console.log("Status:", res.status);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
     const raw = await res.json();
-    console.log("Raw:", raw);
-    
-    const data = raw.Rows ?? raw;
-    console.log("Data dùng để hiển thị:", data);
-    
+    const data = raw.Rows || [];
+
     document.getElementById("loading").style.display = "none";
-    
-    if (!data || data.length === 0) {
-      document.getElementById("loading").innerText = "Không có dữ liệu phù hợp!";
-      document.getElementById("loading").style.display = "block";
+
+    if (data.length === 0) {
+      document.getElementById("loading").innerText = "Không tìm thấy dữ liệu phù hợp!";
+      document.getElementById("loading").style.color = "red";
       return;
     }
-    
-    document.getElementById("dataTable").style.display = "";
+
+    // Hiển thị bảng
+    document.getElementById("dataTable").style.display = "table";
+
+    // Tạo header
     document.getElementById("thead").innerHTML =
       "<tr>" + columnsToShow.map(c => `<th>${c}</th>`).join("") + "</tr>";
-    document.getElementById("tbody").innerHTML =
-      data.map(row =>
-        "<tr>" +
-          columnsToShow.map(c => `<td>${row[c] ?? ""}</td>`).join("") +
-        "</tr>"
-      ).join("");
+
+    // Tạo body
+    document.getElementById("tbody").innerHTML = data.map(row =>
+      "<tr>" +
+        columnsToShow.map(col => {
+          let val = row[col];
+          if (val === null || val === undefined) val = "";
+          return `<td>${val}</td>`;
+        }).join("") +
+      "</tr>"
+    ).join("");
+
   } catch (err) {
-    console.error("Lỗi fetch:", err);
-    document.getElementById("loading").innerText = "Lỗi: " + err.message;
-    document.getElementById("loading").style.display = "block";
+    console.error("Lỗi:", err);
+    document.getElementById("loading").innerHTML = `Lỗi tải dữ liệu: ${err.message}`;
+    document.getElementById("loading").style.color = "red";
   }
 }
 
+// Chạy khi tải trang
 loadData();
 </script>
+
 </body>
 </html>
