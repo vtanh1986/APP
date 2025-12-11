@@ -28,10 +28,10 @@ async function loadData() {
 
   const columnsToShow = ["NGAY", "NVKD", "TEN NVKD"];
 
-  const body = {
-    "Action": "Find",
-    "Rows": [ { "Filter": "" } ]
-  };
+const body = {
+  "Action": "Find",
+  "Filter": ""
+};
 
   try {
     const res = await fetch(url, {
