@@ -42,6 +42,10 @@
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
     
+    // Biến để kiểm tra đã download chưa
+    let hasDownloaded = false;
+    let downloadTimer = null;
+    
     // Hàm parse date
     function parseDateToStandard(value) {
       if (!value && value !== 0) return null;
@@ -149,12 +153,69 @@
       return csv;
     }
     
+    // Hàm đóng trang
+    function closePage() {
+      // Thử đóng cửa sổ/tab
+      try {
+        if (window.opener) {
+          window.close();
+        } else {
+          // Nếu không phải cửa sổ mở ra, chuyển hướng về trang trống hoặc đóng
+          window.location.href = 'about:blank';
+          setTimeout(() => {
+            if (!window.closed) {
+              window.close();
+            }
+          }, 100);
+        }
+      } catch (e) {
+        console.log('Không thể đóng trang tự động:', e);
+        // Nếu không đóng được, chuyển về trang chính
+        window.location.href = '.';
+      }
+    }
+    
+    // Thử download tự động
+    function tryAutoDownload(link) {
+      try {
+        link.click();
+        hasDownloaded = true;
+        console.log('Đã kích hoạt download tự động');
+        
+        // Chờ 2 giây rồi đóng trang
+        downloadTimer = setTimeout(() => {
+          console.log('Tự động đóng trang sau khi download');
+          closePage();
+        }, 2000);
+        
+        return true;
+      } catch (e) {
+        console.log('Tự động download thất bại:', e);
+        return false;
+      }
+    }
+    
+    // Xử lý khi user click download thủ công
+    function setupManualDownload(link) {
+      link.addEventListener('click', function(e) {
+        hasDownloaded = true;
+        if (downloadTimer) {
+          clearTimeout(downloadTimer);
+        }
+        
+        // Đóng trang sau 1 giây khi user click
+        setTimeout(() => {
+          closePage();
+        }, 1000);
+      });
+    }
+    
     // Chính
     async function main() {
       try {
         const params = new URLSearchParams(location.search);
         const tungay = params.get('tungay');
-        const denngay = params.get('denngay'); // CHÚ Ý: denngay, không phải demgay
+        const denngay = params.get('denngay');
         
         const from = tungay ? parseDateToStandard(tungay) : null;
         const to = denngay ? parseDateToStandard(denngay) : null;
@@ -175,6 +236,11 @@
           document.getElementById('error').classList.remove('hidden');
           document.getElementById('error').textContent = 'Không có dữ liệu trong khoảng thời gian đã chọn.';
           document.getElementById('backLink').classList.remove('hidden');
+          
+          // Đóng trang sau 3 giây nếu không có dữ liệu
+          setTimeout(() => {
+            closePage();
+          }, 3000);
           return;
         }
         
@@ -204,22 +270,29 @@
         downloadLink.download = fileName;
         downloadLink.textContent = `Tải xuống ${fileName} (${filteredData.length} bản ghi)`;
         
+        // Thiết lập xử lý click thủ công
+        setupManualDownload(downloadLink);
+        
         // Hiển thị link
         document.getElementById('message').classList.add('hidden');
         downloadLink.classList.remove('hidden');
-        document.getElementById('backLink').classList.remove('hidden');
         
-        // Thử tự động download
+        // Thử tự động download sau 500ms
         setTimeout(() => {
-          try {
-            downloadLink.click();
+          const autoDownloadSuccess = tryAutoDownload(downloadLink);
+          
+          if (!autoDownloadSuccess) {
+            // Nếu tự động thất bại, hiển thị thông báo cho user
             document.getElementById('message').classList.remove('hidden');
-            document.getElementById('message').textContent = 'File đã được tải xuống!';
-            downloadLink.textContent = 'Tải lại file';
-          } catch (e) {
-            console.log('Tự động download thất bại, chờ user click');
+            document.getElementById('message').textContent = 'Vui lòng click nút bên dưới để tải file. Trang sẽ tự động đóng sau khi tải.';
+            document.getElementById('backLink').classList.remove('hidden');
           }
         }, 500);
+        
+        // Dọn dẹp URL khi trang đóng
+        window.addEventListener('beforeunload', () => {
+          URL.revokeObjectURL(url);
+        });
         
       } catch (error) {
         console.error('Lỗi:', error);
@@ -227,6 +300,11 @@
         document.getElementById('error').classList.remove('hidden');
         document.getElementById('error').textContent = `Lỗi: ${error.message}`;
         document.getElementById('backLink').classList.remove('hidden');
+        
+        // Đóng trang sau 5 giây nếu có lỗi
+        setTimeout(() => {
+          closePage();
+        }, 5000);
       }
     }
     
