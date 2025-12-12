@@ -17,6 +17,7 @@
     .export-btn { background: #2e7d32; margin-left: auto; }
     .loading { color: #1976d2; font-weight: bold; }
     .error { color: #d32f2f; font-weight: bold; }
+    .date-inputs { display: flex; gap: 10px; align-items: center; }
   </style>
 </head>
 
@@ -25,8 +26,14 @@
 
   <!-- Filter controls -->
   <div class="controls">
-    <label>Từ ngày <input type="date" id="from"></label>
-    <label>Đến ngày <input type="date" id="to"></label>
+    <div class="date-inputs">
+      <div>
+        <label>Từ ngày <input type="date" id="from"></label>
+      </div>
+      <div>
+        <label>Đến ngày <input type="date" id="to"></label>
+      </div>
+    </div>
     <button id="apply">Lọc</button>
     <button id="reset">Xóa</button>
     <button id="exportExcel" class="export-btn">Tải Excel</button>
@@ -37,6 +44,7 @@
 
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
+    let rawData = [];
     let currentFilteredData = [];
 
     // -------------------------------
@@ -129,51 +137,22 @@
     }
 
     // -------------------------------
-    // Xây dựng URL với tham số
+    // Tải dữ liệu từ Apps Script
     // -------------------------------
-    function buildDataURL(fromDate = null, toDate = null) {
-      let url = DATA_URL;
-      const params = [];
-      
-      if (fromDate) {
-        params.push(`tungay=${encodeURIComponent(formatDateToYYYYMMDD(fromDate))}`);
-      }
-      
-      if (toDate) {
-        params.push(`denngay=${encodeURIComponent(formatDateToYYYYMMDD(toDate))}`);
-      }
-      
-      if (params.length > 0) {
-        url += '?' + params.join('&');
-      }
-      
-      return url;
-    }
-
-    // -------------------------------
-    // Tải dữ liệu đã lọc từ Apps Script
-    // -------------------------------
-    async function loadFilteredData(fromDate = null, toDate = null) {
+    async function loadData() {
       try {
-        const url = buildDataURL(fromDate, toDate);
         document.getElementById("status").className = "loading";
         document.getElementById("status").textContent = "Đang tải dữ liệu...";
         
-        const res = await fetch(url);
+        const res = await fetch(DATA_URL);
         const data = await res.json();
-        const filteredData = Array.isArray(data) ? data : (data.rows || []);
-        
-        // Sắp xếp dữ liệu theo ngày và số hóa đơn giảm dần
-        sortData(filteredData);
+        rawData = Array.isArray(data) ? data : (data.rows || []);
         
         document.getElementById("status").className = "";
-        document.getElementById("status").textContent = "Đã tải " + filteredData.length + " bản ghi.";
+        document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi.";
         
-        // Lưu dữ liệu hiện tại
-        currentFilteredData = filteredData;
-        
-        // Hiển thị bảng
-        renderTable(filteredData);
+        // Áp dụng filter từ URL
+        applyFiltersFromURL();
         
       } catch (err) {
         document.getElementById("status").className = "error";
@@ -224,6 +203,29 @@
     }
 
     // -------------------------------
+    // Lọc dữ liệu phía client
+    // -------------------------------
+    function filterData({ fromDate = null, toDate = null } = {}) {
+      let filtered = rawData.filter((r) => {
+        // Tìm ngày xuất hóa đơn trong các trường có thể
+        const dateValue = r.ngayXuatHoaDon ?? r['Ngày xuất'] ?? r['ngay_xuat'] ?? r['ngayXuatHoaDon'] ?? r['ngay'] ?? r['Ngày'];
+        const d = parseDateToStandard(dateValue);
+        
+        if (!d) return false; // Không có ngày -> không hiển thị
+        
+        if (fromDate && d < fromDate) return false;
+        if (toDate && d > toDate) return false;
+        
+        return true;
+      });
+
+      // Sắp xếp filtered data
+      sortData(filtered);
+
+      return filtered;
+    }
+
+    // -------------------------------
     // Lấy danh sách cột (bỏ các cột không cần hiển thị)
     // -------------------------------
     function getColumns(data) {
@@ -256,6 +258,8 @@
     // Hiển thị bảng
     // -------------------------------
     function renderTable(list) {
+      currentFilteredData = list; // Lưu lại dữ liệu hiện tại để export
+      
       if (!list || list.length === 0) {
         document.getElementById("tableWrap").innerHTML = "<p>Không có dữ liệu.</p>";
         return;
@@ -313,7 +317,7 @@
     }
 
     // -------------------------------
-    // Đọc tham số từ URL và tải dữ liệu
+    // Đọc tham số từ URL và áp dụng filter
     // -------------------------------
     function applyFiltersFromURL() {
       const params = new URLSearchParams(location.search);
@@ -327,8 +331,10 @@
       if (from) document.getElementById("from").value = from.toISOString().slice(0, 10);
       if (to) document.getElementById("to").value = to.toISOString().slice(0, 10);
 
-      // Tải dữ liệu đã lọc
-      loadFilteredData(from, to);
+      // Áp dụng filter và hiển thị
+      const list = filterData({ fromDate: from, toDate: to });
+      document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi, hiển thị " + list.length + " bản ghi sau khi lọc.";
+      renderTable(list);
     }
 
     // -------------------------------
@@ -413,24 +419,37 @@
       const from = vFrom ? parseDateToStandard(vFrom) : null;
       const to = vTo ? parseDateToStandard(vTo) : null;
 
-      // Update URL and reload with filters
+      // Update URL without reload
       const p = new URLSearchParams();
       if (from) p.set('tungay', vFrom);
       if (to) p.set('denngay', vTo);
       
       const newUrl = location.pathname + (p.toString() ? '?' + p.toString() : '');
-      window.location.href = newUrl;
+      history.replaceState(null, '', newUrl);
+
+      // Apply filter locally
+      const list = filterData({ fromDate: from, toDate: to });
+      document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi, hiển thị " + list.length + " bản ghi sau khi lọc.";
+      renderTable(list);
     };
 
     document.getElementById("reset").onclick = () => {
-      // Reset to no filters
-      window.location.href = location.pathname;
+      document.getElementById("from").value = "";
+      document.getElementById("to").value = "";
+      
+      // Update URL without reload
+      history.replaceState(null, '', location.pathname);
+      
+      // Reset filter
+      const list = filterData({ fromDate: null, toDate: null });
+      document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi, hiển thị " + list.length + " bản ghi sau khi lọc.";
+      renderTable(list);
     };
 
     document.getElementById("exportExcel").onclick = exportToExcel;
 
-    // Khởi động - đọc tham số từ URL
-    applyFiltersFromURL();
+    // Khởi động
+    loadData();
   </script>
 </body>
 </html>
