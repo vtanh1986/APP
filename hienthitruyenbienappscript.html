@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Danh sách hóa đơn</title>
+
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f6f6f6; }
+    h1 { margin-bottom: 15px; }
+    table { width: 100%; border-collapse: collapse; background: white;}
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
+    th { background: #f0f0f0; }
+    .controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+    input, button { padding: 6px 8px; }
+    button { cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 4px; }
+  </style>
+</head>
+
+<body>
+  <h1>Danh sách hóa đơn</h1>
+
+  <!-- Filter controls -->
+  <div class="controls">
+    <label>Từ ngày <input type="date" id="from"></label>
+    <label>Đến ngày <input type="date" id="to"></label>
+    <button id="apply">Lọc</button>
+    <button id="reset">Xóa</button>
+  </div>
+
+  <div id="status">Đang tải dữ liệu...</div>
+
+  <div id="tableWrap"></div>
+
+  <script>
+    const DATA_URL =
+      "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
+
+    let rawData = [];
+
+    // -------------------------------
+    // Tải dữ liệu từ Apps Script
+    // -------------------------------
+    async function loadData() {
+      try {
+        const res = await fetch(DATA_URL);
+        const data = await res.json();
+        rawData = Array.isArray(data) ? data : data.rows;
+
+        document.getElementById("status").textContent =
+          "Đã tải " + rawData.length + " bản ghi.";
+
+        applyFiltersFromURL();
+      } catch (err) {
+        document.getElementById("status").textContent =
+          "Lỗi tải dữ liệu: " + err;
+      }
+    }
+
+    // -------------------------------
+    // Hiển thị bảng
+    // -------------------------------
+    function renderTable(list) {
+      if (!list || list.length === 0) {
+        document.getElementById("tableWrap").innerHTML =
+          "<p>Không có dữ liệu.</p>";
+        return;
+      }
+
+      let html = "<table><thead><tr>" +
+        "<th>Số HĐ</th><th>Ngày xuất</th><th>Đối tác</th>" +
+        "<th>Nội dung</th><th>Số tiền</th>" +
+        "</tr></thead><tbody>";
+
+      for (const r of list) {
+        html += "<tr>" +
+          `<td>${r.soHoaDon || ""}</td>` +
+          `<td>${formatDate(r.ngayXuatHoaDon)}</td>` +
+          `<td>${r.doiTac || ""}</td>` +
+          `<td>${r.noiDungHoaDon || ""}</td>` +
+          `<td>${Number(r.soTien || 0).toLocaleString()}</td>` +
+          "</tr>";
+      }
+
+      html += "</tbody></table>";
+
+      document.getElementById("tableWrap").innerHTML = html;
+    }
+
+    // -------------------------------
+    // Lọc dữ liệu
+    // -------------------------------
+    function filterData({ fromDate = null, toDate = null } = {}) {
+      return rawData.filter((r) => {
+        const d = r.ngayXuatHoaDon ? new Date(r.ngayXuatHoaDon) : null;
+        if (!d) return false;
+
+        if (fromDate && d < fromDate) return false;
+
+        if (toDate) {
+          const end = new Date(toDate);
+          end.setHours(23, 59, 59, 999);
+          if (d > end) return false;
+        }
+
+        return true;
+      });
+    }
+
+    // -------------------------------
+    // Lấy tham số URL & tự lọc
+    // -------------------------------
+    function applyFiltersFromURL() {
+      const params = new URLSearchParams(location.search);
+
+      const tungay = params.get("tungay");
+      const denngay = params.get("denngay");
+
+      const tryParse = (s) => {
+        if (!s) return null;
+
+        // dd/mm/yyyy
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+          const [dd, mm, yyyy] = s.split("/");
+          return new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+        }
+
+        // yyyy-mm-dd
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+          return new Date(s + "T00:00:00");
+        }
+
+        return new Date(s);
+      };
+
+      const from = tryParse(tungay);
+      const to = tryParse(denngay);
+
+      // Set vào input hiển thị
+      if (from)
+        document.getElementById("from").value =
+          from.toISOString().slice(0, 10);
+
+      if (to)
+        document.getElementById("to").value =
+          to.toISOString().slice(0, 10);
+
+      const list = filterData({ fromDate: from, toDate: to });
+
+      renderTable(list);
+    }
+
+    // -------------------------------
+    // Nút APPLY
+    // -------------------------------
+    document.getElementById("apply").onclick = () => {
+      const from = document.getElementById("from").value
+        ? new Date(document.getElementById("from").value + "T00:00:00")
+        : null;
+
+      const to = document.getElementById("to").value
+        ? new Date(document.getElementById("to").value + "T00:00:00")
+        : null;
+
+      const list = filterData({ fromDate: from, toDate: to });
+
+      renderTable(list);
+    };
+
+    // -------------------------------
+    // Nút RESET
+    // -------------------------------
+    document.getElementById("reset").onclick = () => {
+      document.getElementById("from").value = "";
+      document.getElementById("to").value = "";
+
+      renderTable(rawData);
+    };
+
+    // -------------------------------
+    // Format ngày
+    // -------------------------------
+    function formatDate(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (isNaN(d)) return iso;
+      return (
+        String(d.getDate()).padStart(2, "0") +
+        "/" +
+        String(d.getMonth() + 1).padStart(2, "0") +
+        "/" +
+        d.getFullYear()
+      );
+    }
+
+    // Khởi động
+    loadData();
+  </script>
+</body>
+</html>
