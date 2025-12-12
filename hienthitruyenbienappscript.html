@@ -18,10 +18,11 @@
     .loading { color: #1976d2; font-weight: bold; }
     .error { color: #d32f2f; font-weight: bold; }
     .date-inputs { display: flex; gap: 10px; align-items: center; }
+    .hidden { display: none; }
   </style>
 </head>
 
-<body>
+<body id="mainBody" class="hidden">
   <h1>Danh sách hóa đơn</h1>
 
   <!-- Filter controls -->
@@ -46,6 +47,14 @@
     const DATA_URL = "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
     let rawData = [];
     let currentFilteredData = [];
+
+    // -------------------------------
+    // Kiểm tra xem có phải chế độ export không
+    // -------------------------------
+    function isExportMode() {
+      const params = new URLSearchParams(location.search);
+      return params.get('export') === 'true' || params.get('export') === '1';
+    }
 
     // -------------------------------
     // Parse date để lấy ngày chuẩn yyyy-mm-dd
@@ -148,16 +157,131 @@
         const data = await res.json();
         rawData = Array.isArray(data) ? data : (data.rows || []);
         
+        // Nếu là chế độ export, tải xong thì export luôn
+        if (isExportMode()) {
+          await exportDataDirectly();
+          return;
+        }
+        
+        // Nếu không phải chế độ export, hiển thị bình thường
         document.getElementById("status").className = "";
         document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi.";
+        
+        // Hiển thị giao diện
+        document.getElementById("mainBody").classList.remove("hidden");
         
         // Áp dụng filter từ URL
         applyFiltersFromURL();
         
       } catch (err) {
-        document.getElementById("status").className = "error";
-        document.getElementById("status").textContent = "Lỗi tải dữ liệu: " + err;
+        if (isExportMode()) {
+          console.error("Lỗi khi export:", err);
+        } else {
+          document.getElementById("status").className = "error";
+          document.getElementById("status").textContent = "Lỗi tải dữ liệu: " + err;
+          document.getElementById("mainBody").classList.remove("hidden");
+        }
       }
+    }
+
+    // -------------------------------
+    // Export dữ liệu trực tiếp (không hiển thị UI)
+    // -------------------------------
+    async function exportDataDirectly() {
+      const params = new URLSearchParams(location.search);
+      const tungay = params.get("tungay");
+      const denngay = params.get("denngay");
+
+      const from = tungay ? parseDateToStandard(tungay) : null;
+      const to = denngay ? parseDateToStandard(denngay) : null;
+
+      // Lọc dữ liệu
+      let filteredData = filterData({ fromDate: from, toDate: to });
+
+      if (filteredData.length === 0) {
+        // Nếu không có dữ liệu, tải về file trống hoặc thông báo
+        const emptyCSV = "data:text/csv;charset=utf-8,\uFEFFTT,Không có dữ liệu";
+        const link = document.createElement("a");
+        link.setAttribute("href", emptyCSV);
+        link.setAttribute("download", `HoaDon_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      // Lấy cột hiển thị
+      const cols = getColumns(filteredData).filter(c => c !== 'TT');
+      
+      // Tạo nội dung CSV
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      
+      // Header
+      const headers = ['TT', ...cols];
+      csvContent += headers.join(',') + '\n';
+      
+      // Data rows
+      for (let i = 0; i < filteredData.length; i++) {
+        const row = filteredData[i];
+        const rowData = [i + 1];
+        
+        for (const col of cols) {
+          let value = row[col] ?? '';
+          
+          // Format ngày
+          if (col.toLowerCase().includes('ngay') || col.toLowerCase().includes('date')) {
+            value = formatDateToYYYYMMDD(value);
+          }
+          
+          // Format tỷ lệ HH
+          else if (col.toLowerCase().includes('tylehh') || col.toLowerCase().includes('tyle_hh')) {
+            value = formatTyLeHH(value);
+          }
+          
+          // Format tiền (loại bỏ dấu phân cách hàng nghìn để Excel hiểu)
+          else if (col.toLowerCase().includes('tien') || 
+                  col.toLowerCase().includes('sotien') || 
+                  col.toLowerCase().includes('so_tien') || 
+                  col.toLowerCase().includes('tong') ||
+                  col.toLowerCase().includes('thanhtien')) {
+            const num = Number(value);
+            if (!isNaN(num)) {
+              value = num;
+            }
+          }
+          
+          // Escape commas and quotes for CSV
+          if (typeof value === 'string') {
+            if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+              value = '"' + value.replace(/"/g, '""') + '"';
+            }
+          }
+          
+          rowData.push(value);
+        }
+        
+        csvContent += rowData.join(',') + '\n';
+      }
+      
+      // Tạo và tải file
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      
+      // Tạo tên file
+      let fileName = `HoaDon_${new Date().toISOString().slice(0, 10)}`;
+      if (from && to) {
+        fileName = `HoaDon_${formatDateToYYYYMMDD(from)}_${formatDateToYYYYMMDD(to)}`;
+      } else if (from) {
+        fileName = `HoaDon_tu_${formatDateToYYYYMMDD(from)}`;
+      } else if (to) {
+        fileName = `HoaDon_den_${formatDateToYYYYMMDD(to)}`;
+      }
+      
+      link.setAttribute("download", `${fileName}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     // -------------------------------
@@ -338,7 +462,7 @@
     }
 
     // -------------------------------
-    // Export to Excel
+    // Export to Excel (cho UI)
     // -------------------------------
     function exportToExcel() {
       if (!currentFilteredData || currentFilteredData.length === 0) {
@@ -448,7 +572,14 @@
 
     document.getElementById("exportExcel").onclick = exportToExcel;
 
+    // -------------------------------
     // Khởi động
+    // -------------------------------
+    if (isExportMode()) {
+      // Ẩn toàn bộ body, chỉ export
+      document.body.innerHTML = '<div class="loading">Đang tải và xuất file Excel...</div>';
+    }
+    
     loadData();
   </script>
 </body>
