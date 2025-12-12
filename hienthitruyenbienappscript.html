@@ -15,6 +15,8 @@
     .stt { text-align: center; width: 50px; }
     .tyleHH { text-align: center; }
     .export-btn { background: #2e7d32; margin-left: auto; }
+    .loading { color: #1976d2; font-weight: bold; }
+    .error { color: #d32f2f; font-weight: bold; }
   </style>
 </head>
 
@@ -30,12 +32,11 @@
     <button id="exportExcel" class="export-btn">Tải Excel</button>
   </div>
 
-  <div id="status">Đang tải dữ liệu...</div>
+  <div id="status" class="loading">Đang tải dữ liệu...</div>
   <div id="tableWrap"></div>
 
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
-    let rawData = [];
     let currentFilteredData = [];
 
     // -------------------------------
@@ -128,20 +129,54 @@
     }
 
     // -------------------------------
-    // Tải dữ liệu từ Apps Script
+    // Xây dựng URL với tham số
     // -------------------------------
-    async function loadData() {
+    function buildDataURL(fromDate = null, toDate = null) {
+      let url = DATA_URL;
+      const params = [];
+      
+      if (fromDate) {
+        params.push(`tungay=${encodeURIComponent(formatDateToYYYYMMDD(fromDate))}`);
+      }
+      
+      if (toDate) {
+        params.push(`denngay=${encodeURIComponent(formatDateToYYYYMMDD(toDate))}`);
+      }
+      
+      if (params.length > 0) {
+        url += '?' + params.join('&');
+      }
+      
+      return url;
+    }
+
+    // -------------------------------
+    // Tải dữ liệu đã lọc từ Apps Script
+    // -------------------------------
+    async function loadFilteredData(fromDate = null, toDate = null) {
       try {
-        const res = await fetch(DATA_URL);
+        const url = buildDataURL(fromDate, toDate);
+        document.getElementById("status").className = "loading";
+        document.getElementById("status").textContent = "Đang tải dữ liệu...";
+        
+        const res = await fetch(url);
         const data = await res.json();
-        rawData = Array.isArray(data) ? data : (data.rows || []);
+        const filteredData = Array.isArray(data) ? data : (data.rows || []);
         
         // Sắp xếp dữ liệu theo ngày và số hóa đơn giảm dần
-        sortData();
+        sortData(filteredData);
         
-        document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi.";
-        applyFiltersFromURL();
+        document.getElementById("status").className = "";
+        document.getElementById("status").textContent = "Đã tải " + filteredData.length + " bản ghi.";
+        
+        // Lưu dữ liệu hiện tại
+        currentFilteredData = filteredData;
+        
+        // Hiển thị bảng
+        renderTable(filteredData);
+        
       } catch (err) {
+        document.getElementById("status").className = "error";
         document.getElementById("status").textContent = "Lỗi tải dữ liệu: " + err;
       }
     }
@@ -149,8 +184,8 @@
     // -------------------------------
     // Sắp xếp dữ liệu theo ngày giảm dần, rồi theo số hóa đơn giảm dần
     // -------------------------------
-    function sortData() {
-      rawData.sort((a, b) => {
+    function sortData(data) {
+      data.sort((a, b) => {
         // Lấy ngày xuất hóa đơn
         const dateA = parseDateToStandard(a.ngayXuatHoaDon || a['Ngày xuất'] || a['ngay_xuat'] || a['ngayXuatHoaDon'] || a['ngay'] || a['Ngày']);
         const dateB = parseDateToStandard(b.ngayXuatHoaDon || b['Ngày xuất'] || b['ngay_xuat'] || b['ngayXuatHoaDon'] || b['ngay'] || b['Ngày']);
@@ -221,8 +256,6 @@
     // Hiển thị bảng
     // -------------------------------
     function renderTable(list) {
-      currentFilteredData = list; // Lưu lại dữ liệu hiện tại để export
-      
       if (!list || list.length === 0) {
         document.getElementById("tableWrap").innerHTML = "<p>Không có dữ liệu.</p>";
         return;
@@ -280,57 +313,7 @@
     }
 
     // -------------------------------
-    // Lọc dữ liệu
-    // -------------------------------
-    function filterData({ fromDate = null, toDate = null } = {}) {
-      let filtered = rawData.filter((r) => {
-        // Tìm ngày xuất hóa đơn trong các trường có thể
-        const dateValue = r.ngayXuatHoaDon ?? r['Ngày xuất'] ?? r['ngay_xuat'] ?? r['ngayXuatHoaDon'] ?? r['ngay'] ?? r['Ngày'];
-        const d = parseDateToStandard(dateValue);
-        
-        if (!d) return false; // Không có ngày -> không hiển thị
-        
-        if (fromDate && d < fromDate) return false;
-        if (toDate && d > toDate) return false;
-        
-        return true;
-      });
-
-      // Sắp xếp filtered data theo ngày giảm dần, rồi theo số hóa đơn giảm dần
-      filtered.sort((a, b) => {
-        const dateA = parseDateToStandard(a.ngayXuatHoaDon || a['Ngày xuất'] || a['ngay_xuat'] || a['ngayXuatHoaDon'] || a['ngay'] || a['Ngày']);
-        const dateB = parseDateToStandard(b.ngayXuatHoaDon || b['Ngày xuất'] || b['ngay_xuat'] || b['ngayXuatHoaDon'] || b['ngay'] || b['Ngày']);
-        
-        const soHoaDonA = a.soHoaDon || a['Số hóa đơn'] || a['so_hoadon'] || a['sohoadon'] || '';
-        const soHoaDonB = b.soHoaDon || b['Số hóa đơn'] || b['so_hoadon'] || b['sohoadon'] || '';
-        
-        // So sánh ngày trước
-        if (dateA && dateB) {
-          if (dateA.getTime() !== dateB.getTime()) {
-            return dateB.getTime() - dateA.getTime();
-          }
-        } else if (!dateA && dateB) {
-          return 1;
-        } else if (dateA && !dateB) {
-          return -1;
-        }
-        
-        // So sánh số hóa đơn
-        const numA = parseFloat(soHoaDonA);
-        const numB = parseFloat(soHoaDonB);
-        
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return numB - numA;
-        } else {
-          return soHoaDonB.localeCompare(soHoaDonA);
-        }
-      });
-
-      return filtered;
-    }
-
-    // -------------------------------
-    // Read URL params & apply filters
+    // Đọc tham số từ URL và tải dữ liệu
     // -------------------------------
     function applyFiltersFromURL() {
       const params = new URLSearchParams(location.search);
@@ -340,11 +323,12 @@
       const from = tungay ? parseDateToStandard(tungay) : null;
       const to = denngay ? parseDateToStandard(denngay) : null;
 
+      // Cập nhật giá trị input
       if (from) document.getElementById("from").value = from.toISOString().slice(0, 10);
       if (to) document.getElementById("to").value = to.toISOString().slice(0, 10);
 
-      const list = filterData({ fromDate: from, toDate: to });
-      renderTable(list);
+      // Tải dữ liệu đã lọc
+      loadFilteredData(from, to);
     }
 
     // -------------------------------
@@ -426,30 +410,27 @@
       const vFrom = document.getElementById("from").value;
       const vTo = document.getElementById("to").value;
 
-      const from = vFrom ? new Date(vFrom + 'T00:00:00') : null;
-      const to = vTo ? new Date(vTo + 'T23:59:59') : null;
+      const from = vFrom ? parseDateToStandard(vFrom) : null;
+      const to = vTo ? parseDateToStandard(vTo) : null;
 
-      const list = filterData({ fromDate: from, toDate: to });
-      renderTable(list);
-
-      // update URL without reload
-      const p = new URLSearchParams(location.search);
-      if (from) p.set('tungay', vFrom); else p.delete('tungay');
-      if (to) p.set('denngay', vTo); else p.delete('denngay');
-      history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p.toString() : ''));
+      // Update URL and reload with filters
+      const p = new URLSearchParams();
+      if (from) p.set('tungay', vFrom);
+      if (to) p.set('denngay', vTo);
+      
+      const newUrl = location.pathname + (p.toString() ? '?' + p.toString() : '');
+      window.location.href = newUrl;
     };
 
     document.getElementById("reset").onclick = () => {
-      document.getElementById("from").value = "";
-      document.getElementById("to").value = "";
-      renderTable(rawData);
-      history.replaceState(null, '', location.pathname);
+      // Reset to no filters
+      window.location.href = location.pathname;
     };
 
     document.getElementById("exportExcel").onclick = exportToExcel;
 
-    // Khởi động
-    loadData();
+    // Khởi động - đọc tham số từ URL
+    applyFiltersFromURL();
   </script>
 </body>
 </html>
