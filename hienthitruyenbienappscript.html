@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Danh sách hóa đơn</title>
-
   <style>
     body { font-family: Arial; padding: 20px; background: #f6f6f6; }
     h1 { margin-bottom: 15px; }
@@ -28,14 +27,56 @@
   </div>
 
   <div id="status">Đang tải dữ liệu...</div>
-
   <div id="tableWrap"></div>
 
   <script>
-    const DATA_URL =
-      "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
-
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
     let rawData = [];
+
+    // -------------------------------
+    // Parse date without timezone shifts:
+    // trả về Date(year,monthIndex,day) hoặc null
+    // -------------------------------
+    function parseDateOnly(value) {
+      if (!value && value !== 0) return null;
+
+      // nếu đã là Date -> chỉ lấy phần ngày
+      if (value instanceof Date) {
+        if (isNaN(value)) return null;
+        return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+      }
+
+      // số (ms kể từ 1970)
+      if (typeof value === 'number') {
+        const d = new Date(value);
+        if (isNaN(d)) return null;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+
+      const s = String(value).trim();
+
+      // yyyy-mm-dd (có thể kèm giờ: yyyy-mm-ddTHH:MM:SS... )
+      let m = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (m) {
+        const y = Number(m[1]), mo = Number(m[2]) - 1, da = Number(m[3]);
+        return new Date(y, mo, da);
+      }
+
+      // dd/mm/yyyy
+      m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m) {
+        const da = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
+        return new Date(y, mo, da);
+      }
+
+      // fallback: try Date parse, then extract local Y/M/D
+      const d = new Date(s);
+      if (!isNaN(d)) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+
+      return null;
+    }
 
     // -------------------------------
     // Tải dữ liệu từ Apps Script
@@ -44,62 +85,70 @@
       try {
         const res = await fetch(DATA_URL);
         const data = await res.json();
-        rawData = Array.isArray(data) ? data : data.rows;
-
-        document.getElementById("status").textContent =
-          "Đã tải " + rawData.length + " bản ghi.";
-
+        rawData = Array.isArray(data) ? data : (data.rows || []);
+        document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi.";
         applyFiltersFromURL();
       } catch (err) {
-        document.getElementById("status").textContent =
-          "Lỗi tải dữ liệu: " + err;
+        document.getElementById("status").textContent = "Lỗi tải dữ liệu: " + err;
       }
     }
 
     // -------------------------------
-    // Hiển thị bảng
+    // Hiển thị bảng (lấy các cột tự động)
     // -------------------------------
     function renderTable(list) {
       if (!list || list.length === 0) {
-        document.getElementById("tableWrap").innerHTML =
-          "<p>Không có dữ liệu.</p>";
+        document.getElementById("tableWrap").innerHTML = "<p>Không có dữ liệu.</p>";
         return;
       }
 
-      let html = "<table><thead><tr>" +
-        "<th>Số HĐ</th><th>Ngày xuất</th><th>Đối tác</th>" +
-        "<th>Nội dung</th><th>Số tiền</th>" +
-        "</tr></thead><tbody>";
+      const cols = Object.keys(list[0]);
+      let html = "<table><thead><tr>" + cols.map(c => `<th>${c}</th>`).join('') + "</tr></thead><tbody>";
 
       for (const r of list) {
-        html += "<tr>" +
-          `<td>${r.soHoaDon || ""}</td>` +
-          `<td>${formatDate(r.ngayXuatHoaDon)}</td>` +
-          `<td>${r.doiTac || ""}</td>` +
-          `<td>${r.noiDungHoaDon || ""}</td>` +
-          `<td>${Number(r.soTien || 0).toLocaleString()}</td>` +
-          "</tr>";
+        html += "<tr>" + cols.map(c => {
+          // nếu c là ngayXuatHoaDon -> format đẹp
+          if (c.toLowerCase().includes('ngay') || c.toLowerCase().includes('ngayxuat') || c.toLowerCase().includes('ngay_xuat')) {
+            return `<td>${formatDate(r[c])}</td>`;
+          }
+          // tiền -> format số (giả định tên cột chứa 'tien' hoặc 'soTien')
+          if (c.toLowerCase().includes('tien') || c.toLowerCase().includes('sotien') || c.toLowerCase().includes('so_tien')) {
+            const v = r[c]==null ? '' : Number(r[c]);
+            return `<td style="text-align:right">${isNaN(v) ? (r[c] ?? '') : v.toLocaleString()}</td>`;
+          }
+          return `<td>${r[c] ?? ''}</td>`;
+        }).join('') + "</tr>";
       }
 
       html += "</tbody></table>";
-
       document.getElementById("tableWrap").innerHTML = html;
     }
 
     // -------------------------------
-    // Lọc dữ liệu
+    // Format ngày dùng parseDateOnly -> dd/mm/yyyy
+    // -------------------------------
+    function formatDate(raw) {
+      const d = parseDateOnly(raw);
+      if (!d) return '';
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    // -------------------------------
+    // Lọc dữ liệu: dùng parseDateOnly để so sánh ngày (không bị timezone)
     // -------------------------------
     function filterData({ fromDate = null, toDate = null } = {}) {
+      // fromDate/toDate được đưa vào ở dạng Date chỉ phần ngày (hoặc null)
       return rawData.filter((r) => {
-        const d = r.ngayXuatHoaDon ? new Date(r.ngayXuatHoaDon) : null;
+        const d = parseDateOnly(r.ngayXuatHoaDon ?? r['Ngày xuất'] ?? r['ngay_xuat'] ?? r['ngayXuatHoaDon']);
         if (!d) return false;
 
         if (fromDate && d < fromDate) return false;
 
         if (toDate) {
-          const end = new Date(toDate);
-          end.setHours(23, 59, 59, 999);
-          if (d > end) return false;
+          if (d > toDate) return false; // both are date-only (00:00 local), so inclusive logic below
         }
 
         return true;
@@ -107,90 +156,69 @@
     }
 
     // -------------------------------
-    // Lấy tham số URL & tự lọc
+    // Read URL params & apply filters
     // -------------------------------
     function applyFiltersFromURL() {
       const params = new URLSearchParams(location.search);
-
       const tungay = params.get("tungay");
       const denngay = params.get("denngay");
 
-      const tryParse = (s) => {
+      const tryParseUrl = s => {
         if (!s) return null;
-
-        // dd/mm/yyyy
-        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-          const [dd, mm, yyyy] = s.split("/");
-          return new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
-        }
-
-        // yyyy-mm-dd
-        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-          return new Date(s + "T00:00:00");
-        }
-
-        return new Date(s);
+        // handle dd/mm/yyyy
+        const m1 = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m1) return new Date(Number(m1[3]), Number(m1[2]) - 1, Number(m1[1]));
+        // handle yyyy-mm-dd
+        const m2 = String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (m2) return new Date(Number(m2[1]), Number(m2[2]) - 1, Number(m2[3]));
+        // fallback to parseDateOnly
+        return parseDateOnly(s);
       };
 
-      const from = tryParse(tungay);
-      const to = tryParse(denngay);
+      const from = tryParseUrl(tungay);
+      const to = tryParseUrl(denngay);
 
-      // Set vào input hiển thị
-      if (from)
-        document.getElementById("from").value =
-          from.toISOString().slice(0, 10);
-
-      if (to)
-        document.getElementById("to").value =
-          to.toISOString().slice(0, 10);
+      // For inclusive 'to', we keep as date-only but comparison in filterData is <= since both are date-only
+      if (from) document.getElementById("from").value = from.toISOString().slice(0, 10);
+      if (to) document.getElementById("to").value = to.toISOString().slice(0, 10);
 
       const list = filterData({ fromDate: from, toDate: to });
-
       renderTable(list);
     }
 
     // -------------------------------
-    // Nút APPLY
+    // Buttons
     // -------------------------------
     document.getElementById("apply").onclick = () => {
-      const from = document.getElementById("from").value
-        ? new Date(document.getElementById("from").value + "T00:00:00")
-        : null;
+      const vFrom = document.getElementById("from").value;
+      const vTo = document.getElementById("to").value;
 
-      const to = document.getElementById("to").value
-        ? new Date(document.getElementById("to").value + "T00:00:00")
-        : null;
+      const from = vFrom ? (()=>{
+        const [y,m,d] = vFrom.split('-').map(Number);
+        return new Date(y, m-1, d);
+      })() : null;
+
+      const to = vTo ? (()=>{
+        const [y,m,d] = vTo.split('-').map(Number);
+        return new Date(y, m-1, d);
+      })() : null;
 
       const list = filterData({ fromDate: from, toDate: to });
-
       renderTable(list);
+
+      // update URL without reload
+      const p = new URLSearchParams(location.search);
+      if (from) p.set('tungay', vFrom); else p.delete('tungay');
+      if (to) p.set('denngay', vTo); else p.delete('denngay');
+      history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p.toString() : ''));
     };
 
-    // -------------------------------
-    // Nút RESET
-    // -------------------------------
     document.getElementById("reset").onclick = () => {
       document.getElementById("from").value = "";
       document.getElementById("to").value = "";
-
       renderTable(rawData);
+      history.replaceState(null, '', location.pathname);
     };
-
-    // -------------------------------
-    // Format ngày
-    // -------------------------------
-    function formatDate(iso) {
-      if (!iso) return "";
-      const d = new Date(iso);
-      if (isNaN(d)) return iso;
-      return (
-        String(d.getDate()).padStart(2, "0") +
-        "/" +
-        String(d.getMonth() + 1).padStart(2, "0") +
-        "/" +
-        d.getFullYear()
-      );
-    }
 
     // Khởi động
     loadData();
