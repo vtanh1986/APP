@@ -2,271 +2,123 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Danh sách hóa đơn</title>
+  <title>Export Hóa Đơn</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f6f6f6; }
-    h1 { margin-bottom: 15px; }
-    table { width: 100%; border-collapse: collapse; background: white;}
-    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
-    th { background: #f0f0f0; }
-    .controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-    input, button { padding: 6px 8px; }
-    button { cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 4px; }
-    .stt { text-align: center; width: 50px; }
-    .tyleHH { text-align: center; }
-    .export-btn { background: #2e7d32; margin-left: auto; }
-    .loading { color: #1976d2; font-weight: bold; }
-    .error { color: #d32f2f; font-weight: bold; }
-    .date-inputs { display: flex; gap: 10px; align-items: center; }
+    body { 
+      font-family: Arial; 
+      padding: 50px; 
+      text-align: center; 
+      background: #f6f6f6; 
+    }
+    .message { 
+      font-size: 18px; 
+      margin: 20px 0; 
+      color: #1976d2; 
+    }
+    .error { 
+      color: #d32f2f; 
+    }
+    .link { 
+      display: inline-block; 
+      margin-top: 20px; 
+      padding: 10px 20px; 
+      background: #2e7d32; 
+      color: white; 
+      text-decoration: none; 
+      border-radius: 4px; 
+    }
     .hidden { display: none; }
-    .export-message { text-align: center; margin-top: 50px; font-size: 18px; color: #1976d2; }
   </style>
 </head>
-
-<body id="mainBody">
-  <!-- Nội dung chính (sẽ bị ẩn nếu là export mode) -->
-  <div id="mainContent">
-    <h1>Danh sách hóa đơn</h1>
-
-    <!-- Filter controls -->
-    <div class="controls">
-      <div class="date-inputs">
-        <div>
-          <label>Từ ngày <input type="date" id="from"></label>
-        </div>
-        <div>
-          <label>Đến ngày <input type="date" id="to"></label>
-        </div>
-      </div>
-      <button id="apply">Lọc</button>
-      <button id="reset">Xóa</button>
-      <button id="exportExcel" class="export-btn">Tải Excel</button>
-    </div>
-
-    <div id="status" class="loading">Đang tải dữ liệu...</div>
-    <div id="tableWrap"></div>
-  </div>
-
-  <!-- Message cho export mode -->
-  <div id="exportMessage" class="export-message hidden">
-    <p>Đang chuẩn bị file Excel...</p>
-    <p>Nếu file không tự động tải xuống, vui lòng <a id="manualDownload" href="#" style="color: #1976d2; text-decoration: underline;">click vào đây</a></p>
+<body>
+  <div id="message" class="message">Đang tải dữ liệu và chuẩn bị file Excel...</div>
+  <div id="error" class="message error hidden"></div>
+  <a id="downloadLink" class="link hidden" href="#" download>Download File Excel</a>
+  <div id="backLink" class="hidden">
+    <br>
+    <a href="." style="color: #1976d2;">← Quay lại trang chính</a>
   </div>
 
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
-    let rawData = [];
-    let currentFilteredData = [];
-    let exportDataUrl = null;
-
-    // -------------------------------
-    // Kiểm tra xem có phải chế độ export không
-    // -------------------------------
-    function isExportMode() {
-      const params = new URLSearchParams(location.search);
-      return params.get('export') === 'true' || params.get('export') === '1';
-    }
-
-    // -------------------------------
-    // Parse date để lấy ngày chuẩn yyyy-mm-dd
-    // -------------------------------
+    
+    // Hàm parse date
     function parseDateToStandard(value) {
       if (!value && value !== 0) return null;
-
-      // Nếu đã là Date object
+      
       if (value instanceof Date) {
-        if (isNaN(value)) return null;
-        return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return isNaN(value) ? null : new Date(value.getFullYear(), value.getMonth(), value.getDate());
       }
-
-      // Số (timestamp)
+      
       if (typeof value === 'number') {
         const d = new Date(value);
         return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
       }
-
+      
       const s = String(value).trim();
       
       // yyyy-mm-dd
       let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
       if (m) {
-        const y = Number(m[1]), mo = Number(m[2]) - 1, da = Number(m[3]);
-        return new Date(y, mo, da);
-      }
-      
-      // yyyy/mm/dd
-      m = s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-      if (m) {
-        const y = Number(m[1]), mo = Number(m[2]) - 1, da = Number(m[3]);
-        return new Date(y, mo, da);
+        return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
       }
       
       // dd/mm/yyyy
       m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
       if (m) {
-        const da = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
-        return new Date(y, mo, da);
+        return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
       }
-
-      // dd-mm-yyyy
-      m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
-      if (m) {
-        const da = Number(m[1]), mo = Number(m[2]) - 1, y = Number(m[3]);
-        return new Date(y, mo, da);
-      }
-
-      // Thử Date constructor cho các định dạng khác
+      
       const d = new Date(s);
-      if (!isNaN(d)) {
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      }
-
-      return null;
+      return isNaN(d) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
     }
-
-    // -------------------------------
-    // Format ngày thành yyyy-mm-dd
-    // -------------------------------
+    
+    // Format date
     function formatDateToYYYYMMDD(raw) {
       const d = parseDateToStandard(raw);
-      if (!d) return raw || ''; // Trả về nguyên bản nếu không parse được
-      
+      if (!d) return raw || '';
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd}`;
     }
-
-    // -------------------------------
-    // Format tỷ lệ HH thành %
-    // -------------------------------
+    
+    // Format tỷ lệ HH
     function formatTyLeHH(value) {
       if (value === null || value === undefined || value === '') return '';
-      
-      // Chuyển thành số
       const num = Number(value);
       if (isNaN(num)) return value;
-      
-      // Nhân với 100 và làm tròn 1 chữ số thập phân
       const percent = (num * 100).toFixed(1);
-      
-      // Loại bỏ .0 nếu là số nguyên
       const formatted = percent.replace(/\.0$/, '');
-      
       return `${formatted}%`;
     }
-
-    // -------------------------------
-    // Tải dữ liệu từ Apps Script
-    // -------------------------------
-    async function loadData() {
-      try {
-        if (isExportMode()) {
-          document.getElementById("mainContent").classList.add("hidden");
-          document.getElementById("exportMessage").classList.remove("hidden");
-        } else {
-          document.getElementById("status").className = "loading";
-          document.getElementById("status").textContent = "Đang tải dữ liệu...";
-        }
+    
+    // Lọc dữ liệu
+    function filterData(data, fromDate, toDate) {
+      return data.filter((r) => {
+        const dateValue = r.ngayXuatHoaDon || r['Ngày xuất'] || r['ngay_xuat'] || r['ngayXuatHoaDon'] || r['ngay'] || r['Ngày'];
+        const d = parseDateToStandard(dateValue);
         
-        const res = await fetch(DATA_URL);
-        const data = await res.json();
-        rawData = Array.isArray(data) ? data : (data.rows || []);
-        
-        // Nếu là chế độ export, tạo file và download
-        if (isExportMode()) {
-          await createAndDownloadExport();
-          return;
-        }
-        
-        // Nếu không phải chế độ export, hiển thị bình thường
-        document.getElementById("status").className = "";
-        document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi.";
-        
-        // Áp dụng filter từ URL
-        applyFiltersFromURL();
-        
-      } catch (err) {
-        if (isExportMode()) {
-          document.getElementById("exportMessage").innerHTML = 
-            `<p class="error">Lỗi khi tạo file Excel: ${err}</p>
-             <p><a href="${location.pathname}">Quay lại trang chính</a></p>`;
-        } else {
-          document.getElementById("status").className = "error";
-          document.getElementById("status").textContent = "Lỗi tải dữ liệu: " + err;
-        }
-      }
+        if (!d) return false;
+        if (fromDate && d < fromDate) return false;
+        if (toDate && d > toDate) return false;
+        return true;
+      });
     }
-
-    // -------------------------------
-    // Tạo và download file export
-    // -------------------------------
-    async function createAndDownloadExport() {
-      const params = new URLSearchParams(location.search);
-      const tungay = params.get("tungay");
-      const denngay = params.get("denngay");
-
-      const from = tungay ? parseDateToStandard(tungay) : null;
-      const to = denngay ? parseDateToStandard(denngay) : null;
-
-      // Lọc dữ liệu
-      let filteredData = filterData({ fromDate: from, toDate: to });
-
-      if (filteredData.length === 0) {
-        document.getElementById("exportMessage").innerHTML = 
-          `<p class="error">Không có dữ liệu để xuất</p>
-           <p><a href="${location.pathname}">Quay lại trang chính</a></p>`;
-        return;
-      }
-
-      // Tạo file CSV
-      const csvContent = createCSVContent(filteredData);
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
-      exportDataUrl = URL.createObjectURL(blob);
+    
+    // Tạo CSV
+    function createCSV(data) {
+      if (!data || data.length === 0) return '';
       
-      // Tạo tên file
-      let fileName = `HoaDon_${new Date().toISOString().slice(0, 10)}`;
-      if (from && to) {
-        fileName = `HoaDon_${formatDateToYYYYMMDD(from)}_${formatDateToYYYYMMDD(to)}`;
-      } else if (from) {
-        fileName = `HoaDon_tu_${formatDateToYYYYMMDD(from)}`;
-      } else if (to) {
-        fileName = `HoaDon_den_${formatDateToYYYYMMDD(to)}`;
-      }
+      // Bỏ các cột không cần
+      const excludedCols = ['id', 'quy', 'nam', 'lichsuhoadon', 'danhdau', 'nguoithuchien'];
+      const cols = Object.keys(data[0]).filter(col => 
+        !excludedCols.some(excluded => col.toLowerCase().includes(excluded.toLowerCase()))
+      );
       
-      // Tạo link download
-      const downloadLink = document.getElementById("manualDownload");
-      downloadLink.href = exportDataUrl;
-      downloadLink.download = `${fileName}.csv`;
+      let csv = '\uFEFF'; // UTF-8 BOM
+      csv += 'TT,' + cols.join(',') + '\n';
       
-      // Thử tự động download
-      setTimeout(() => {
-        try {
-          downloadLink.click();
-          document.getElementById("exportMessage").innerHTML = 
-            `<p>File Excel đã sẵn sàng!</p>
-             <p>Nếu file không tự động tải xuống, vui lòng <a href="${exportDataUrl}" download="${fileName}.csv" style="color: #1976d2; text-decoration: underline;">click vào đây</a></p>
-             <p><a href="${location.pathname}">Quay lại trang chính</a></p>`;
-        } catch (error) {
-          console.log("Tự động download không thành công, đợi user click");
-        }
-      }, 1000);
-    }
-
-    // -------------------------------
-    // Tạo nội dung CSV
-    // -------------------------------
-    function createCSVContent(data) {
-      // Lấy cột hiển thị
-      const cols = getColumns(data).filter(c => c !== 'TT');
-      
-      let csvContent = '';
-      
-      // Header
-      const headers = ['TT', ...cols];
-      csvContent += headers.join(',') + '\n';
-      
-      // Data rows
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
         const rowData = [i + 1];
@@ -274,297 +126,112 @@
         for (const col of cols) {
           let value = row[col] ?? '';
           
-          // Format ngày
           if (col.toLowerCase().includes('ngay') || col.toLowerCase().includes('date')) {
             value = formatDateToYYYYMMDD(value);
-          }
-          
-          // Format tỷ lệ HH
-          else if (col.toLowerCase().includes('tylehh') || col.toLowerCase().includes('tyle_hh')) {
+          } else if (col.toLowerCase().includes('tylehh') || col.toLowerCase().includes('tyle_hh')) {
             value = formatTyLeHH(value);
-          }
-          
-          // Format tiền (loại bỏ dấu phân cách hàng nghìn để Excel hiểu)
-          else if (col.toLowerCase().includes('tien') || 
-                  col.toLowerCase().includes('sotien') || 
-                  col.toLowerCase().includes('so_tien') || 
-                  col.toLowerCase().includes('tong') ||
-                  col.toLowerCase().includes('thanhtien')) {
+          } else if (col.toLowerCase().includes('tien') || col.toLowerCase().includes('sotien') || 
+                     col.toLowerCase().includes('tong') || col.toLowerCase().includes('thanhtien')) {
             const num = Number(value);
-            if (!isNaN(num)) {
-              value = num;
-            }
+            if (!isNaN(num)) value = num;
           }
           
-          // Escape commas and quotes for CSV
-          if (typeof value === 'string') {
-            if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-              value = '"' + value.replace(/"/g, '""') + '"';
-            }
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+            value = '"' + value.replace(/"/g, '""') + '"';
           }
           
           rowData.push(value);
         }
         
-        csvContent += rowData.join(',') + '\n';
+        csv += rowData.join(',') + '\n';
       }
       
-      return csvContent;
+      return csv;
     }
-
-    // -------------------------------
-    // Sắp xếp dữ liệu theo ngày giảm dần, rồi theo số hóa đơn giảm dần
-    // -------------------------------
-    function sortData(data) {
-      data.sort((a, b) => {
-        // Lấy ngày xuất hóa đơn
-        const dateA = parseDateToStandard(a.ngayXuatHoaDon || a['Ngày xuất'] || a['ngay_xuat'] || a['ngayXuatHoaDon'] || a['ngay'] || a['Ngày']);
-        const dateB = parseDateToStandard(b.ngayXuatHoaDon || b['Ngày xuất'] || b['ngay_xuat'] || b['ngayXuatHoaDon'] || b['ngay'] || b['Ngày']);
+    
+    // Chính
+    async function main() {
+      try {
+        const params = new URLSearchParams(location.search);
+        const tungay = params.get('tungay');
+        const denngay = params.get('denngay'); // CHÚ Ý: denngay, không phải demgay
         
-        // Lấy số hóa đơn
-        const soHoaDonA = a.soHoaDon || a['Số hóa đơn'] || a['so_hoadon'] || a['sohoadon'] || '';
-        const soHoaDonB = b.soHoaDon || b['Số hóa đơn'] || b['so_hoadon'] || b['sohoadon'] || '';
+        const from = tungay ? parseDateToStandard(tungay) : null;
+        const to = denngay ? parseDateToStandard(denngay) : null;
         
-        // So sánh ngày trước
-        if (dateA && dateB) {
-          if (dateA.getTime() !== dateB.getTime()) {
-            // Sắp xếp ngày giảm dần (mới nhất trước)
-            return dateB.getTime() - dateA.getTime();
-          }
-        } else if (!dateA && dateB) {
-          return 1; // Không có ngày đẩy xuống dưới
-        } else if (dateA && !dateB) {
-          return -1; // Không có ngày đẩy xuống dưới
-        } else if (!dateA && !dateB) {
-          // Cả hai đều không có ngày, so sánh số hóa đơn
+        // Hiển thị thông báo
+        document.getElementById('message').textContent = 'Đang tải dữ liệu từ server...';
+        
+        // Tải dữ liệu
+        const response = await fetch(DATA_URL);
+        const allData = await response.json();
+        const rawData = Array.isArray(allData) ? allData : (allData.rows || []);
+        
+        // Lọc dữ liệu
+        const filteredData = filterData(rawData, from, to);
+        
+        if (filteredData.length === 0) {
+          document.getElementById('message').classList.add('hidden');
+          document.getElementById('error').classList.remove('hidden');
+          document.getElementById('error').textContent = 'Không có dữ liệu trong khoảng thời gian đã chọn.';
+          document.getElementById('backLink').classList.remove('hidden');
+          return;
         }
         
-        // Nếu cùng ngày hoặc không có ngày, so sánh số hóa đơn giảm dần
-        // Chuyển số hóa đơn thành số để so sánh nếu có thể
-        const numA = parseFloat(soHoaDonA);
-        const numB = parseFloat(soHoaDonB);
+        // Tạo CSV
+        document.getElementById('message').textContent = 'Đang tạo file Excel...';
+        const csvContent = createCSV(filteredData);
         
-        if (!isNaN(numA) && !isNaN(numB)) {
-          // So sánh số
-          return numB - numA;
-        } else {
-          // So sánh chuỗi (giảm dần Z->A)
-          return soHoaDonB.localeCompare(soHoaDonA);
+        // Tạo blob và link download
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        // Tạo tên file
+        let fileName = 'HoaDon';
+        if (from && to) {
+          fileName = `HoaDon_${formatDateToYYYYMMDD(from)}_${formatDateToYYYYMMDD(to)}`;
+        } else if (from) {
+          fileName = `HoaDon_tu_${formatDateToYYYYMMDD(from)}`;
+        } else if (to) {
+          fileName = `HoaDon_den_${formatDateToYYYYMMDD(to)}`;
         }
-      });
-    }
-
-    // -------------------------------
-    // Lọc dữ liệu phía client
-    // -------------------------------
-    function filterData({ fromDate = null, toDate = null } = {}) {
-      let filtered = rawData.filter((r) => {
-        // Tìm ngày xuất hóa đơn trong các trường có thể
-        const dateValue = r.ngayXuatHoaDon ?? r['Ngày xuất'] ?? r['ngay_xuat'] ?? r['ngayXuatHoaDon'] ?? r['ngay'] ?? r['Ngày'];
-        const d = parseDateToStandard(dateValue);
         
-        if (!d) return false; // Không có ngày -> không hiển thị
+        fileName += '.csv';
         
-        if (fromDate && d < fromDate) return false;
-        if (toDate && d > toDate) return false;
+        // Cập nhật link
+        const downloadLink = document.getElementById('downloadLink');
+        downloadLink.href = url;
+        downloadLink.download = fileName;
+        downloadLink.textContent = `Tải xuống ${fileName} (${filteredData.length} bản ghi)`;
         
-        return true;
-      });
-
-      // Sắp xếp filtered data
-      sortData(filtered);
-
-      return filtered;
-    }
-
-    // -------------------------------
-    // Lấy danh sách cột (bỏ các cột không cần hiển thị)
-    // -------------------------------
-    function getColumns(data) {
-      if (!data || data.length === 0) return ['TT'];
-      
-      const firstRow = data[0];
-      const excludedColumns = [
-        'id', 'ID', 'Id',
-        'quy', 'Quy', 'QUY',
-        'nam', 'Nam', 'NAM',
-        'lichsuhoadon', 'LichSuHoaDon', 'LICHSUHOADON', 'lich_su_hoa_don',
-        'danhdau', 'DanhDau', 'DANHDAU', 'danh_dau',
-        'nguoithuchien', 'NguoiThucHien', 'NGUOITHUCHIEN', 'nguoi_thuc_hien'
-      ];
-      
-      const cols = Object.keys(firstRow).filter(col => {
-        const lowerCol = col.toLowerCase();
-        return !excludedColumns.some(excluded => 
-          lowerCol === excluded.toLowerCase() || 
-          col === excluded
-        );
-      });
-      
-      // Thêm cột TT vào đầu
-      cols.unshift('TT');
-      return cols;
-    }
-
-    // -------------------------------
-    // Hiển thị bảng
-    // -------------------------------
-    function renderTable(list) {
-      currentFilteredData = list; // Lưu lại dữ liệu hiện tại để export
-      
-      if (!list || list.length === 0) {
-        document.getElementById("tableWrap").innerHTML = "<p>Không có dữ liệu.</p>";
-        return;
-      }
-
-      const cols = getColumns(list);
-      let html = "<table><thead><tr>" + 
-        cols.map(c => {
-          if (c === 'TT') return `<th class="stt">${c}</th>`;
-          if (c.toLowerCase().includes('tylehh') || c.toLowerCase().includes('tyle_hh')) 
-            return `<th class="tyleHH">${c}</th>`;
-          return `<th>${c}</th>`;
-        })
-        .join('') + 
-        "</tr></thead><tbody>";
-
-      for (let i = 0; i < list.length; i++) {
-        const r = list[i];
-        html += "<tr>" + cols.map(c => {
-          if (c === 'TT') {
-            return `<td class="stt">${i + 1}</td>`;
+        // Hiển thị link
+        document.getElementById('message').classList.add('hidden');
+        downloadLink.classList.remove('hidden');
+        document.getElementById('backLink').classList.remove('hidden');
+        
+        // Thử tự động download
+        setTimeout(() => {
+          try {
+            downloadLink.click();
+            document.getElementById('message').classList.remove('hidden');
+            document.getElementById('message').textContent = 'File đã được tải xuống!';
+            downloadLink.textContent = 'Tải lại file';
+          } catch (e) {
+            console.log('Tự động download thất bại, chờ user click');
           }
-          
-          const value = r[c];
-          
-          // Format ngày thành yyyy-mm-dd
-          if (c.toLowerCase().includes('ngay') || c.toLowerCase().includes('date')) {
-            const formatted = formatDateToYYYYMMDD(value);
-            return `<td>${formatted}</td>`;
-          }
-          
-          // Format tỷ lệ HH thành %
-          if (c.toLowerCase().includes('tylehh') || c.toLowerCase().includes('tyle_hh')) {
-            const formatted = formatTyLeHH(value);
-            return `<td class="tyleHH">${formatted}</td>`;
-          }
-          
-          // Tiền -> format số
-          if (c.toLowerCase().includes('tien') || 
-              c.toLowerCase().includes('sotien') || 
-              c.toLowerCase().includes('so_tien') || 
-              c.toLowerCase().includes('tong') ||
-              c.toLowerCase().includes('thanhtien')) {
-            const v = value == null ? '' : Number(value);
-            return `<td style="text-align:right">${isNaN(v) ? (value ?? '') : v.toLocaleString('vi-VN')}</td>`;
-          }
-          
-          // Hiển thị nguyên bản cho các trường khác
-          return `<td>${value ?? ''}</td>`;
-        }).join('') + "</tr>";
+        }, 500);
+        
+      } catch (error) {
+        console.error('Lỗi:', error);
+        document.getElementById('message').classList.add('hidden');
+        document.getElementById('error').classList.remove('hidden');
+        document.getElementById('error').textContent = `Lỗi: ${error.message}`;
+        document.getElementById('backLink').classList.remove('hidden');
       }
-
-      html += "</tbody></table>";
-      document.getElementById("tableWrap").innerHTML = html;
     }
-
-    // -------------------------------
-    // Đọc tham số từ URL và áp dụng filter
-    // -------------------------------
-    function applyFiltersFromURL() {
-      const params = new URLSearchParams(location.search);
-      const tungay = params.get("tungay");
-      const denngay = params.get("denngay");
-
-      const from = tungay ? parseDateToStandard(tungay) : null;
-      const to = denngay ? parseDateToStandard(denngay) : null;
-
-      // Cập nhật giá trị input
-      if (from) document.getElementById("from").value = from.toISOString().slice(0, 10);
-      if (to) document.getElementById("to").value = to.toISOString().slice(0, 10);
-
-      // Áp dụng filter và hiển thị
-      const list = filterData({ fromDate: from, toDate: to });
-      document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi, hiển thị " + list.length + " bản ghi sau khi lọc.";
-      renderTable(list);
-    }
-
-    // -------------------------------
-    // Export to Excel (cho UI)
-    // -------------------------------
-    function exportToExcel() {
-      if (!currentFilteredData || currentFilteredData.length === 0) {
-        alert('Không có dữ liệu để xuất Excel');
-        return;
-      }
-
-      const csvContent = createCSVContent(currentFilteredData);
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `HoaDon_${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-    }
-
-    // -------------------------------
-    // Buttons
-    // -------------------------------
-    document.getElementById("apply").onclick = () => {
-      const vFrom = document.getElementById("from").value;
-      const vTo = document.getElementById("to").value;
-
-      const from = vFrom ? parseDateToStandard(vFrom) : null;
-      const to = vTo ? parseDateToStandard(vTo) : null;
-
-      // Update URL without reload
-      const p = new URLSearchParams();
-      if (from) p.set('tungay', vFrom);
-      if (to) p.set('denngay', vTo);
-      
-      const newUrl = location.pathname + (p.toString() ? '?' + p.toString() : '');
-      history.replaceState(null, '', newUrl);
-
-      // Apply filter locally
-      const list = filterData({ fromDate: from, toDate: to });
-      document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi, hiển thị " + list.length + " bản ghi sau khi lọc.";
-      renderTable(list);
-    };
-
-    document.getElementById("reset").onclick = () => {
-      document.getElementById("from").value = "";
-      document.getElementById("to").value = "";
-      
-      // Update URL without reload
-      history.replaceState(null, '', location.pathname);
-      
-      // Reset filter
-      const list = filterData({ fromDate: null, toDate: null });
-      document.getElementById("status").textContent = "Đã tải " + rawData.length + " bản ghi, hiển thị " + list.length + " bản ghi sau khi lọc.";
-      renderTable(list);
-    };
-
-    document.getElementById("exportExcel").onclick = exportToExcel;
-
-    // -------------------------------
-    // Dọn dẹp khi trang đóng
-    // -------------------------------
-    window.addEventListener('beforeunload', () => {
-      if (exportDataUrl) {
-        URL.revokeObjectURL(exportDataUrl);
-      }
-    });
-
-    // -------------------------------
-    // Khởi động
-    // -------------------------------
-    loadData();
+    
+    // Chạy khi trang tải xong
+    window.addEventListener('DOMContentLoaded', main);
   </script>
 </body>
 </html>
