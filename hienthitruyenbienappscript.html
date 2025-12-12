@@ -1,198 +1,190 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Danh sách hóa đơn</title>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hiển thị dữ liệu hóa đơn</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f6f6f6; }
-    h1 { margin-bottom: 15px; }
-    table { width: 100%; border-collapse: collapse; background: white;}
-    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
-    th { background: #f0f0f0; }
-    .controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-    input, button { padding: 6px 8px; }
-    button { cursor: pointer; background: #1976d2; color: white; border: none; border-radius: 4px; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;padding:18px;background:#f7f9fc}
+    h1{font-size:20px;margin:0 0 12px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    input[type=date], input[type=text]{padding:6px;border:1px solid #ccc;border-radius:6px}
+    button{padding:8px 10px;border-radius:8px;border:0;background:#0366d6;color:#fff;cursor:pointer}
+    table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left;font-size:13px}
+    th{background:#fafafa;position:sticky;top:0}
+    .muted{color:#666;font-size:12px}
+    .empty{padding:20px;text-align:center;color:#777}
+    .right{text-align:right}
+    @media (max-width:700px){table{font-size:12px} .controls{flex-direction:column}}
   </style>
 </head>
-
 <body>
   <h1>Danh sách hóa đơn</h1>
 
-  <!-- Filter controls -->
   <div class="controls">
-    <label>Từ ngày <input type="date" id="from"></label>
-    <label>Đến ngày <input type="date" id="to"></label>
-    <button id="apply">Lọc</button>
+    <label> Từ ngày <input id="from" type="date" /></label>
+    <label> Đến ngày <input id="to" type="date" /></label>
+    <input id="search" type="text" placeholder="Tìm theo Số hóa đơn / Đối tác / Nội dung" />
+    <button id="apply">Áp dụng</button>
     <button id="reset">Xóa</button>
+    <button id="download">Tải CSV</button>
   </div>
 
-  <div id="status">Đang tải dữ liệu...</div>
-
+  <div id="info" class="muted">Đang tải dữ liệu…</div>
   <div id="tableWrap"></div>
 
   <script>
-    const DATA_URL =
-      "https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec";
+    // Thay URL này nếu bạn có exec khác
+    const DATA_URL = 'https://script.google.com/macros/s/AKfycbwnoIs3T8FKrq53SG7lCTwE1Rm0H6eWc05mD1S347XscHkgg-VxMkHO96b_8Z-O_r0j/exec';
+
+    // Utility
+    const fmtDate = iso => {
+      if(!iso) return '';
+      const d = new Date(iso);
+      if(isNaN(d)) return iso;
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    };
+
+    const parseQueryDate = s => {
+      if(!s) return null;
+      // input 'yyyy-mm-dd' from <input date>
+      const d = new Date(s + 'T00:00:00');
+      return isNaN(d) ? null : d;
+    };
 
     let rawData = [];
 
-    // -------------------------------
-    // Tải dữ liệu từ Apps Script
-    // -------------------------------
-    async function loadData() {
-      try {
+    async function loadData(){
+      try{
+        document.getElementById('info').textContent = 'Đang tải dữ liệu từ server...';
         const res = await fetch(DATA_URL);
+        if(!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        rawData = Array.isArray(data) ? data : data.rows;
-
-        document.getElementById("status").textContent =
-          "Đã tải " + rawData.length + " bản ghi.";
-
+        rawData = Array.isArray(data) ? data : (data.rows||[]);
+        document.getElementById('info').textContent = `Đã tải ${rawData.length} bản ghi.`;
         applyFiltersFromURL();
-      } catch (err) {
-        document.getElementById("status").textContent =
-          "Lỗi tải dữ liệu: " + err;
-      }
-    }
+        function renderTable(list){
+  if(!list || list.length===0){
+    document.getElementById('tableWrap').innerHTML = "<p>Không có dữ liệu.</p>";
+    return;
+  }
 
-    // -------------------------------
-    // Hiển thị bảng
-    // -------------------------------
-    function renderTable(list) {
-      if (!list || list.length === 0) {
-        document.getElementById("tableWrap").innerHTML =
-          "<p>Không có dữ liệu.</p>";
-        return;
-      }
+  const cols = Object.keys(list[0]);
+  let html = "<table><thead><tr>" +
+             cols.map(c=>`<th>${c}</th>`).join('') +
+             "</tr></thead><tbody>";
 
-      let html = "<table><thead><tr>" +
-        "<th>Số HĐ</th><th>Ngày xuất</th><th>Đối tác</th>" +
-        "<th>Nội dung</th><th>Số tiền</th>" +
-        "</tr></thead><tbody>";
+  for(const r of list){
+    html += "<tr>" + cols.map(c=>`<td>${r[c] ?? ''}</td>`).join('') + "</tr>";
+  }
 
-      for (const r of list) {
-        html += "<tr>" +
-          `<td>${r.soHoaDon || ""}</td>` +
-          `<td>${formatDate(r.ngayXuatHoaDon)}</td>` +
-          `<td>${r.doiTac || ""}</td>` +
-          `<td>${r.noiDungHoaDon || ""}</td>` +
-          `<td>${Number(r.soTien || 0).toLocaleString()}</td>` +
-          "</tr>";
-      }
+  html += "</tbody></table>";
+  document.getElementById('tableWrap').innerHTML = html;
+}
 
-      html += "</tbody></table>";
-
-      document.getElementById("tableWrap").innerHTML = html;
-    }
-
-    // -------------------------------
-    // Lọc dữ liệu
-    // -------------------------------
-    function filterData({ fromDate = null, toDate = null } = {}) {
-      return rawData.filter((r) => {
-        const d = r.ngayXuatHoaDon ? new Date(r.ngayXuatHoaDon) : null;
-        if (!d) return false;
-
-        if (fromDate && d < fromDate) return false;
-
-        if (toDate) {
-          const end = new Date(toDate);
-          end.setHours(23, 59, 59, 999);
-          if (d > end) return false;
+function filterData({ fromDate=null, toDate=null } = {})({fromDate=null, toDate=null, q='' } = {}){
+      q = (q||'').trim().toLowerCase();
+      return rawData.filter(r => {
+        // filter by date
+        if(fromDate || toDate){
+          const d = r.ngayXuatHoaDon ? new Date(r.ngayXuatHoaDon) : null;
+          if(!d) return false;
+          if(fromDate && d < fromDate) return false;
+          if(toDate){
+            // include entire day
+            const end = new Date(toDate);
+            end.setHours(23,59,59,999);
+            if(d > end) return false;
+          }
         }
-
-        return true;
+        if(!q) return true;
+        const fields = [r.soHoaDon, r.doiTac, r.noiDungHoaDon].join(' ').toLowerCase();
+        return fields.includes(q);
       });
     }
 
-    // -------------------------------
-    // Lấy tham số URL & tự lọc
-    // -------------------------------
-    function applyFiltersFromURL() {
+    // Read URL params 'tungay' and 'denngay' in dd/mm/yyyy or yyyy-mm-dd and set inputs
+    function applyFiltersFromURL(){
       const params = new URLSearchParams(location.search);
+      const tungay = params.get('tungay');
+      const denngay = params.get('denngay');
+      const searchq = params.get('q') || '';
 
-      const tungay = params.get("tungay");
-      const denngay = params.get("denngay");
-
-      const tryParse = (s) => {
-        if (!s) return null;
-
+      const tryParse = s => {
+        if(!s) return null;
         // dd/mm/yyyy
-        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
-          const [dd, mm, yyyy] = s.split("/");
-          return new Date(`${yyyy}-${mm}-${dd}T00:00:00`);
+        if(/\d{1,2}\/\d{1,2}\/\d{4}/.test(s)){
+          const [dd,mm,yyyy] = s.split('/');
+          return new Date(`${yyyy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
         }
-
         // yyyy-mm-dd
-        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-          return new Date(s + "T00:00:00");
-        }
-
+        if(/\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s + 'T00:00:00');
         return new Date(s);
       };
 
       const from = tryParse(tungay);
       const to = tryParse(denngay);
+      if(from && !isNaN(from)) document.getElementById('from').value = from.toISOString().slice(0,10);
+      if(to && !isNaN(to)) document.getElementById('to').value = to.toISOString().slice(0,10);
+      if(searchq) document.getElementById('search').value = searchq;
 
-      // Set vào input hiển thị
-      if (from)
-        document.getElementById("from").value =
-          from.toISOString().slice(0, 10);
-
-      if (to)
-        document.getElementById("to").value =
-          to.toISOString().slice(0, 10);
-
-      const list = filterData({ fromDate: from, toDate: to });
-
+      const list = filterData({ fromDate: from, toDate: to, q: searchq });
       renderTable(list);
     }
 
-    // -------------------------------
-    // Nút APPLY
-    // -------------------------------
-    document.getElementById("apply").onclick = () => {
-      const from = document.getElementById("from").value
-        ? new Date(document.getElementById("from").value + "T00:00:00")
-        : null;
+    // controls
+    document.getElementById('apply').addEventListener('click', ()=>{
+      const from = parseQueryDate(document.getElementById('from').value);
+      const to = parseQueryDate(document.getElementById('to').value);
+      const q = document.getElementById('search').value;
+      const filtered = filterData({fromDate: from, toDate: to, q});
+      renderTable(filtered);
+      // update URL (without reload)
+      const p = new URLSearchParams(location.search);
+      if(from) p.set('tungay', document.getElementById('from').value);
+      else p.delete('tungay');
+      if(to) p.set('denngay', document.getElementById('to').value);
+      else p.delete('denngay');
+      if(q) p.set('q', q); else p.delete('q');
+      history.replaceState(null,'', location.pathname + '?' + p.toString());
+    });
 
-      const to = document.getElementById("to").value
-        ? new Date(document.getElementById("to").value + "T00:00:00")
-        : null;
-
-      const list = filterData({ fromDate: from, toDate: to });
-
-      renderTable(list);
-    };
-
-    // -------------------------------
-    // Nút RESET
-    // -------------------------------
-    document.getElementById("reset").onclick = () => {
-      document.getElementById("from").value = "";
-      document.getElementById("to").value = "";
-
+    document.getElementById('reset').addEventListener('click', ()=>{
+      document.getElementById('from').value = '';
+      document.getElementById('to').value = '';
+      document.getElementById('search').value = '';
       renderTable(rawData);
-    };
+      history.replaceState(null,'', location.pathname);
+    });
 
-    // -------------------------------
-    // Format ngày
-    // -------------------------------
-    function formatDate(iso) {
-      if (!iso) return "";
-      const d = new Date(iso);
-      if (isNaN(d)) return iso;
-      return (
-        String(d.getDate()).padStart(2, "0") +
-        "/" +
-        String(d.getMonth() + 1).padStart(2, "0") +
-        "/" +
-        d.getFullYear()
-      );
+    // CSV download
+    function toCSV(list){
+      const cols = ['soHoaDon','ngayXuatHoaDon','doiTac','noiDungHoaDon','soTien','loaiHD','thang','quy','nam'];
+      const header = ['Số HĐ','Ngày xuất','Đối tác','Nội dung','Số tiền','Loại HĐ','Tháng','Quý','Năm'];
+      const rows = [header.join(',')];
+      for(const r of list){
+        rows.push(cols.map(c => '"' + ((r[c]===undefined||r[c]===null)?'': String(r[c]).replace(/\"/g,'""')) + '"').join(','));
+      }
+      return rows.join('\n');
     }
 
-    // Khởi động
+    document.getElementById('download').addEventListener('click', ()=>{
+      const from = parseQueryDate(document.getElementById('from').value);
+      const to = parseQueryDate(document.getElementById('to').value);
+      const q = document.getElementById('search').value;
+      const list = filterData({fromDate: from, toDate: to, q});
+      const csv = toCSV(list);
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'hoa_don.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // kick off
     loadData();
   </script>
 </body>
