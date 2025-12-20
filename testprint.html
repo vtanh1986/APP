@@ -124,7 +124,7 @@
             background: #f0f0f0;
             font-weight: bold;
             font-size: 14px;
-            border-top: 2px solid #333;
+            border-bottom: 1px solid #ddd;
         }
         
         .summary-row td {
@@ -132,13 +132,18 @@
         }
         
         .discount-reason {
-            background: #f9f9f9;
+            background: #f0f0f0;
             font-size: 13px;
             font-style: italic;
             color: #666;
-            padding: 5px 8px !important;
-            text-align: center !important;
+            padding: 8px;
+            text-align: center;
+            font-weight: normal;
             border-bottom: 1px solid #ddd;
+        }
+        
+        .first-summary {
+            border-top: 2px solid #333;
         }
         
         .footer {
@@ -335,15 +340,6 @@
             
             // Thêm dòng TỔNG TIỀN
             if (stt > 0) {
-                // Dòng TỔNG TIỀN
-                const trTongTien = document.createElement('tr');
-                trTongTien.className = 'summary-row';
-                trTongTien.innerHTML = `
-                    <td colspan="4">TỔNG TIỀN</td>
-                    <td>${tongTien.toLocaleString('vi-VN')}đ</td>
-                `;
-                tableBody.appendChild(trTongTien);
-                
                 // Tính toán chiết khấu và thanh toán
                 let chiTietChietKhau = 0;
                 if (chietKhau) {
@@ -362,6 +358,15 @@
                 if (noiDungChietKhau) {
                     noiDungChiTiet = decodeURIComponent(noiDungChietKhau);
                 }
+                
+                // Dòng TỔNG TIỀN (dòng đầu tiên có border-top đậm)
+                const trTongTien = document.createElement('tr');
+                trTongTien.className = 'summary-row first-summary';
+                trTongTien.innerHTML = `
+                    <td colspan="4">TỔNG TIỀN</td>
+                    <td>${tongTien.toLocaleString('vi-VN')}đ</td>
+                `;
+                tableBody.appendChild(trTongTien);
                 
                 // Thêm dòng CHIẾT KHẤU (nếu có)
                 if (chiTietChietKhau > 0) {
