@@ -120,36 +120,25 @@
             text-align: right;
         }
         
-        .total-row {
+        .summary-row {
             background: #f0f0f0;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             border-top: 2px solid #333;
         }
         
-        .discount-row {
-            background: #fff3cd;
-            font-weight: bold;
-            font-size: 16px;
-            color: #856404;
+        .summary-row td {
+            padding: 8px;
         }
         
-        .payment-row {
-            background: #d4edda;
-            font-weight: bold;
-            font-size: 16px;
-            color: #155724;
-        }
-        
-        .discount-note-row {
-            background: #f8f9fa;
-            font-size: 14px;
+        .discount-reason {
+            background: #f9f9f9;
+            font-size: 13px;
             font-style: italic;
             color: #666;
-        }
-        
-        .summary-row td {
-            padding: 15px 8px;
+            padding: 5px 8px !important;
+            text-align: center !important;
+            border-bottom: 1px solid #ddd;
         }
         
         .footer {
@@ -348,7 +337,7 @@
             if (stt > 0) {
                 // Dòng TỔNG TIỀN
                 const trTongTien = document.createElement('tr');
-                trTongTien.className = 'total-row summary-row';
+                trTongTien.className = 'summary-row';
                 trTongTien.innerHTML = `
                     <td colspan="4">TỔNG TIỀN</td>
                     <td>${tongTien.toLocaleString('vi-VN')}đ</td>
@@ -377,32 +366,32 @@
                 // Thêm dòng CHIẾT KHẤU (nếu có)
                 if (chiTietChietKhau > 0) {
                     const trChietKhau = document.createElement('tr');
-                    trChietKhau.className = 'discount-row summary-row';
+                    trChietKhau.className = 'summary-row';
                     trChietKhau.innerHTML = `
                         <td colspan="4">CHIẾT KHẤU</td>
                         <td>-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>
                     `;
                     tableBody.appendChild(trChietKhau);
-                    
-                    // Thêm dòng NỘI DUNG CHIẾT KHẤU (nếu có nội dung)
-                    if (noiDungChiTiet && noiDungChiTiet !== "Chiết khấu") {
-                        const trNoiDung = document.createElement('tr');
-                        trNoiDung.className = 'discount-note-row summary-row';
-                        trNoiDung.innerHTML = `
-                            <td colspan="5" style="text-align: left;">(${noiDungChiTiet})</td>
-                        `;
-                        tableBody.appendChild(trNoiDung);
-                    }
                 }
                 
                 // Thêm dòng THANH TOÁN
                 const trThanhToan = document.createElement('tr');
-                trThanhToan.className = 'payment-row summary-row';
+                trThanhToan.className = 'summary-row';
                 trThanhToan.innerHTML = `
                     <td colspan="4">THANH TOÁN</td>
                     <td>${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>
                 `;
                 tableBody.appendChild(trThanhToan);
+                
+                // Thêm dòng lý do chiết khấu (nếu có và khác mặc định)
+                if (chiTietChietKhau > 0 && noiDungChiTiet && noiDungChiTiet !== "Chiết khấu") {
+                    const trNoiDung = document.createElement('tr');
+                    trNoiDung.className = 'discount-reason';
+                    trNoiDung.innerHTML = `
+                        <td colspan="5">${noiDungChiTiet}</td>
+                    `;
+                    tableBody.appendChild(trNoiDung);
+                }
             }
         }
     </script>
