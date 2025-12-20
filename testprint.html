@@ -124,11 +124,32 @@
             background: #f0f0f0;
             font-weight: bold;
             font-size: 16px;
+            border-top: 2px solid #333;
         }
         
-        .total-row td {
+        .discount-row {
+            background: #fff3cd;
+            font-weight: bold;
+            font-size: 16px;
+            color: #856404;
+        }
+        
+        .payment-row {
+            background: #d4edda;
+            font-weight: bold;
+            font-size: 16px;
+            color: #155724;
+        }
+        
+        .discount-note-row {
+            background: #f8f9fa;
+            font-size: 14px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .summary-row td {
             padding: 15px 8px;
-            border-top: 2px solid #333;
         }
         
         .footer {
@@ -229,6 +250,11 @@
         const dienThoai = urlParams.get('dienthoai');
         const footerText = urlParams.get('footer');
         
+        // Thêm các tham số mới cho chiết khấu và thanh toán
+        const chietKhau = urlParams.get('chietkhau');
+        const thanhToan = urlParams.get('thanhtoan');
+        const noiDungChietKhau = urlParams.get('noidungchietkhau');
+        
         // Cập nhật thông tin từ URL
         if (tenShop) {
             document.getElementById('tenShop').textContent = decodeURIComponent(tenShop);
@@ -318,15 +344,65 @@
                 }
             });
             
-            // Thêm dòng tổng tiền
+            // Thêm dòng TỔNG TIỀN
             if (stt > 0) {
-                const trTotal = document.createElement('tr');
-                trTotal.className = 'total-row';
-                trTotal.innerHTML = `
-                    <td colspan="4">TỔNG CỘNG</td>
+                // Dòng TỔNG TIỀN
+                const trTongTien = document.createElement('tr');
+                trTongTien.className = 'total-row summary-row';
+                trTongTien.innerHTML = `
+                    <td colspan="4">TỔNG TIỀN</td>
                     <td>${tongTien.toLocaleString('vi-VN')}đ</td>
                 `;
-                tableBody.appendChild(trTotal);
+                tableBody.appendChild(trTongTien);
+                
+                // Tính toán chiết khấu và thanh toán
+                let chiTietChietKhau = 0;
+                if (chietKhau) {
+                    chiTietChietKhau = parseInt(chietKhau) || 0;
+                }
+                
+                let chiTietThanhToan = 0;
+                if (thanhToan) {
+                    chiTietThanhToan = parseInt(thanhToan) || 0;
+                } else {
+                    // Nếu không có tham số thanh toán, tính tự động
+                    chiTietThanhToan = tongTien - chiTietChietKhau;
+                }
+                
+                let noiDungChiTiet = "Chiết khấu";
+                if (noiDungChietKhau) {
+                    noiDungChiTiet = decodeURIComponent(noiDungChietKhau);
+                }
+                
+                // Thêm dòng CHIẾT KHẤU (nếu có)
+                if (chiTietChietKhau > 0) {
+                    const trChietKhau = document.createElement('tr');
+                    trChietKhau.className = 'discount-row summary-row';
+                    trChietKhau.innerHTML = `
+                        <td colspan="4">CHIẾT KHẤU</td>
+                        <td>-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>
+                    `;
+                    tableBody.appendChild(trChietKhau);
+                    
+                    // Thêm dòng NỘI DUNG CHIẾT KHẤU (nếu có nội dung)
+                    if (noiDungChiTiet && noiDungChiTiet !== "Chiết khấu") {
+                        const trNoiDung = document.createElement('tr');
+                        trNoiDung.className = 'discount-note-row summary-row';
+                        trNoiDung.innerHTML = `
+                            <td colspan="5" style="text-align: left;">(${noiDungChiTiet})</td>
+                        `;
+                        tableBody.appendChild(trNoiDung);
+                    }
+                }
+                
+                // Thêm dòng THANH TOÁN
+                const trThanhToan = document.createElement('tr');
+                trThanhToan.className = 'payment-row summary-row';
+                trThanhToan.innerHTML = `
+                    <td colspan="4">THANH TOÁN</td>
+                    <td>${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>
+                `;
+                tableBody.appendChild(trThanhToan);
             }
         }
     </script>
