@@ -146,9 +146,37 @@
             border-top: 2px solid #333;
         }
         
+        .qrcode-section {
+            text-align: center;
+            margin: 30px 0 20px 0;
+            padding: 20px 0;
+            border-top: 1px dashed #ccc;
+        }
+        
+        .qrcode-container {
+            display: inline-block;
+            padding: 10px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .qrcode-container img {
+            display: block;
+            max-width: 150px;
+            height: auto;
+        }
+        
+        .qrcode-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
         .footer {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 20px;
             padding-top: 20px;
             border-top: 1px dashed #999;
             color: #666;
@@ -223,6 +251,14 @@
             </tbody>
         </table>
         
+        <!-- QR Code Section -->
+        <div class="qrcode-section" id="qrcodeSection">
+            <div class="qrcode-container">
+                <img id="qrcodeImage" src="" alt="QR Code">
+            </div>
+            <div class="qrcode-text" id="qrcodeText"></div>
+        </div>
+        
         <div class="footer">
             <p id="footerText">Cảm ơn quý khách và hẹn gặp lại!</p>
             <p>---===---</p>
@@ -248,6 +284,12 @@
         const chietKhau = urlParams.get('chietkhau');
         const thanhToan = urlParams.get('thanhtoan');
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
+        
+        // Tham số mới cho QR code
+        const qrcodeUrl = urlParams.get('qrcode'); // URL hình ảnh QR code
+        const qrcodeContent = urlParams.get('qrcodecontent'); // Nội dung để tạo QR code
+        const qrcodeText = urlParams.get('qrcodetext'); // Chú thích dưới QR code
+        const showQrcode = urlParams.get('showqrcode'); // Hiển thị/ẩn QR code (true/false)
         
         // Cập nhật thông tin từ URL
         if (tenShop) {
@@ -280,6 +322,44 @@
         
         if (footerText) {
             document.getElementById('footerText').textContent = decodeURIComponent(footerText);
+        }
+        
+        // Xử lý QR code
+        const qrcodeSection = document.getElementById('qrcodeSection');
+        const qrcodeImage = document.getElementById('qrcodeImage');
+        const qrcodeTextElement = document.getElementById('qrcodeText');
+        
+        // Kiểm tra nên hiển thị QR code không
+        const shouldShowQrcode = showQrcode !== 'false'; // Mặc định hiển thị
+        
+        if (shouldShowQrcode) {
+            // Ưu tiên sử dụng URL QR code có sẵn
+            if (qrcodeUrl) {
+                qrcodeImage.src = decodeURIComponent(qrcodeUrl);
+                qrcodeImage.alt = "QR Code";
+            } 
+            // Nếu không có URL, tạo QR code từ nội dung
+            else if (qrcodeContent) {
+                const content = decodeURIComponent(qrcodeContent);
+                // Tạo QR code online sử dụng API Google Charts
+                const encodedContent = encodeURIComponent(content);
+                qrcodeImage.src = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodedContent}&choe=UTF-8`;
+                qrcodeImage.alt = "QR Code";
+            } 
+            // Nếu không có tham số QR code, ẩn section
+            else {
+                qrcodeSection.style.display = 'none';
+            }
+            
+            // Cập nhật chú thích QR code
+            if (qrcodeText) {
+                qrcodeTextElement.textContent = decodeURIComponent(qrcodeText);
+            } else {
+                qrcodeTextElement.textContent = "Quét mã QR để thanh toán";
+            }
+        } else {
+            // Ẩn QR code nếu showqrcode=false
+            qrcodeSection.style.display = 'none';
         }
         
         // Xử lý data cho bảng
