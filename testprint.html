@@ -13,54 +13,48 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: white;
-            padding: 0;
+            background: #f5f5f5;
+            padding: 20px;
         }
         
         .invoice {
-            width: 100%;
-            max-width: 100%;
-            margin: 0;
+            max-width: 600px;
+            margin: 0 auto;
             background: white;
-            padding: 10px;
-            box-shadow: none;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .header {
             text-align: center;
             border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-            padding-top: 0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
         }
         
         .header h1 {
-            font-size: 20px;
+            font-size: 24px;
             color: #333;
-            margin-bottom: 3px;
-            line-height: 1.2;
+            margin-bottom: 5px;
         }
         
         .header p {
             color: #666;
-            font-size: 13px;
-            margin: 2px 0;
-            line-height: 1.2;
+            font-size: 14px;
         }
         
         .info-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 15px;
-            padding: 10px;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
             background: #f9f9f9;
-            border-radius: 3px;
+            border-radius: 5px;
         }
         
         .info-item {
-            font-size: 13px;
-            line-height: 1.2;
+            font-size: 14px;
         }
         
         .info-label {
@@ -75,8 +69,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
-            table-layout: fixed;
+            margin-bottom: 20px;
         }
         
         thead {
@@ -85,30 +78,20 @@
         }
         
         th {
-            padding: 8px 4px;
+            padding: 12px 8px;
             text-align: left;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
-            line-height: 1.2;
         }
         
         th:first-child {
-            width: 35px;
+            width: 40px;
             text-align: center;
         }
         
-        th:nth-child(2) {
-            width: auto;
-        }
-        
-        th:nth-child(3) {
-            width: 40px;
-            text-align: right;
-        }
-        
+        th:nth-child(3),
         th:nth-child(4),
         th:nth-child(5) {
-            width: 70px;
             text-align: right;
         }
         
@@ -116,57 +99,47 @@
             border-bottom: 1px solid #ddd;
         }
         
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+        
         td {
-            padding: 8px 4px;
-            font-size: 13px;
+            padding: 10px 8px;
+            font-size: 14px;
             color: #333;
-            line-height: 1.2;
-            word-wrap: break-word;
         }
         
         td:first-child {
             text-align: center;
             font-weight: bold;
-            width: 35px;
         }
         
-        td:nth-child(2) {
-            text-align: left;
-        }
-        
-        td:nth-child(3) {
-            text-align: right;
-            width: 40px;
-        }
-        
+        td:nth-child(3),
         td:nth-child(4),
         td:nth-child(5) {
             text-align: right;
-            width: 70px;
         }
         
         .summary-row {
             background: #f0f0f0;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 14px;
             border-bottom: 1px solid #ddd;
-            line-height: 1.2;
         }
         
         .summary-row td {
-            padding: 6px 4px;
+            padding: 8px;
         }
         
         .discount-reason {
             background: #f0f0f0;
-            font-size: 12px;
+            font-size: 13px;
             font-style: italic;
             color: #666;
-            padding: 6px 4px;
+            padding: 8px;
             text-align: center;
             font-weight: normal;
             border-bottom: 1px solid #ddd;
-            line-height: 1.2;
         }
         
         .first-summary {
@@ -175,29 +148,22 @@
         
         .footer {
             text-align: center;
-            margin-top: 20px;
-            padding-top: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
             border-top: 1px dashed #999;
             color: #666;
-            font-size: 13px;
-            line-height: 1.2;
+            font-size: 14px;
         }
         
         @media print {
-            @page {
-                margin: 0;
-            }
-            
             body {
-                margin: 0;
+                background: white;
                 padding: 0;
             }
             
             .invoice {
-                margin: 0;
-                padding: 5mm;
                 box-shadow: none;
-                width: 100%;
+                max-width: 100%;
             }
         }
     </style>
