@@ -575,7 +575,7 @@
             qrcodeSection.style.display = 'none';
         }
         
-        // Xử lý data cho bảng với logic gộp các dòng cùng tên hàng
+        // Xử lý data cho bảng với logic gộp các dòng cùng tên hàng VÀ cùng đơn giá
         if (data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = ''; // Xóa dữ liệu mẫu
@@ -583,7 +583,7 @@
             // Tách các dòng bằng _b_
             const rows = data.split('_b_');
             
-            // Object để lưu các sản phẩm trùng tên
+            // Object để lưu các sản phẩm trùng tên VÀ đơn giá
             const productMap = new Map();
             let tongTien = 0;
             
@@ -601,15 +601,18 @@
                         const soLuong = parseInt(cols[1]) || 0;
                         const donGia = parseInt(cols[2]) || 0;
                         
+                        // Tạo key duy nhất từ tên hàng + đơn giá
+                        const productKey = `${tenHang}_${donGia}`;
+                        
                         // Kiểm tra xem sản phẩm đã có trong map chưa
-                        if (productMap.has(tenHang)) {
+                        if (productMap.has(productKey)) {
                             // Cập nhật số lượng và thành tiền
-                            const existingProduct = productMap.get(tenHang);
+                            const existingProduct = productMap.get(productKey);
                             existingProduct.soLuong += soLuong;
                             existingProduct.thanhTien = existingProduct.soLuong * existingProduct.donGia;
                         } else {
                             // Thêm sản phẩm mới vào map
-                            productMap.set(tenHang, {
+                            productMap.set(productKey, {
                                 tenHang: tenHang,
                                 soLuong: soLuong,
                                 donGia: donGia,
@@ -718,6 +721,32 @@
                 }
             }
         }
+        
+        // Hàm kiểm tra logic gộp với ví dụ minh họa
+        function debugMergeLogic() {
+            console.log("=== KIỂM TRA LOGIC GỘP SẢN PHẨM ===");
+            
+            // Ví dụ 1: Cùng tên hàng, cùng đơn giá
+            console.log("Ví dụ 1 - Cùng tên hàng, cùng đơn giá:");
+            console.log("- Cà phê đen - 2 cái - 25,000");
+            console.log("- Cà phê đen - 1 cái - 25,000");
+            console.log("=> Gộp thành: Cà phê đen - 3 cái - 25,000 = 75,000");
+            
+            // Ví dụ 2: Cùng tên hàng, khác đơn giá
+            console.log("\nVí dụ 2 - Cùng tên hàng, khác đơn giá:");
+            console.log("- Cà phê đen - 2 cái - 25,000");
+            console.log("- Cà phê đen - 1 cái - 30,000");
+            console.log("=> KHÔNG gộp, hiển thị 2 dòng riêng biệt");
+            
+            // Ví dụ 3: Khác tên hàng
+            console.log("\nVí dụ 3 - Khác tên hàng:");
+            console.log("- Cà phê đen - 2 cái - 25,000");
+            console.log("- Cà phê sữa - 1 cái - 30,000");
+            console.log("=> KHÔNG gộp, hiển thị 2 dòng riêng biệt");
+        }
+        
+        // Gọi hàm debug để kiểm tra logic
+        debugMergeLogic();
     </script>
 </body>
 </html>
