@@ -58,7 +58,7 @@
         /* Tiêu đề cột danh sách món */
         .dish-header {
             display: grid;
-            grid-template-columns: 50px 1fr 80px 70px;
+            grid-template-columns: 50px 1fr 70px;
             margin-bottom: 5px;
             font-weight: bold;
             padding-bottom: 3px;
@@ -76,7 +76,7 @@
         
         .dish-item {
             display: grid;
-            grid-template-columns: 50px 1fr 80px 70px;
+            grid-template-columns: 50px 1fr 70px;
             margin-bottom: 8px;
             padding: 3px 0;
             min-height: 30px;
@@ -130,6 +130,21 @@
             .no-print {
                 display: none !important;
             }
+            
+            /* Khi in: chỉ hiển thị 2 cột SL và TÊN MÓN */
+            .dish-header {
+                grid-template-columns: 50px 1fr;
+            }
+            
+            .dish-item {
+                grid-template-columns: 50px 1fr;
+            }
+            
+            /* Ẩn cột LOẠI BẾP khi in */
+            .dish-header > div:nth-child(3),
+            .dish-item > div:nth-child(3) {
+                display: none;
+            }
         }
         
         /* Nút in ẩn đi khi in */
@@ -152,14 +167,6 @@
             background-color: #555;
         }
         
-        /* Hiệu ứng cho ghi chú đặc biệt */
-        .special-note {
-            background-color: #fffacd;
-            border-left: 3px solid #ffd700;
-            padding: 5px;
-            margin-top: 3px;
-        }
-        
         /* Phần thông tin bếp */
         .kitchen-info {
             text-align: center;
@@ -176,11 +183,10 @@
             <div class="service-name">ORDER BẾP</div>
         </div>
         
-        <!-- Tiêu đề cột -->
+        <!-- Tiêu đề cột - CHỈ CÒN 3 CỘT -->
         <div class="dish-header">
             <div>SL</div>
             <div>TÊN MÓN</div>
-            <div>GHI CHÚ</div>
             <div>LOẠI BẾP</div>
         </div>
         
@@ -234,8 +240,8 @@
                 // Tách các cột bằng _a_
                 const columns = row.split('_a_');
                 
-                // Đảm bảo có đủ 4 cột
-                while (columns.length < 4) {
+                // Đảm bảo có đủ 3 cột (đã bỏ cột GHI CHÚ)
+                while (columns.length < 3) {
                     columns.push('');
                 }
                 
@@ -243,16 +249,8 @@
                 const dish = {
                     quantity: columns[0] || '1',
                     name: columns[1] || '',
-                    note: columns[2] || '',
-                    kitchenType: columns[3] || 'BẾP CHÍNH'
+                    kitchenType: columns[2] || 'BẾP CHÍNH'
                 };
-                
-                // Kiểm tra nếu có ghi chú đặc biệt (chứa từ khóa đặc biệt)
-                if (dish.note.toLowerCase().includes('không cay') || 
-                    dish.note.toLowerCase().includes('đặc biệt') ||
-                    dish.note.toLowerCase().includes('quan trọng')) {
-                    dish.specialNote = true;
-                }
                 
                 dishes.push(dish);
             });
@@ -262,15 +260,10 @@
         
         // Hàm tạo mã HTML cho danh sách món ăn
         function createDishItem(dish) {
-            const noteClass = dish.note && dish.note.trim() !== '' ? 
-                (dish.specialNote ? 'dish-note special-note' : 'dish-note') : 
-                'dish-note';
-            
             return `
                 <div class="dish-item">
                     <div class="dish-quantity">${dish.quantity || 1}</div>
                     <div class="dish-name">${dish.name || ''}</div>
-                    <div class="${noteClass}">${dish.note || ''}</div>
                     <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
                 </div>
             `;
@@ -317,20 +310,22 @@
                     <div class="dish-item">
                         <div class="dish-quantity">1</div>
                         <div class="dish-name">Cơm rang bò</div>
-                        <div class="dish-note">Ít dầu</div>
                         <div class="dish-kitchen-type">BẾP CHÍNH</div>
                     </div>
                     <div class="dish-item">
                         <div class="dish-quantity">1</div>
                         <div class="dish-name">Cơm rang thập cẩm</div>
-                        <div class="dish-note">Không thịt bò</div>
                         <div class="dish-kitchen-type">BẾP CHÍNH</div>
                     </div>
                     <div class="dish-item">
                         <div class="dish-quantity">2</div>
                         <div class="dish-name">Canh chua cá lóc</div>
-                        <div class="dish-note special-note">Không cay</div>
                         <div class="dish-kitchen-type">BẾP SÚP</div>
+                    </div>
+                    <div class="dish-item">
+                        <div class="dish-quantity">1</div>
+                        <div class="dish-name">Rau muống xào tỏi</div>
+                        <div class="dish-kitchen-type">BẾP XÀO</div>
                     </div>
                 `;
             }
