@@ -1,1 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Đơn Giản - Bếp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            line-height: 1.2;
+            padding: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+        }
+        
+        .order-container {
+            border: 1px solid #000;
+            padding: 15px;
+            font-size: 14px;
+        }
+        
+        .order-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #000;
+        }
+        
+        .order-number {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .table-info {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .service-name {
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .dish-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 70px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #000;
+        }
+        
+        .dish-header > div {
+            padding: 0 5px;
+        }
+        
+        .dish-list {
+            margin-top: 10px;
+        }
+        
+        .dish-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 70px;
+            margin-bottom: 8px;
+            padding: 3px 0;
+            min-height: 30px;
+            align-items: start;
+        }
+        
+        .dish-item.hidden-item {
+            display: none;
+        }
+        
+        .dish-item > div {
+            padding: 0 5px;
+            word-break: break-word;
+        }
+        
+        .dish-quantity {
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .dish-name {
+            padding-left: 10px !important;
+        }
+        
+        .dish-kitchen-type {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            color: #d00;
+        }
+        
+        .divider {
+            border-bottom: 1px dashed #000;
+            margin: 10px 0;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .order-container {
+                border: none;
+                padding: 10px;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .dish-header {
+                grid-template-columns: 50px 1fr;
+            }
+            
+            .dish-item:not(.hidden-item) {
+                grid-template-columns: 50px 1fr;
+            }
+            
+            .dish-header > div:nth-child(3),
+            .dish-item:not(.hidden-item) > div:nth-child(3) {
+                display: none;
+            }
+            
+            .dish-item.hidden-item {
+                display: none !important;
+            }
+        }
+        
+        .print-btn {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .print-btn button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .print-btn button:hover {
+            background-color: #555;
+        }
+        
+        .kitchen-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="order-container">
+        <div class="order-header">
+            <div class="order-number" id="orderNumber">#0902-04-02</div>
+            <div class="table-info" id="tableInfo">BÀN 1</div>
+            <div class="service-name">ORDER BẾP</div>
+        </div>
+        
+        <div class="dish-header">
+            <div>SL</div>
+            <div>TÊN MÓN</div>
+            <div>LOẠI BẾP</div>
+        </div>
+        
+        <div class="dish-list" id="dishList">
+            <!-- Dữ liệu món ăn sẽ được thêm bằng JavaScript -->
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="order-footer">
+            <div class="kitchen-info" id="kitchenInfo">
+                Order Time: 14:30 | Bếp: 01
+            </div>
+        </div>
+    </div>
+    
+    <div class="print-btn no-print">
+        <button onclick="window.print()">IN ORDER</button>
+    </div>
 
+    <script>
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        function decodeHtmlEntities(text) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = text;
+            return textarea.value;
+        }
+        
+        function normalizeKitchenType(kitchenType) {
+            if (!kitchenType) return '';
+            return kitchenType.toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^\w\s]/gi, '')
+                .trim();
+        }
+        
+        function isPhoKitchen(kitchenType) {
+            const normalized = normalizeKitchenType(kitchenType);
+            return normalized.includes('pho') || normalized.includes('phở') || normalized.includes('phó');
+        }
+        
+        function parseDishesFromUrl() {
+            const dishesParam = getUrlParameter('data');
+            if (!dishesParam) return null;
+            
+            const decodedParam = decodeURIComponent(dishesParam);
+            const cleanParam = decodeHtmlEntities(decodedParam);
+            
+            const rows = cleanParam.split('_b_');
+            const dishes = [];
+            
+            rows.forEach(row => {
+                if (row.trim() === '') return;
+                
+                const columns = row.split('_a_');
+                
+                while (columns.length < 3) {
+                    columns.push('');
+                }
+                
+                const dish = {
+                    quantity: columns[0] || '1',
+                    name: columns[1] || '',
+                    kitchenType: columns[2] || 'BẾP CHÍNH',
+                    isPhoKitchen: isPhoKitchen(columns[2])
+                };
+                
+                dishes.push(dish);
+            });
+            
+            return dishes;
+        }
+        
+        function createDishItem(dish) {
+            const hiddenClass = dish.isPhoKitchen ? 'hidden-item' : '';
+            return `
+                <div class="dish-item ${hiddenClass}">
+                    <div class="dish-quantity">${dish.quantity || 1}</div>
+                    <div class="dish-name">${dish.name || ''}</div>
+                    <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
+                </div>
+            `;
+        }
+        
+        function updateOrderFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const table = getUrlParameter('table');
+            if (table) {
+                document.getElementById('tableInfo').textContent = `BÀN ${table}`;
+            }
+            
+            const orderNumber = getUrlParameter('order');
+            if (orderNumber) {
+                document.getElementById('orderNumber').textContent = `#${orderNumber}`;
+            }
+            
+            const kitchen = getUrlParameter('kitchen');
+            const kitchenElement = document.getElementById('kitchenInfo');
+            if (kitchen) {
+                kitchenElement.textContent = `Order Time: ${getCurrentTime()} | Bếp: ${kitchen}`;
+            } else {
+                kitchenElement.textContent = `Order Time: ${getCurrentTime()} | Bếp: 01`;
+            }
+            
+            const dishes = parseDishesFromUrl();
+            const dishListElement = document.getElementById('dishList');
+            
+            if (dishes && dishes.length > 0) {
+                let dishesHtml = '';
+                
+                dishes.forEach(dish => {
+                    dishesHtml += createDishItem(dish);
+                });
+                
+                dishListElement.innerHTML = dishesHtml;
+            } else {
+                const sampleDishes = [
+                    { quantity: '1', name: 'Phở gà 45K', kitchenType: 'Bếp Phó', isPhoKitchen: true },
+                    { quantity: '1', name: 'Cơm rang dưa bò 45K', kitchenType: 'Bếp cơm', isPhoKitchen: false }
+                ];
+                
+                let dishesHtml = '';
+                
+                sampleDishes.forEach(dish => {
+                    dishesHtml += createDishItem(dish);
+                });
+                
+                dishListElement.innerHTML = dishesHtml;
+            }
+        }
+        
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + 
+                   now.getMinutes().toString().padStart(2, '0');
+        }
+        
+        function checkAutoPrint() {
+            if (getUrlParameter('print') === '1') {
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateOrderFromUrl();
+            checkAutoPrint();
+        });
+    </script>
+</body>
+</html>
