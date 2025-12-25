@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Đơn Giản - Bếp</title>
+    <title>CHON IN BEP</title>
     <style>
         /* Reset và font chữ đơn giản */
         * {
@@ -13,7 +13,7 @@
         }
         
         body {
-            font-family: 'Courier New', monospace;
+            font-family: 'Arial', monospace;
             line-height: 1.2;
             padding: 10px;
             max-width: 500px;
@@ -201,6 +201,11 @@
             .print-rice .pho-item,
             .print-rice .other-item {
                 display: none !important;
+            }
+            
+            /* Thêm khoảng trắng để tránh bị cắt khi in */
+            @page {
+                margin: 0.5cm;
             }
         }
         
@@ -402,7 +407,7 @@
             }
         }
         
-        // Hàm in bếp phở
+        // Hàm in bếp phở - ĐÃ SỬA: tăng timeout để load đủ DOM trước khi in
         function printPhoKitchen() {
             // Lưu trạng thái hiện tại
             const originalBodyClass = document.body.className;
@@ -425,19 +430,25 @@
             // Thêm class để xác định đang in bếp phở
             document.body.className = originalBodyClass + ' print-pho';
             
-            // Đặt timeout để đảm bảo DOM đã cập nhật
+            // TĂNG TIMEOUT ĐỂ ĐẢM BẢO DOM ĐÃ CẬP NHẬT HOÀN TOÀN TRƯỚC KHI IN
             setTimeout(() => {
-                window.print();
-                
-                // Khôi phục trạng thái sau khi in
-                setTimeout(() => {
-                    document.body.className = originalBodyClass;
-                    document.getElementById('dishList').innerHTML = currentHTML;
-                }, 100);
-            }, 100);
+                // Đợi thêm cho trình duyệt render xong
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        // Gọi hàm in
+                        window.print();
+                        
+                        // Khôi phục trạng thái sau khi in
+                        setTimeout(() => {
+                            document.body.className = originalBodyClass;
+                            document.getElementById('dishList').innerHTML = currentHTML;
+                        }, 300); // Tăng timeout khôi phục
+                    }, 100); // Thêm delay nhỏ trước khi gọi print()
+                });
+            }, 500); // Tăng timeout chính từ 100ms lên 500ms
         }
         
-        // Hàm in bếp cơm
+        // Hàm in bếp cơm - ĐÃ SỬA: tăng timeout để load đủ DOM trước khi in
         function printRiceKitchen() {
             // Lưu trạng thái hiện tại
             const originalBodyClass = document.body.className;
@@ -460,16 +471,22 @@
             // Thêm class để xác định đang in bếp cơm
             document.body.className = originalBodyClass + ' print-rice';
             
-            // Đặt timeout để đảm bảo DOM đã cập nhật
+            // TĂNG TIMEOUT ĐỂ ĐẢM BẢO DOM ĐÃ CẬP NHẬT HOÀN TOÀN TRƯỚC KHI IN
             setTimeout(() => {
-                window.print();
-                
-                // Khôi phục trạng thái sau khi in
-                setTimeout(() => {
-                    document.body.className = originalBodyClass;
-                    document.getElementById('dishList').innerHTML = currentHTML;
-                }, 100);
-            }, 100);
+                // Đợi thêm cho trình duyệt render xong
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        // Gọi hàm in
+                        window.print();
+                        
+                        // Khôi phục trạng thái sau khi in
+                        setTimeout(() => {
+                            document.body.className = originalBodyClass;
+                            document.getElementById('dishList').innerHTML = currentHTML;
+                        }, 300); // Tăng timeout khôi phục
+                    }, 100); // Thêm delay nhỏ trước khi gọi print()
+                });
+            }, 500); // Tăng timeout chính từ 100ms lên 500ms
         }
         
         // Hàm cập nhật thời gian order
