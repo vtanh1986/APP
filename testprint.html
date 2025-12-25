@@ -25,6 +25,10 @@
             top: 20px;
             right: 20px;
             z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .print-button {
@@ -41,6 +45,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            width: 100%;
+            justify-content: center;
         }
         
         .print-button:hover {
@@ -225,13 +231,30 @@
             font-size: 14px;
         }
         
+        /* Thông báo đang in */
+        .print-status {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            z-index: 10000;
+            display: none;
+            text-align: center;
+            font-size: 18px;
+        }
+        
         @media print {
             body {
                 background: white;
                 padding: 0;
             }
             
-            .print-button-container {
+            .print-button-container,
+            .print-status {
                 display: none !important;
             }
             
@@ -250,7 +273,7 @@
         @media (max-width: 768px) {
             body {
                 padding: 10px;
-                padding-top: 70px; /* Tạo khoảng trống cho nút in */
+                padding-top: 80px; /* Tạo khoảng trống cho nút in */
             }
             
             .print-button-container {
@@ -289,7 +312,7 @@
         /* Điều chỉnh cho màn hình rất nhỏ */
         @media (max-width: 480px) {
             body {
-                padding-top: 60px;
+                padding-top: 70px;
             }
             
             .print-button {
@@ -336,6 +359,12 @@
     </style>
 </head>
 <body>
+    <!-- Thông báo đang in -->
+    <div class="print-status" id="printStatus">
+        <p>Đang mở hộp thoại in...</p>
+        <p>Vui lòng chọn máy in và nhấn "In"</p>
+    </div>
+    
     <!-- Nút in ở góc trên bên phải -->
     <div class="print-button-container">
         <button class="print-button" onclick="printInvoice()">
@@ -415,18 +444,39 @@
     <script>
         // Hàm in hóa đơn
         function printInvoice() {
-            window.print();
+            document.getElementById('printStatus').style.display = 'block';
+            
+            setTimeout(() => {
+                window.print();
+                // Ẩn thông báo sau 2 giây
+                setTimeout(() => {
+                    document.getElementById('printStatus').style.display = 'none';
+                }, 2000);
+            }, 500);
         }
+        
+        // Tự động in khi trang tải xong
+        function autoPrint() {
+            // Đợi 1 giây để đảm bảo tất cả nội dung đã tải
+            setTimeout(() => {
+                // Kiểm tra xem có tham số noautoprint không
+                const urlParams = new URLSearchParams(window.location.search);
+                const noAutoPrint = urlParams.get('noautoprint');
+                
+                // Chỉ tự động in nếu không có tham số noautoprint
+                if (noAutoPrint !== 'true') {
+                    console.log("Tự động in hóa đơn...");
+                    printInvoice();
+                }
+            }, 1000);
+        }
+        
+        // Gọi autoPrint khi trang tải xong
+        window.addEventListener('load', autoPrint);
         
         // Kiểm tra nếu là thiết bị di động để tối ưu hiển thị
         function isMobileDevice() {
             return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
-        }
-        
-        // Tối ưu cho thiết bị di động
-        if (isMobileDevice()) {
-            // Có thể thêm các tối ưu riêng cho mobile nếu cần
-            console.log("Đang chạy trên thiết bị di động");
         }
         
         // Lấy URL parameters
