@@ -116,6 +116,51 @@
             margin: 10px 0;
         }
         
+        /* Nút in */
+        .print-buttons {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .print-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+            max-width: 150px;
+        }
+        
+        .print-btn:hover {
+            background-color: #555;
+        }
+        
+        .print-btn-pho {
+            background-color: #0066cc;
+        }
+        
+        .print-btn-rice {
+            background-color: #cc6600;
+        }
+        
+        /* Phần thông tin bếp */
+        .kitchen-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        /* Ẩn khi không in */
+        .no-print {
+            display: block;
+        }
+        
         /* Tùy chỉnh khi in */
         @media print {
             body {
@@ -145,33 +190,16 @@
             .dish-item > div:nth-child(3) {
                 display: none;
             }
-        }
-        
-        /* Nút in ẩn đi khi in */
-        .print-btn {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .print-btn button {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-family: 'Courier New', monospace;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .print-btn button:hover {
-            background-color: #555;
-        }
-        
-        /* Phần thông tin bếp */
-        .kitchen-info {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 12px;
+            
+            /* Khi in phiên bản Bếp Phở */
+            .rice-kitchen-only {
+                display: none !important;
+            }
+            
+            /* Khi in phiên bản Bếp Cơm */
+            .pho-kitchen-only {
+                display: none !important;
+            }
         }
     </style>
 </head>
@@ -183,7 +211,7 @@
             <div class="service-name">ORDER BẾP</div>
         </div>
         
-        <!-- Tiêu đề cột - CHỈ CÒN 3 CỘT -->
+        <!-- Tiêu đề cột -->
         <div class="dish-header">
             <div>SL</div>
             <div>TÊN MÓN</div>
@@ -203,8 +231,8 @@
         </div>
     </div>
     
-    <div class="print-btn no-print">
-        <button onclick="window.print()">IN ORDER</button>
+    <div class="print-buttons no-print" id="printButtons">
+        <!-- Nút in sẽ được thêm bằng JavaScript -->
     </div>
 
     <script>
@@ -240,7 +268,7 @@
                 // Tách các cột bằng _a_
                 const columns = row.split('_a_');
                 
-                // Đảm bảo có đủ 3 cột (đã bỏ cột GHI CHÚ)
+                // Đảm bảo có đủ 3 cột
                 while (columns.length < 3) {
                     columns.push('');
                 }
@@ -249,7 +277,9 @@
                 const dish = {
                     quantity: columns[0] || '1',
                     name: columns[1] || '',
-                    kitchenType: columns[2] || 'BẾP CHÍNH'
+                    kitchenType: columns[2] || 'BẾP CHÍNH',
+                    // Thêm class để phân biệt khi in
+                    kitchenClass: getKitchenClass(columns[2] || 'BẾP CHÍNH')
                 };
                 
                 dishes.push(dish);
@@ -258,15 +288,118 @@
             return dishes;
         }
         
+        // Hàm xác định class của bếp
+        function getKitchenClass(kitchenType) {
+            const kitchenTypeLower = kitchenType.toLowerCase();
+            if (kitchenTypeLower.includes('phở') || kitchenTypeLower.includes('pho')) {
+                return 'pho-kitchen-only';
+            } else if (kitchenTypeLower.includes('cơm') || kitchenTypeLower.includes('com') || kitchenTypeLower.includes('rice')) {
+                return 'rice-kitchen-only';
+            }
+            return '';
+        }
+        
+        // Hàm kiểm tra xem có món thuộc loại bếp nào
+        function checkKitchenTypes(dishes) {
+            const hasPho = dishes.some(dish => dish.kitchenClass === 'pho-kitchen-only');
+            const hasRice = dishes.some(dish => dish.kitchenClass === 'rice-kitchen-only');
+            
+            return { hasPho, hasRice };
+        }
+        
         // Hàm tạo mã HTML cho danh sách món ăn
         function createDishItem(dish) {
             return `
-                <div class="dish-item">
+                <div class="dish-item ${dish.kitchenClass}">
                     <div class="dish-quantity">${dish.quantity || 1}</div>
                     <div class="dish-name">${dish.name || ''}</div>
                     <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
                 </div>
             `;
+        }
+        
+        // Hàm tạo nút in
+        function createPrintButtons(hasPho, hasRice) {
+            const printButtonsDiv = document.getElementById('printButtons');
+            let buttonsHtml = '';
+            
+            if (hasPho) {
+                buttonsHtml += `
+                    <button class="print-btn print-btn-pho" onclick="printPhoKitchen()">
+                        IN BẾP PHỞ
+                    </button>
+                `;
+            }
+            
+            if (hasRice) {
+                buttonsHtml += `
+                    <button class="print-btn print-btn-rice" onclick="printRiceKitchen()">
+                        IN BẾP CƠM
+                    </button>
+                `;
+            }
+            
+            // Thêm nút in tất cả nếu có cả hai loại
+            if (hasPho && hasRice) {
+                buttonsHtml += `
+                    <button class="print-btn" onclick="window.print()">
+                        IN TẤT CẢ
+                    </button>
+                `;
+            } else if (!hasPho && !hasRice) {
+                // Nếu không có loại bếp nào rõ ràng, hiện nút in tất cả
+                buttonsHtml += `
+                    <button class="print-btn" onclick="window.print()">
+                        IN ORDER
+                    </button>
+                `;
+            }
+            
+            printButtonsDiv.innerHTML = buttonsHtml;
+        }
+        
+        // Hàm in bếp phở
+        function printPhoKitchen() {
+            // Thêm class để ẩn các món không phải bếp phở khi in
+            document.body.classList.add('print-pho-only');
+            
+            // Tạm thời ẩn các món không phải bếp phở
+            const riceItems = document.querySelectorAll('.rice-kitchen-only');
+            riceItems.forEach(item => {
+                item.style.display = 'none';
+            });
+            
+            // In
+            window.print();
+            
+            // Khôi phục hiển thị
+            riceItems.forEach(item => {
+                item.style.display = '';
+            });
+            
+            document.body.classList.remove('print-pho-only');
+        }
+        
+        // Hàm in bếp cơm
+        function printRiceKitchen() {
+            // Thêm class để ẩn các món không phải bếp cơm khi in
+            document.body.classList.add('print-rice-only');
+            
+            // Tạm thời ẩn các món không phải bếp cơm
+            const phoItems = document.querySelectorAll('.pho-kitchen-only');
+            phoItems.forEach(item => {
+                item.style.display = 'none';
+            });
+            
+            // In
+            window.print();
+            
+            // Khôi phục hiển thị
+            phoItems.forEach(item => {
+                item.style.display = '';
+            });
+            
+            document.body.classList.remove('print-rice-only');
         }
         
         // Hàm cập nhật thông tin order từ URL parameters
@@ -304,30 +437,37 @@
                     dishesHtml += createDishItem(dish);
                 });
                 dishListElement.innerHTML = dishesHtml;
+                
+                // Kiểm tra loại bếp và tạo nút in tương ứng
+                const { hasPho, hasRice } = checkKitchenTypes(dishes);
+                createPrintButtons(hasPho, hasRice);
             } else {
                 // Dữ liệu mẫu nếu không có dữ liệu từ URL
                 dishListElement.innerHTML = `
-                    <div class="dish-item">
+                    <div class="dish-item pho-kitchen-only">
+                        <div class="dish-quantity">2</div>
+                        <div class="dish-name">Phở bò tái chín</div>
+                        <div class="dish-kitchen-type">BẾP PHỞ</div>
+                    </div>
+                    <div class="dish-item pho-kitchen-only">
+                        <div class="dish-quantity">1</div>
+                        <div class="dish-name">Phở gà</div>
+                        <div class="dish-kitchen-type">BẾP PHỞ</div>
+                    </div>
+                    <div class="dish-item rice-kitchen-only">
                         <div class="dish-quantity">1</div>
                         <div class="dish-name">Cơm rang bò</div>
-                        <div class="dish-kitchen-type">BẾP CHÍNH</div>
+                        <div class="dish-kitchen-type">BẾP CƠM</div>
                     </div>
-                    <div class="dish-item">
-                        <div class="dish-quantity">1</div>
-                        <div class="dish-name">Cơm rang thập cẩm</div>
-                        <div class="dish-kitchen-type">BẾP CHÍNH</div>
-                    </div>
-                    <div class="dish-item">
+                    <div class="dish-item rice-kitchen-only">
                         <div class="dish-quantity">2</div>
-                        <div class="dish-name">Canh chua cá lóc</div>
-                        <div class="dish-kitchen-type">BẾP SÚP</div>
-                    </div>
-                    <div class="dish-item">
-                        <div class="dish-quantity">1</div>
-                        <div class="dish-name">Rau muống xào tỏi</div>
-                        <div class="dish-kitchen-type">BẾP XÀO</div>
+                        <div class="dish-name">Cơm rang thập cẩm</div>
+                        <div class="dish-kitchen-type">BẾP CƠM</div>
                     </div>
                 `;
+                
+                // Tạo nút in cho dữ liệu mẫu
+                createPrintButtons(true, true);
             }
         }
         
@@ -338,19 +478,9 @@
                    now.getMinutes().toString().padStart(2, '0');
         }
         
-        // Tự động in nếu cần
-        function checkAutoPrint() {
-            if (getUrlParameter('print') === '1') {
-                setTimeout(() => {
-                    window.print();
-                }, 500);
-            }
-        }
-        
         // Khi trang tải xong
         document.addEventListener('DOMContentLoaded', function() {
             updateOrderFromUrl();
-            checkAutoPrint();
         });
     </script>
 </body>
