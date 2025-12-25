@@ -182,21 +182,6 @@
             margin-top: 10px;
             font-size: 12px;
         }
-        
-        /* Thông báo về món bị ẩn */
-        .hidden-notice {
-            font-size: 12px;
-            color: #666;
-            text-align: center;
-            margin-top: 10px;
-            padding: 5px;
-            border-top: 1px dashed #ccc;
-            display: none;
-        }
-        
-        .hidden-notice.show {
-            display: block;
-        }
     </style>
 </head>
 <body>
@@ -216,11 +201,6 @@
         
         <div class="dish-list" id="dishList">
             <!-- Dữ liệu món ăn sẽ được thêm bằng JavaScript -->
-        </div>
-        
-        <!-- Thông báo về món thuộc BẾP PHỞ bị ẩn -->
-        <div class="hidden-notice" id="hiddenNotice">
-            <em>Đã ẩn các món thuộc BẾP PHỞ/PHÓ</em>
         </div>
         
         <div class="divider"></div>
@@ -345,26 +325,15 @@
             // Cập nhật danh sách món ăn
             const dishes = parseDishesFromUrl();
             const dishListElement = document.getElementById('dishList');
-            const hiddenNoticeElement = document.getElementById('hiddenNotice');
-            
-            let hasHiddenItems = false;
             
             if (dishes && dishes.length > 0) {
                 let dishesHtml = '';
                 
                 dishes.forEach(dish => {
                     dishesHtml += createDishItem(dish);
-                    if (dish.isPhoKitchen) {
-                        hasHiddenItems = true;
-                    }
                 });
                 
                 dishListElement.innerHTML = dishesHtml;
-                
-                // Hiển thị thông báo nếu có món bị ẩn
-                if (hasHiddenItems) {
-                    hiddenNoticeElement.classList.add('show');
-                }
             } else {
                 // Dữ liệu mẫu nếu không có dữ liệu từ URL (dùng để test)
                 const sampleDishes = [
@@ -378,17 +347,9 @@
                 
                 sampleDishes.forEach(dish => {
                     dishesHtml += createDishItem(dish);
-                    if (dish.isPhoKitchen) {
-                        hasHiddenItems = true;
-                    }
                 });
                 
                 dishListElement.innerHTML = dishesHtml;
-                
-                // Hiển thị thông báo nếu có món bị ẩn
-                if (hasHiddenItems) {
-                    hiddenNoticeElement.classList.add('show');
-                }
             }
         }
         
@@ -412,13 +373,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateOrderFromUrl();
             checkAutoPrint();
-            
-            // Log để debug
-            console.log('Kiểm tra các trường hợp:');
-            console.log('"Bếp Phó":', isPhoKitchen('Bếp Phó'));
-            console.log('"Bếp Phở":', isPhoKitchen('Bếp Phở'));
-            console.log('"Bếp phở":', isPhoKitchen('Bếp phở'));
-            console.log('"Bếp cơm":', isPhoKitchen('Bếp cơm'));
         });
     </script>
 </body>
