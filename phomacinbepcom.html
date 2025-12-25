@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Đơn Giản - Bếp</title>
+    <title>IN BEP</title>
     <style>
         /* Reset và font chữ đơn giản */
         * {
@@ -149,8 +149,8 @@
             background-color: #cc6600;
         }
         
-        /* Phần thông tin bếp */
-        .kitchen-info {
+        /* Phần thông tin */
+        .order-info {
             text-align: center;
             margin-top: 10px;
             font-size: 12px;
@@ -230,8 +230,8 @@
         <div class="divider"></div>
         
         <div class="order-footer">
-            <div class="kitchen-info" id="kitchenInfo">
-                Order Time: 14:30 | Bếp: 01
+            <div class="order-info" id="orderInfo">
+                Order Time: 14:30
             </div>
         </div>
     </div>
@@ -395,6 +395,9 @@
             // Chỉ hiển thị món bếp phở
             showPhoDishes();
             
+            // Cập nhật thông tin order time
+            updateOrderTime();
+            
             // Thêm class để xác định đang in bếp phở
             document.body.classList.add('show-pho-only');
             
@@ -414,6 +417,9 @@
             // Chỉ hiển thị món bếp cơm
             showRiceDishes();
             
+            // Cập nhật thông tin order time
+            updateOrderTime();
+            
             // Thêm class để xác định đang in bếp cơm
             document.body.classList.add('show-rice-only');
             
@@ -423,6 +429,13 @@
             // Khôi phục trạng thái
             document.body.classList.remove('show-rice-only');
             document.getElementById('dishList').innerHTML = currentHTML;
+        }
+        
+        // Hàm cập nhật thời gian order
+        function updateOrderTime() {
+            const orderInfoElement = document.getElementById('orderInfo');
+            const currentTime = getCurrentTime();
+            orderInfoElement.textContent = `Order Time: ${currentTime}`;
         }
         
         // Hàm cập nhật thông tin order từ URL parameters
@@ -441,15 +454,8 @@
                 document.getElementById('orderNumber').textContent = `#${orderNumber}`;
             }
             
-            // Cập nhật số bếp
-            const kitchen = getUrlParameter('kitchen');
-            const kitchenElement = document.getElementById('kitchenInfo');
-            const currentTime = getCurrentTime();
-            if (kitchen) {
-                kitchenElement.textContent = `Order Time: ${currentTime} | Bếp: ${kitchen}`;
-            } else {
-                kitchenElement.textContent = `Order Time: ${currentTime} | Bếp: 01`;
-            }
+            // Cập nhật thời gian order
+            updateOrderTime();
             
             // Cập nhật danh sách món ăn
             const dishes = parseDishesFromUrl();
