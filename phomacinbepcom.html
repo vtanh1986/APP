@@ -83,6 +83,10 @@
             align-items: start;
         }
         
+        .dish-item.hidden-item {
+            display: none;
+        }
+        
         .dish-item > div {
             padding: 0 5px;
             word-break: break-word;
@@ -136,14 +140,19 @@
                 grid-template-columns: 50px 1fr;
             }
             
-            .dish-item {
+            .dish-item:not(.hidden-item) {
                 grid-template-columns: 50px 1fr;
             }
             
             /* Ẩn cột LOẠI BẾP khi in */
             .dish-header > div:nth-child(3),
-            .dish-item > div:nth-child(3) {
+            .dish-item:not(.hidden-item) > div:nth-child(3) {
                 display: none;
+            }
+            
+            /* Ẩn hoàn toàn các món thuộc BẾP PHỞ */
+            .dish-item.hidden-item {
+                display: none !important;
             }
         }
         
@@ -173,6 +182,21 @@
             margin-top: 10px;
             font-size: 12px;
         }
+        
+        /* Thông báo về món bị ẩn */
+        .hidden-notice {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+            padding: 5px;
+            border-top: 1px dashed #ccc;
+            display: none;
+        }
+        
+        .hidden-notice.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -192,6 +216,11 @@
         
         <div class="dish-list" id="dishList">
             <!-- Dữ liệu món ăn sẽ được thêm bằng JavaScript -->
+        </div>
+        
+        <!-- Thông báo về món thuộc BẾP PHỞ bị ẩn -->
+        <div class="hidden-notice" id="hiddenNotice">
+            <em>Đã ẩn các món thuộc BẾP PHỞ</em>
         </div>
         
         <div class="divider"></div>
@@ -219,6 +248,18 @@
             const textarea = document.createElement('textarea');
             textarea.innerHTML = text;
             return textarea.value;
+        }
+        
+        // Hàm chuẩn hóa tên loại bếp để so sánh
+        function normalizeKitchenType(kitchenType) {
+            if (!kitchenType) return '';
+            return kitchenType.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+        }
+        
+        // Kiểm tra xem món có thuộc BẾP PHỞ không
+        function isPhoKitchen(kitchenType) {
+            const normalized = normalizeKitchenType(kitchenType);
+            return normalized.includes('phở') || normalized.includes('pho');
         }
         
         // Hàm parse dữ liệu món ăn từ URL theo định dạng _a_ và _b_
@@ -249,7 +290,8 @@
                 const dish = {
                     quantity: columns[0] || '1',
                     name: columns[1] || '',
-                    kitchenType: columns[2] || 'BẾP CHÍNH'
+                    kitchenType: columns[2] || 'BẾP CHÍNH',
+                    isPhoKitchen: isPhoKitchen(columns[2])
                 };
                 
                 dishes.push(dish);
@@ -260,8 +302,9 @@
         
         // Hàm tạo mã HTML cho danh sách món ăn
         function createDishItem(dish) {
+            const hiddenClass = dish.isPhoKitchen ? 'hidden-item' : '';
             return `
-                <div class="dish-item">
+                <div class="dish-item ${hiddenClass}">
                     <div class="dish-quantity">${dish.quantity || 1}</div>
                     <div class="dish-name">${dish.name || ''}</div>
                     <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
@@ -297,37 +340,53 @@
             // Cập nhật danh sách món ăn
             const dishes = parseDishesFromUrl();
             const dishListElement = document.getElementById('dishList');
+            const hiddenNoticeElement = document.getElementById('hiddenNotice');
+            
+            let hasHiddenItems = false;
             
             if (dishes && dishes.length > 0) {
                 let dishesHtml = '';
+                
                 dishes.forEach(dish => {
                     dishesHtml += createDishItem(dish);
+                    if (dish.isPhoKitchen) {
+                        hasHiddenItems = true;
+                    }
                 });
+                
                 dishListElement.innerHTML = dishesHtml;
+                
+                // Hiển thị thông báo nếu có món bị ẩn
+                if (hasHiddenItems) {
+                    hiddenNoticeElement.classList.add('show');
+                }
             } else {
                 // Dữ liệu mẫu nếu không có dữ liệu từ URL
-                dishListElement.innerHTML = `
-                    <div class="dish-item">
-                        <div class="dish-quantity">1</div>
-                        <div class="dish-name">Cơm rang bò</div>
-                        <div class="dish-kitchen-type">BẾP CHÍNH</div>
-                    </div>
-                    <div class="dish-item">
-                        <div class="dish-quantity">1</div>
-                        <div class="dish-name">Cơm rang thập cẩm</div>
-                        <div class="dish-kitchen-type">BẾP CHÍNH</div>
-                    </div>
-                    <div class="dish-item">
-                        <div class="dish-quantity">2</div>
-                        <div class="dish-name">Canh chua cá lóc</div>
-                        <div class="dish-kitchen-type">BẾP SÚP</div>
-                    </div>
-                    <div class="dish-item">
-                        <div class="dish-quantity">1</div>
-                        <div class="dish-name">Rau muống xào tỏi</div>
-                        <div class="dish-kitchen-type">BẾP XÀO</div>
-                    </div>
-                `;
+                const sampleDishes = [
+                    { quantity: '1', name: 'Cơm rang bò', kitchenType: 'BẾP CHÍNH', isPhoKitchen: false },
+                    { quantity: '1', name: 'Cơm rang thập cẩm', kitchenType: 'BẾP CHÍNH', isPhoKitchen: false },
+                    { quantity: '2', name: 'Canh chua cá lóc', kitchenType: 'BẾP SÚP', isPhoKitchen: false },
+                    { quantity: '1', name: 'Rau muống xào tỏi', kitchenType: 'BẾP XÀO', isPhoKitchen: false },
+                    { quantity: '1', name: 'Phở bò tái', kitchenType: 'BẾP PHỞ', isPhoKitchen: true },
+                    { quantity: '2', name: 'Phở gà', kitchenType: 'BẾP PHỞ', isPhoKitchen: true },
+                    { quantity: '1', name: 'Bún chả', kitchenType: 'BẾP PHỞ', isPhoKitchen: true }
+                ];
+                
+                let dishesHtml = '';
+                
+                sampleDishes.forEach(dish => {
+                    dishesHtml += createDishItem(dish);
+                    if (dish.isPhoKitchen) {
+                        hasHiddenItems = true;
+                    }
+                });
+                
+                dishListElement.innerHTML = dishesHtml;
+                
+                // Hiển thị thông báo nếu có món bị ẩn
+                if (hasHiddenItems) {
+                    hiddenNoticeElement.classList.add('show');
+                }
             }
         }
         
