@@ -152,31 +152,48 @@
             display: block;
         }
         
+        /* Ẩn khi in - QUAN TRỌNG */
         @media print {
             body {
                 padding: 0;
+                width: 100% !important;
+                max-width: 100% !important;
             }
             
             .order-container {
                 border: none;
                 padding: 10px;
+                width: 100%;
+                max-width: 100%;
             }
             
             .no-print {
                 display: none !important;
             }
             
-            .dish-header {
-                grid-template-columns: 50px 1fr;
+            /* Ẩn loading khi in */
+            .loading-overlay {
+                display: none !important;
             }
             
-            .dish-item {
-                grid-template-columns: 50px 1fr;
+            /* CHỈ HIỆN MÓN ĐƯỢC CHỌN - 2 CỘT */
+            body:not(.print-active) .dish-item {
+                display: none !important;
             }
             
-            .dish-header > div:nth-child(3),
-            .dish-item > div:nth-child(3) {
-                display: none;
+            body.print-active .dish-header {
+                grid-template-columns: 50px 1fr !important;
+            }
+            
+            body.print-active .dish-item {
+                grid-template-columns: 50px 1fr !important;
+                display: grid !important;
+            }
+            
+            /* Ẩn cột LOẠI BẾP khi in */
+            body.print-active .dish-header > div:nth-child(3),
+            body.print-active .dish-item > div:nth-child(3) {
+                display: none !important;
             }
             
             @page {
@@ -208,22 +225,56 @@
             }
         }
         
-        .status-message {
-            text-align: center;
-            margin-top: 10px;
-            padding: 8px;
-            background-color: #f0f0f0;
-            border-radius: 4px;
-            font-size: 13px;
+        /* Hiệu ứng loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
             display: none;
+            flex-direction: column;
         }
         
-        .status-message.show {
-            display: block;
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0066cc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .loading-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <!-- Overlay loading với chữ -->
+    <div class="loading-overlay no-print" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text" id="loadingText">Đang chuẩn bị in...</div>
+    </div>
+    
     <div class="order-container">
         <div class="order-header">
             <div class="order-number" id="orderNumber">#0902-04-02</div>
@@ -237,6 +288,7 @@
             <div>LOẠI BẾP</div>
         </div>
         
+        <!-- DANH SÁCH GỐC - HIỂN THỊ TẤT CẢ MÓN -->
         <div class="dish-list" id="dishList"></div>
         
         <div class="divider"></div>
@@ -246,7 +298,8 @@
         </div>
     </div>
     
-    <div class="status-message" id="statusMessage"></div>
+    <!-- CONTAINER RIÊNG ĐỂ IN - ẨN KHI KHÔNG IN -->
+    <div id="printContainer" style="display: none;"></div>
     
     <div class="print-buttons no-print" id="printButtons"></div>
 
@@ -308,6 +361,7 @@
             return { hasPho, hasRice };
         }
         
+        // Tạo danh sách gốc hiển thị tất cả món
         function showAllDishes() {
             const dishListElement = document.getElementById('dishList');
             let dishesHtml = '';
@@ -337,49 +391,35 @@
             
             printButtonsDiv.innerHTML = buttonsHtml;
             
-            // Thêm event listener đơn giản
+            // Thêm event listener
             if (hasPho) {
                 const phoBtn = document.getElementById('printPhoBtn');
-                phoBtn.addEventListener('click', () => handlePrint('pho'));
+                phoBtn.addEventListener('click', () => preparePrint('pho'));
                 phoBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    handlePrint('pho');
+                    preparePrint('pho');
                 });
             }
             
             if (hasRice) {
                 const riceBtn = document.getElementById('printRiceBtn');
-                riceBtn.addEventListener('click', () => handlePrint('rice'));
+                riceBtn.addEventListener('click', () => preparePrint('rice'));
                 riceBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    handlePrint('rice');
+                    preparePrint('rice');
                 });
             }
         }
         
-        function showStatus(message, isError = false) {
-            const statusEl = document.getElementById('statusMessage');
-            statusEl.textContent = message;
-            statusEl.className = 'status-message show';
-            statusEl.style.color = isError ? '#d00' : '#0066cc';
-            
-            setTimeout(() => {
-                statusEl.className = 'status-message';
-            }, 3000);
-        }
-        
-        function handlePrint(kitchenType) {
+        // Chuẩn bị in - tạo container in riêng
+        function preparePrint(kitchenType) {
             if (isPrinting) return;
             
             isPrinting = true;
-            showStatus(`Đang chuẩn bị in cho bếp ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}...`);
             
-            // Lưu trạng thái gốc
-            const originalDishesHTML = document.getElementById('dishList').innerHTML;
-            const originalHeaderHTML = document.querySelector('.dish-header').innerHTML;
-            
-            // Cập nhật thời gian
-            updateOrderTime();
+            // Hiển thị loading với chữ thông báo
+            const kitchenName = kitchenType === 'pho' ? 'PHỞ' : 'CƠM';
+            showLoading(`Đang chuẩn bị in cho bếp ${kitchenName}...`);
             
             // Lọc món theo loại bếp
             let filteredDishes = [];
@@ -391,19 +431,38 @@
             });
             
             if (filteredDishes.length === 0) {
-                showStatus('Không có món nào để in!', true);
+                showLoading(false);
                 isPrinting = false;
                 return;
             }
             
-            // Cập nhật giao diện để in
-            const dishListElement = document.getElementById('dishList');
-            const dishHeader = document.querySelector('.dish-header');
+            // Cập nhật thời gian
+            updateOrderTime();
             
-            // Tạo HTML mới chỉ với món cần in
-            let dishesHtml = '';
+            // TẠO CONTAINER RIÊNG ĐỂ IN
+            const printContainer = document.getElementById('printContainer');
+            
+            // Tạo HTML cho container in
+            let printHtml = `
+                <div class="order-container">
+                    <div class="order-header">
+                        <div class="order-number">${document.getElementById('orderNumber').textContent}</div>
+                        <div class="table-info">${document.getElementById('tableInfo').textContent}</div>
+                        <div class="service-name">ORDER BẾP ${kitchenName}</div>
+                    </div>
+                    
+                    <div class="dish-header">
+                        <div>SL</div>
+                        <div>TÊN MÓN</div>
+                        <div style="display:none;">LOẠI BẾP</div>
+                    </div>
+                    
+                    <div class="dish-list">
+            `;
+            
+            // Thêm món ăn vào container in
             filteredDishes.forEach(dish => {
-                dishesHtml += `
+                printHtml += `
                     <div class="dish-item">
                         <div class="dish-quantity">${dish.quantity || 1}</div>
                         <div class="dish-name">${dish.name || ''}</div>
@@ -412,40 +471,71 @@
                 `;
             });
             
-            dishListElement.innerHTML = dishesHtml;
-            dishHeader.innerHTML = `
-                <div>SL</div>
-                <div>TÊN MÓN</div>
-                <div style="display:none;"></div>
+            printHtml += `
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <div class="order-footer">
+                        <div class="order-info">${document.getElementById('orderInfo').textContent}</div>
+                    </div>
+                </div>
             `;
             
-            // Thêm class để định danh loại in
-            document.body.classList.add(`print-${kitchenType}`);
+            printContainer.innerHTML = printHtml;
             
-            // Đợi một chút để DOM cập nhật rồi mới gọi in
+            // Hiển thị container in và ẩn container gốc
+            const originalContainer = document.querySelector('.order-container');
+            originalContainer.style.display = 'none';
+            printContainer.style.display = 'block';
+            
+            // Thêm class print-active để CSS in hoạt động
+            document.body.classList.add('print-active');
+            
+            // Chờ DOM cập nhật rồi gọi in
             setTimeout(() => {
                 try {
-                    // Gọi hàm in - QUAN TRỌNG: Phải gọi trực tiếp từ sự kiện người dùng
                     window.print();
-                    
-                    // Khôi phục sau khi in
-                    setTimeout(() => {
-                        dishListElement.innerHTML = originalDishesHTML;
-                        dishHeader.innerHTML = originalHeaderHTML;
-                        document.body.classList.remove(`print-${kitchenType}`);
-                        showStatus(`Đã gửi lệnh in cho bếp ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}`);
-                        isPrinting = false;
-                    }, 1000);
                 } catch (error) {
-                    showStatus('Lỗi khi in: ' + error.message, true);
-                    isPrinting = false;
-                    
-                    // Khôi phục ngay khi có lỗi
-                    dishListElement.innerHTML = originalDishesHTML;
-                    dishHeader.innerHTML = originalHeaderHTML;
-                    document.body.classList.remove(`print-${kitchenType}`);
+                    console.error('Print error:', error);
                 }
+                
+                // Khôi phục sau khi in
+                restoreAfterPrint();
             }, 300);
+        }
+        
+        // Khôi phục sau khi in
+        function restoreAfterPrint() {
+            setTimeout(() => {
+                const originalContainer = document.querySelector('.order-container');
+                const printContainer = document.getElementById('printContainer');
+                
+                // Khôi phục hiển thị gốc
+                originalContainer.style.display = 'block';
+                printContainer.style.display = 'none';
+                printContainer.innerHTML = '';
+                
+                // Xóa class print-active
+                document.body.classList.remove('print-active');
+                
+                // Tắt loading
+                showLoading(false);
+                isPrinting = false;
+            }, 500);
+        }
+        
+        // Hiển thị/ẩn loading với chữ
+        function showLoading(message) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            
+            if (message) {
+                loadingText.textContent = message;
+                loadingOverlay.classList.add('active');
+            } else {
+                loadingOverlay.classList.remove('active');
+            }
         }
         
         function updateOrderTime() {
@@ -501,16 +591,13 @@
             }
         }
         
-        // Tối ưu cho mobile
-        document.addEventListener('touchstart', function() {}, { passive: true });
+        // Sự kiện khi print dialog đóng
+        window.addEventListener('afterprint', () => {
+            restoreAfterPrint();
+        });
         
         document.addEventListener('DOMContentLoaded', function() {
             updateOrderFromUrl();
-            
-            // Thêm hướng dẫn nếu cần
-            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                showStatus('Nhấn và giữ nút IN để chọn máy in', false);
-            }
         });
     </script>
 </body>
