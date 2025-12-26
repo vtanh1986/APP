@@ -195,14 +195,6 @@
                 display: none;
             }
             
-            /* Ẩn các món không phải loại bếp đang in */
-            .print-pho .rice-item,
-            .print-pho .other-item,
-            .print-rice .pho-item,
-            .print-rice .other-item {
-                display: none !important;
-            }
-            
             /* Thêm khoảng trắng để tránh bị cắt khi in */
             @page {
                 margin: 0.5cm;
@@ -268,10 +260,13 @@
     </div>
 
     <script>
-        // Biến toàn cục lưu trữ danh sách món ăn
+        // Biến toàn cục lưu trữ danh sách món ăn và trạng thái gốc
         let allDishes = [];
         let hasPho = false;
         let hasRice = false;
+        let originalDishListHTML = '';
+        let originalHeaderHTML = '';
+        let originalBodyClass = '';
         
         // Hàm lấy tham số từ URL
         function getUrlParameter(name) {
@@ -348,7 +343,7 @@
         // Hàm tạo mã HTML cho danh sách món ăn
         function createDishItem(dish) {
             return `
-                <div class="dish-item ${dish.kitchenClass}">
+                <div class="dish-item">
                     <div class="dish-quantity">${dish.quantity || 1}</div>
                     <div class="dish-name">${dish.name || ''}</div>
                     <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
@@ -364,6 +359,11 @@
                 dishesHtml += createDishItem(dish);
             });
             dishListElement.innerHTML = dishesHtml;
+            
+            // Lưu trạng thái gốc
+            originalDishListHTML = dishListElement.innerHTML;
+            originalHeaderHTML = document.querySelector('.dish-header').innerHTML;
+            originalBodyClass = document.body.className;
         }
         
         // Hàm tạo nút in
@@ -407,86 +407,112 @@
             }
         }
         
-        // Hàm in bếp phở - ĐÃ SỬA: tăng timeout để load đủ DOM trước khi in
+        // Hàm in bếp phở
         function printPhoKitchen() {
+            const dishListElement = document.getElementById('dishList');
+            const dishHeader = document.querySelector('.dish-header');
+            
             // Lưu trạng thái hiện tại
-            const originalBodyClass = document.body.className;
-            const currentHTML = document.getElementById('dishList').innerHTML;
+            const currentDishListHTML = dishListElement.innerHTML;
+            const currentHeaderHTML = dishHeader.innerHTML;
+            const currentBodyClass = document.body.className;
             
             // Cập nhật thời gian order
             updateOrderTime();
             
-            // Tạo danh sách chỉ có món bếp phở
+            // Tạo danh sách chỉ có món bếp phở (CHỈ 2 CỘT)
             let phoDishesHtml = '';
             allDishes.forEach(dish => {
                 if (dish.kitchenClass === 'pho-item') {
-                    phoDishesHtml += createDishItem(dish);
+                    phoDishesHtml += `
+                        <div class="dish-item">
+                            <div class="dish-quantity">${dish.quantity || 1}</div>
+                            <div class="dish-name">${dish.name || ''}</div>
+                            <div style="display:none;"></div>
+                        </div>
+                    `;
                 }
             });
             
             // Cập nhật danh sách hiển thị
-            document.getElementById('dishList').innerHTML = phoDishesHtml;
+            dishListElement.innerHTML = phoDishesHtml;
+            
+            // Cập nhật tiêu đề (CHỈ 2 CỘT)
+            dishHeader.innerHTML = `
+                <div>SL</div>
+                <div>TÊN MÓN</div>
+                <div style="display:none;"></div>
+            `;
             
             // Thêm class để xác định đang in bếp phở
-            document.body.className = originalBodyClass + ' print-pho';
+            document.body.className = currentBodyClass + ' print-pho';
             
-            // TĂNG TIMEOUT ĐỂ ĐẢM BẢO DOM ĐÃ CẬP NHẬT HOÀN TOÀN TRƯỚC KHI IN
+            // Gọi hàm in với delay để đảm bảo DOM đã cập nhật
             setTimeout(() => {
-                // Đợi thêm cho trình duyệt render xong
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        // Gọi hàm in
-                        window.print();
-                        
-                        // Khôi phục trạng thái sau khi in
-                        setTimeout(() => {
-                            document.body.className = originalBodyClass;
-                            document.getElementById('dishList').innerHTML = currentHTML;
-                        }, 300); // Tăng timeout khôi phục
-                    }, 100); // Thêm delay nhỏ trước khi gọi print()
-                });
-            }, 600); // Tăng timeout chính từ 100ms lên 600ms
+                // Gọi hàm in
+                window.print();
+                
+                // Khôi phục trạng thái sau khi in
+                setTimeout(() => {
+                    document.body.className = currentBodyClass;
+                    dishListElement.innerHTML = currentDishListHTML;
+                    dishHeader.innerHTML = currentHeaderHTML;
+                }, 500);
+            }, 300);
         }
         
-        // Hàm in bếp cơm - ĐÃ SỬA: tăng timeout để load đủ DOM trước khi in
+        // Hàm in bếp cơm
         function printRiceKitchen() {
+            const dishListElement = document.getElementById('dishList');
+            const dishHeader = document.querySelector('.dish-header');
+            
             // Lưu trạng thái hiện tại
-            const originalBodyClass = document.body.className;
-            const currentHTML = document.getElementById('dishList').innerHTML;
+            const currentDishListHTML = dishListElement.innerHTML;
+            const currentHeaderHTML = dishHeader.innerHTML;
+            const currentBodyClass = document.body.className;
             
             // Cập nhật thời gian order
             updateOrderTime();
             
-            // Tạo danh sách chỉ có món bếp cơm
+            // Tạo danh sách chỉ có món bếp cơm (CHỈ 2 CỘT)
             let riceDishesHtml = '';
             allDishes.forEach(dish => {
                 if (dish.kitchenClass === 'rice-item') {
-                    riceDishesHtml += createDishItem(dish);
+                    riceDishesHtml += `
+                        <div class="dish-item">
+                            <div class="dish-quantity">${dish.quantity || 1}</div>
+                            <div class="dish-name">${dish.name || ''}</div>
+                            <div style="display:none;"></div>
+                        </div>
+                    `;
                 }
             });
             
             // Cập nhật danh sách hiển thị
-            document.getElementById('dishList').innerHTML = riceDishesHtml;
+            dishListElement.innerHTML = riceDishesHtml;
+            
+            // Cập nhật tiêu đề (CHỈ 2 CỘT)
+            dishHeader.innerHTML = `
+                <div>SL</div>
+                <div>TÊN MÓN</div>
+                <div style="display:none;"></div>
+            `;
             
             // Thêm class để xác định đang in bếp cơm
-            document.body.className = originalBodyClass + ' print-rice';
+            document.body.className = currentBodyClass + ' print-rice';
             
-            // TĂNG TIMEOUT ĐỂ ĐẢM BẢO DOM ĐÃ CẬP NHẬT HOÀN TOÀN TRƯỚC KHI IN
+            // Gọi hàm in với delay để đảm bảo DOM đã cập nhật
             setTimeout(() => {
-                // Đợi thêm cho trình duyệt render xong
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        // Gọi hàm in
-                        window.print();
-                        
-                        // Khôi phục trạng thái sau khi in
-                        setTimeout(() => {
-                            document.body.className = originalBodyClass;
-                            document.getElementById('dishList').innerHTML = currentHTML;
-                        }, 300); // Tăng timeout khôi phục
-                    }, 100); // Thêm delay nhỏ trước khi gọi print()
-                });
-            }, 500); // Tăng timeout chính từ 100ms lên 500ms
+                // Gọi hàm in
+                window.print();
+                
+                // Khôi phục trạng thái sau khi in
+                setTimeout(() => {
+                    document.body.className = currentBodyClass;
+                    dishListElement.innerHTML = currentDishListHTML;
+                    dishHeader.innerHTML = currentHeaderHTML;
+                }, 500);
+            }, 300);
         }
         
         // Hàm cập nhật thời gian order
