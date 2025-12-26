@@ -165,6 +165,29 @@
             display: block;
         }
         
+        /* Quan trọng: Thêm !important để ghi đè trên mobile */
+        .print-pho .rice-item,
+        .print-pho .other-item,
+        .print-rice .pho-item,
+        .print-rice .other-item {
+            display: none !important;
+        }
+        
+        /* Khi in: chỉ hiển thị 2 cột SL và TÊN MÓN */
+        .print-mode .dish-header {
+            grid-template-columns: 50px 1fr !important;
+        }
+        
+        .print-mode .dish-item {
+            grid-template-columns: 50px 1fr !important;
+        }
+        
+        /* Ẩn cột LOẠI BẾP khi in */
+        .print-mode .dish-header > div:nth-child(3),
+        .print-mode .dish-item > div:nth-child(3) {
+            display: none !important;
+        }
+        
         /* Tùy chỉnh khi in */
         @media print {
             body {
@@ -180,27 +203,11 @@
                 display: none !important;
             }
             
-            /* Khi in: chỉ hiển thị 2 cột SL và TÊN MÓN */
-            .dish-header {
-                grid-template-columns: 50px 1fr;
-            }
-            
-            .dish-item {
-                grid-template-columns: 50px 1fr;
-            }
-            
-            /* Ẩn cột LOẠI BẾP khi in */
-            .dish-header > div:nth-child(3),
-            .dish-item > div:nth-child(3) {
-                display: none;
-            }
-            
-            /* Ẩn các món không phải loại bếp đang in */
-            .print-pho .rice-item,
-            .print-pho .other-item,
-            .print-rice .pho-item,
-            .print-rice .other-item {
-                display: none !important;
+            /* Áp dụng class print-mode khi in */
+            body.print-pho,
+            body.print-rice {
+                visibility: visible;
+                opacity: 1;
             }
             
             /* Thêm khoảng trắng để tránh bị cắt khi in */
@@ -407,7 +414,7 @@
             }
         }
         
-        // Hàm in bếp phở - ĐÃ SỬA: tăng timeout để load đủ DOM trước khi in
+        // Hàm in bếp phở - Sử dụng cách tiếp cận khác cho mobile
         function printPhoKitchen() {
             // Lưu trạng thái hiện tại
             const originalBodyClass = document.body.className;
@@ -427,28 +434,26 @@
             // Cập nhật danh sách hiển thị
             document.getElementById('dishList').innerHTML = phoDishesHtml;
             
-            // Thêm class để xác định đang in bếp phở
-            document.body.className = originalBodyClass + ' print-pho';
+            // Áp dụng lớp print-mode cho body và container
+            document.body.classList.add('print-mode', 'print-pho');
+            document.querySelector('.order-container').classList.add('print-mode');
             
-            // TĂNG TIMEOUT ĐỂ ĐẢM BẢO DOM ĐÃ CẬP NHẬT HOÀN TOÀN TRƯỚC KHI IN
+            // Đợi một chút để DOM cập nhật rồi in
             setTimeout(() => {
-                // Đợi thêm cho trình duyệt render xong
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        // Gọi hàm in
-                        window.print();
-                        
-                        // Khôi phục trạng thái sau khi in
-                        setTimeout(() => {
-                            document.body.className = originalBodyClass;
-                            document.getElementById('dishList').innerHTML = currentHTML;
-                        }, 300); // Tăng timeout khôi phục
-                    }, 100); // Thêm delay nhỏ trước khi gọi print()
-                });
-            }, 600); // Tăng timeout chính từ 100ms lên 600ms
+                // In
+                window.print();
+                
+                // Khôi phục trạng thái sau khi in
+                setTimeout(() => {
+                    document.body.className = originalBodyClass;
+                    document.body.classList.remove('print-mode');
+                    document.querySelector('.order-container').classList.remove('print-mode');
+                    document.getElementById('dishList').innerHTML = currentHTML;
+                }, 300);
+            }, 100);
         }
         
-        // Hàm in bếp cơm - ĐÃ SỬA: tăng timeout để load đủ DOM trước khi in
+        // Hàm in bếp cơm - Sử dụng cách tiếp cận khác cho mobile
         function printRiceKitchen() {
             // Lưu trạng thái hiện tại
             const originalBodyClass = document.body.className;
@@ -468,25 +473,23 @@
             // Cập nhật danh sách hiển thị
             document.getElementById('dishList').innerHTML = riceDishesHtml;
             
-            // Thêm class để xác định đang in bếp cơm
-            document.body.className = originalBodyClass + ' print-rice';
+            // Áp dụng lớp print-mode cho body và container
+            document.body.classList.add('print-mode', 'print-rice');
+            document.querySelector('.order-container').classList.add('print-mode');
             
-            // TĂNG TIMEOUT ĐỂ ĐẢM BẢO DOM ĐÃ CẬP NHẬT HOÀN TOÀN TRƯỚC KHI IN
+            // Đợi một chút để DOM cập nhật rồi in
             setTimeout(() => {
-                // Đợi thêm cho trình duyệt render xong
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        // Gọi hàm in
-                        window.print();
-                        
-                        // Khôi phục trạng thái sau khi in
-                        setTimeout(() => {
-                            document.body.className = originalBodyClass;
-                            document.getElementById('dishList').innerHTML = currentHTML;
-                        }, 300); // Tăng timeout khôi phục
-                    }, 100); // Thêm delay nhỏ trước khi gọi print()
-                });
-            }, 500); // Tăng timeout chính từ 100ms lên 500ms
+                // In
+                window.print();
+                
+                // Khôi phục trạng thái sau khi in
+                setTimeout(() => {
+                    document.body.className = originalBodyClass;
+                    document.body.classList.remove('print-mode');
+                    document.querySelector('.order-container').classList.remove('print-mode');
+                    document.getElementById('dishList').innerHTML = currentHTML;
+                }, 300);
+            }, 100);
         }
         
         // Hàm cập nhật thời gian order
