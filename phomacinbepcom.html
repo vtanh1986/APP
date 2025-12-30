@@ -1,157 +1,642 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST IN</title>
+    <title>CHON IN BEP</title>
     <style>
+        /* Reset và font chữ đơn giản */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Arial', monospace;
+            line-height: 1.2;
+            padding: 10px;
             max-width: 500px;
             margin: 0 auto;
+            background-color: #fff;
         }
         
-        .test-section {
-            margin: 20px 0;
+        /* Container chính */
+        .order-container {
+            border: 1px solid #000;
             padding: 15px;
-            border: 2px solid #333;
+            font-size: 14px;
         }
         
-        h2 {
-            color: #333;
-            margin-top: 0;
+        /* Tiêu đề order */
+        .order-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #000;
         }
         
-        button {
-            background-color: #0066cc;
+        .order-number {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .table-info {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        /* Thông tin đơn hàng */
+        .service-name {
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        /* Tiêu đề cột danh sách món */
+        .dish-header {
+            display: grid;
+            grid-template-columns: 50px 1fr 70px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #000;
+        }
+        
+        .dish-header > div {
+            padding: 0 5px;
+        }
+        
+        /* Danh sách món ăn */
+        .dish-list {
+            margin-top: 10px;
+        }
+        
+        .dish-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 70px;
+            margin-bottom: 8px;
+            padding: 3px 0;
+            min-height: 30px;
+            align-items: start;
+        }
+        
+        .dish-item > div {
+            padding: 0 5px;
+            word-break: break-word;
+        }
+        
+        .dish-quantity {
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .dish-name {
+            padding-left: 10px !important;
+        }
+        
+        .dish-kitchen-type {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            color: #d00;
+        }
+        
+        /* Đường kẻ ngang */
+        .divider {
+            border-bottom: 1px dashed #000;
+            margin: 10px 0;
+        }
+        
+        /* Nút in */
+        .print-buttons {
+            margin-top: 20px;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .print-btn {
+            background-color: #333;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 16px;
+            padding: 12px 16px;
+            font-family: 'Courier New', monospace;
             cursor: pointer;
-            margin: 10px 5px;
-            width: 100%;
-            max-width: 300px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 140px;
+            max-width: 200px;
+            margin-bottom: 5px;
+            touch-action: manipulation;
         }
         
-        button:hover {
-            background-color: #0052a3;
+        .print-btn:hover {
+            background-color: #555;
         }
         
-        .result {
+        .print-btn-pho {
+            background-color: #0066cc;
+        }
+        
+        .print-btn-rice {
+            background-color: #cc6600;
+        }
+        
+        .print-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Phần thông tin */
+        .order-info {
+            text-align: center;
             margin-top: 10px;
-            padding: 10px;
-            background: #f0f0f0;
+            font-size: 12px;
+        }
+        
+        /* Message box */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 2px solid #333;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            text-align: center;
             display: none;
         }
         
-        .error {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .success {
-            background: #e8f5e9;
-            color: #2e7d32;
+        /* Tối ưu cho mobile */
+        @media (max-width: 480px) {
+            .print-btn {
+                padding: 14px 12px;
+                font-size: 13px;
+                min-width: 120px;
+            }
+            
+            .order-container {
+                padding: 10px;
+            }
+            
+            .dish-header {
+                grid-template-columns: 40px 1fr 60px;
+            }
+            
+            .dish-item {
+                grid-template-columns: 40px 1fr 60px;
+            }
+            
+            .dish-kitchen-type {
+                font-size: 11px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>TEST IN LOOPED LABS</h1>
-    
-    <div class="test-section">
-        <h2>Test 1: In HTML Đơn Giản (Data URI)</h2>
-        <p>Test in một trang HTML siêu đơn giản qua data URI</p>
-        <button onclick="testDataURI()">TEST DATA URI</button>
-        <div id="result1" class="result"></div>
+    <div class="order-container">
+        <div class="order-header">
+            <div class="order-number" id="orderNumber">#0902-04-02</div>
+            <div class="table-info" id="tableInfo">BÀN 1</div>
+            <div class="service-name">ORDER BẾP</div>
+        </div>
+        
+        <!-- Tiêu đề cột -->
+        <div class="dish-header">
+            <div>SL</div>
+            <div>TÊN MÓN</div>
+            <div>LOẠI BẾP</div>
+        </div>
+        
+        <div class="dish-list" id="dishList">
+            <!-- Dữ liệu món ăn sẽ được thêm bằng JavaScript -->
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="order-footer">
+            <div class="order-info" id="orderInfo">
+                Order Time: 14:30
+            </div>
+        </div>
     </div>
     
-    <div class="test-section">
-        <h2>Test 2: In Từ URL Thật</h2>
-        <p>Test in từ URL có sẵn của Looped Labs</p>
-        <button onclick="testRealURL()">TEST URL THẬT</button>
-        <div id="result2" class="result"></div>
-    </div>
-    
-    <div class="test-section">
-        <h2>Test 3: Thông Tin Debug</h2>
-        <button onclick="showDebugInfo()">XEM THÔNG TIN</button>
-        <div id="result3" class="result"></div>
+    <div class="print-buttons" id="printButtons">
+        <!-- Nút in sẽ được thêm bằng JavaScript -->
     </div>
 
+    <!-- Message box -->
+    <div class="message-box" id="messageBox">
+        <div id="messageText">Đang xử lý...</div>
+        <button id="closeMessage" style="margin-top: 15px; padding: 8px 16px; background: #ccc; border: none; cursor: pointer;">Đóng</button>
+    </div>
+
+    <!-- Hidden iframe for printing -->
+    <iframe id="printFrame" name="printFrame" style="display:none; width:0; height:0; border:0;"></iframe>
+
     <script>
-        function testDataURI() {
-            const result = document.getElementById('result1');
-            result.style.display = 'block';
-            result.className = 'result';
-            result.textContent = 'Đang thử in...';
+        // Biến toàn cục
+        let allDishes = [];
+        let hasPho = false;
+        let hasRice = false;
+        let orderNumber = '';
+        let tableInfo = '';
+        
+        // Hàm lấy tham số từ URL
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // Hàm decode HTML entities
+        function decodeHtmlEntities(text) {
+            const textarea = document.createElement('textarea');
+            textarea.innerHTML = text;
+            return textarea.value;
+        }
+        
+        // Hàm parse dữ liệu món ăn từ URL
+        function parseDishesFromUrl() {
+            const dishesParam = getUrlParameter('data');
+            if (!dishesParam) return null;
             
-            try {
-                // HTML cực kỳ đơn giản
-                const simpleHTML = '<html><body><h1>TEST PRINT</h1><p>Day la test print</p></body></html>';
-                const encoded = encodeURIComponent(simpleHTML);
-                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&numCopies=1&src=data:text/html,${encoded}`;
+            const decodedParam = decodeURIComponent(dishesParam);
+            const cleanParam = decodeHtmlEntities(decodedParam);
+            const rows = cleanParam.split('_b_');
+            const dishes = [];
+            
+            rows.forEach(row => {
+                if (row.trim() === '') return;
                 
-                result.textContent = 'URL đã tạo. Đang mở app in...';
-                window.location.href = printUrl;
+                const columns = row.split('_a_');
+                while (columns.length < 3) columns.push('');
                 
-                setTimeout(() => {
-                    result.className = 'result success';
-                    result.textContent = 'Đã gửi lệnh in. Nếu không in được, kiểm tra app Looped Labs.';
-                }, 2000);
+                const kitchenType = columns[2] || 'BẾP CHÍNH';
+                let kitchenClass = 'other-item';
                 
-            } catch (error) {
-                result.className = 'result error';
-                result.textContent = 'Lỗi: ' + error.message;
+                if (kitchenType.toLowerCase().includes('phở') || kitchenType.toLowerCase().includes('pho')) {
+                    kitchenClass = 'pho-item';
+                } else if (kitchenType.toLowerCase().includes('cơm') || kitchenType.toLowerCase().includes('com') || kitchenType.toLowerCase().includes('rice')) {
+                    kitchenClass = 'rice-item';
+                }
+                
+                dishes.push({
+                    quantity: columns[0] || '1',
+                    name: columns[1] || '',
+                    kitchenType: kitchenType,
+                    kitchenClass: kitchenClass
+                });
+            });
+            
+            return dishes;
+        }
+        
+        // Hàm kiểm tra loại bếp
+        function checkKitchenTypes(dishes) {
+            return {
+                hasPho: dishes.some(dish => dish.kitchenClass === 'pho-item'),
+                hasRice: dishes.some(dish => dish.kitchenClass === 'rice-item')
+            };
+        }
+        
+        // Hàm hiển thị danh sách món
+        function showAllDishes() {
+            const dishListElement = document.getElementById('dishList');
+            let dishesHtml = '';
+            allDishes.forEach(dish => {
+                dishesHtml += `
+                    <div class="dish-item">
+                        <div class="dish-quantity">${dish.quantity || 1}</div>
+                        <div class="dish-name">${dish.name || ''}</div>
+                        <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
+                    </div>
+                `;
+            });
+            dishListElement.innerHTML = dishesHtml;
+        }
+        
+        // Hàm tạo nút in
+        function createPrintButtons() {
+            const printButtonsDiv = document.getElementById('printButtons');
+            let buttonsHtml = '';
+            
+            if (hasPho) {
+                buttonsHtml += `
+                    <button class="print-btn print-btn-pho" id="printPhoBtn">
+                        IN BẾP PHỞ
+                    </button>
+                `;
+            }
+            
+            if (hasRice) {
+                buttonsHtml += `
+                    <button class="print-btn print-btn-rice" id="printRiceBtn">
+                        IN BẾP CƠM
+                    </button>
+                `;
+            }
+            
+            printButtonsDiv.innerHTML = buttonsHtml;
+            
+            // Thêm event listener
+            if (hasPho) {
+                document.getElementById('printPhoBtn').addEventListener('click', () => printDirect('pho'));
+            }
+            
+            if (hasRice) {
+                document.getElementById('printRiceBtn').addEventListener('click', () => printDirect('rice'));
             }
         }
         
-        function testRealURL() {
-            const result = document.getElementById('result2');
-            result.style.display = 'block';
-            result.className = 'result';
-            result.textContent = 'Đang thử in từ URL thật...';
+        // PHƯƠNG PHÁP MỚI: In trực tiếp một lần bấm
+        function printDirect(kitchenType) {
+            // Cập nhật thời gian
+            updateOrderTime();
+            
+            // Lọc món theo loại bếp
+            let filteredDishes = [];
+            if (kitchenType === 'pho') {
+                filteredDishes = allDishes.filter(dish => dish.kitchenClass === 'pho-item');
+            } else if (kitchenType === 'rice') {
+                filteredDishes = allDishes.filter(dish => dish.kitchenClass === 'rice-item');
+            }
+            
+            if (filteredDishes.length === 0) {
+                showMessage('Không có món nào để in');
+                return;
+            }
+            
+            // Tạo nội dung in đơn giản nhất
+            const printContent = createSimpleESCContent(kitchenType, filteredDishes);
+            
+            // PHƯƠNG PHÁP 1: Thử in qua Looped Labs trước
+            tryLoopLabsPrint(printContent, kitchenType);
+        }
+        
+        // Tạo nội dung ESC/POS đơn giản (cho máy in nhiệt)
+        function createSimpleESCContent(kitchenType, filteredDishes) {
+            let content = '';
+            
+            // Tiêu đề
+            content += '\x1B\x21\x30'; // Bật chế độ in đậm
+            content += `\n${orderNumber}\n`;
+            content += `${tableInfo}\n`;
+            content += `ORDER BẾP ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}\n`;
+            content += '\x1B\x21\x00'; // Tắt chế độ in đậm
+            
+            content += '--------------------------------\n';
+            content += 'SL  TÊN MÓN\n';
+            content += '--------------------------------\n';
+            
+            // Danh sách món
+            filteredDishes.forEach(dish => {
+                const qty = dish.quantity.padEnd(3, ' ');
+                const name = dish.name;
+                content += `${qty} ${name}\n`;
+            });
+            
+            content += '--------------------------------\n';
+            content += `Order Time: ${getCurrentTime()}\n\n\n\n\n`;
+            
+            return content;
+        }
+        
+        // PHƯƠNG PHÁP CHÍNH: Thử in qua Looped Labs
+        function tryLoopLabsPrint(content, kitchenType) {
+            showMessage('Đang gửi đến máy in...');
+            
+            // Tạo HTML đơn giản nhất có thể
+            const simpleHtml = createSimpleHTMLContent(kitchenType, 
+                allDishes.filter(dish => kitchenType === 'pho' ? 
+                    dish.kitchenClass === 'pho-item' : 
+                    dish.kitchenClass === 'rice-item'));
+            
+            // Mã hóa HTML
+            const encodedHtml = encodeURIComponent(simpleHtml);
+            
+            // Tạo URL cho Looped Labs - ĐỊNH DẠNG ĐƠN GIẢN HƠN
+            const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&src=data:text/html,${encodedHtml}`;
+            
+            // THỬ PHƯƠNG PHÁP 1A: Dùng location.replace (không lịch sử)
+            setTimeout(() => {
+                try {
+                    window.location.replace(printUrl);
+                    
+                    // Sau 2 giây, nếu vẫn còn trên trang này -> chuyển sang phương pháp khác
+                    setTimeout(() => {
+                        if (!document.hidden) {
+                            // PHƯƠNG PHÁP 1B: Dùng form submit
+                            tryFormSubmitPrint(simpleHtml);
+                        }
+                    }, 2000);
+                    
+                } catch (error) {
+                    // PHƯƠNG PHÁP 2: Form submit
+                    tryFormSubmitPrint(simpleHtml);
+                }
+            }, 100);
+        }
+        
+        // Tạo HTML cực kỳ đơn giản
+        function createSimpleHTMLContent(kitchenType, filteredDishes) {
+            let items = '';
+            filteredDishes.forEach(dish => {
+                items += `<div>${dish.quantity} ${dish.name}</div>`;
+            });
+            
+            return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:monospace;font-size:12pt;margin:0;padding:10px;width:80mm;">
+<div style="text-align:center;font-weight:bold;">
+<div>${orderNumber}</div>
+<div style="font-size:14pt;">${tableInfo}</div>
+<div>ORDER BẾP ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}</div>
+</div>
+<hr style="border:none;border-top:1px solid #000;margin:10px 0;">
+<div style="font-weight:bold;">SL TÊN MÓN</div>
+<hr style="border:none;border-top:1px solid #000;margin:5px 0 10px 0;">
+${items}
+<hr style="border:none;border-top:1px dashed #000;margin:10px 0;">
+<div style="text-align:center;font-size:10pt;">
+Order Time: ${getCurrentTime()}
+</div>
+</body>
+</html>`;
+        }
+        
+        // PHƯƠNG PHÁP 2: Dùng form submit
+        function tryFormSubmitPrint(htmlContent) {
+            showMessage('Đang kết nối máy in...');
             
             try {
-                // Dùng URL mẫu từ tài liệu Looped Labs
-                const printUrl = "print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&numCopies=1&src=https://loopedlabs.com/web-print/bill.html";
+                // Tạo form ẩn
+                const form = document.createElement('form');
+                form.style.display = 'none';
+                form.method = 'POST';
+                form.action = 'about:blank';
+                form.target = 'printFrame';
                 
-                result.textContent = 'Đang mở app in...';
-                window.location.href = printUrl;
+                // Tạo iframe để nhận kết quả
+                const iframe = document.getElementById('printFrame');
                 
+                // Khi iframe load xong
+                iframe.onload = function() {
+                    try {
+                        // Đợi một chút rồi đóng message
+                        setTimeout(() => {
+                            hideMessage();
+                        }, 1000);
+                    } catch (e) {
+                        hideMessage();
+                    }
+                };
+                
+                // Tạo input ẩn
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'html';
+                input.value = htmlContent;
+                
+                form.appendChild(input);
+                document.body.appendChild(form);
+                
+                // Submit form
+                form.submit();
+                
+                // Xóa form sau 3 giây
                 setTimeout(() => {
-                    result.className = 'result success';
-                    result.textContent = 'Đã gửi lệnh in từ URL. Nếu in được = App OK, nếu không = cấu hình app.';
-                }, 2000);
+                    document.body.removeChild(form);
+                }, 3000);
                 
             } catch (error) {
-                result.className = 'result error';
-                result.textContent = 'Lỗi: ' + error.message;
+                // PHƯƠNG PHÁP 3: Tạo blob URL
+                tryBlobPrint(htmlContent);
             }
         }
         
-        function showDebugInfo() {
-            const result = document.getElementById('result3');
-            result.style.display = 'block';
-            result.className = 'result';
+        // PHƯƠNG PHÁP 3: Dùng blob URL
+        function tryBlobPrint(htmlContent) {
+            showMessage('Đang tạo lệnh in...');
             
-            let info = '';
-            info += 'User Agent: ' + navigator.userAgent + '\n\n';
-            info += 'Platform: ' + navigator.platform + '\n\n';
-            info += 'Ngôn ngữ: ' + navigator.language + '\n\n';
-            info += 'Online: ' + navigator.onLine + '\n\n';
+            try {
+                // Tạo blob từ HTML
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const blobUrl = URL.createObjectURL(blob);
+                
+                // Tạo URL print:// với blob
+                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&src=${encodeURIComponent(blobUrl)}`;
+                
+                // Tạo iframe để mở URL
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = printUrl;
+                
+                iframe.onload = function() {
+                    setTimeout(() => {
+                        document.body.removeChild(iframe);
+                        URL.revokeObjectURL(blobUrl);
+                        hideMessage();
+                    }, 1000);
+                };
+                
+                document.body.appendChild(iframe);
+                
+            } catch (error) {
+                // PHƯƠNG PHÁP CUỐI: Thông báo lỗi
+                showMessage('Không thể kết nối máy in. Vui lòng kiểm tra ứng dụng in.');
+                setTimeout(hideMessage, 3000);
+            }
+        }
+        
+        // Hàm hiển thị thông báo
+        function showMessage(text) {
+            document.getElementById('messageText').textContent = text;
+            document.getElementById('messageBox').style.display = 'block';
+        }
+        
+        // Hàm ẩn thông báo
+        function hideMessage() {
+            document.getElementById('messageBox').style.display = 'none';
+        }
+        
+        // Hàm cập nhật thời gian
+        function updateOrderTime() {
+            const orderInfoElement = document.getElementById('orderInfo');
+            const currentTime = getCurrentTime();
+            orderInfoElement.textContent = `Order Time: ${currentTime}`;
+        }
+        
+        // Hàm lấy thời gian hiện tại
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + 
+                   now.getMinutes().toString().padStart(2, '0');
+        }
+        
+        // Khởi tạo trang
+        function initPage() {
+            const urlParams = new URLSearchParams(window.location.search);
             
-            // Kiểm tra xem có phải Android không
-            const isAndroid = /android/i.test(navigator.userAgent);
-            info += 'Là Android: ' + (isAndroid ? 'CÓ ✓' : 'KHÔNG ✗') + '\n\n';
-            
-            if (!isAndroid) {
-                info += '⚠️ CHÚ Ý: App Looped Labs chỉ hoạt động trên Android!\n\n';
+            // Cập nhật số bàn
+            const table = getUrlParameter('table');
+            if (table) {
+                tableInfo = `BÀN ${table}`;
+                document.getElementById('tableInfo').textContent = tableInfo;
             }
             
-            result.innerHTML = '<pre style="white-space: pre-wrap; word-wrap: break-word;">' + info + '</pre>';
+            // Cập nhật số order
+            const orderNum = getUrlParameter('order');
+            if (orderNum) {
+                orderNumber = `#${orderNum}`;
+                document.getElementById('orderNumber').textContent = orderNumber;
+            }
+            
+            // Cập nhật thời gian
+            updateOrderTime();
+            
+            // Cập nhật danh sách món ăn
+            const dishes = parseDishesFromUrl();
+            
+            if (dishes && dishes.length > 0) {
+                allDishes = dishes;
+                showAllDishes();
+                
+                const kitchenTypes = checkKitchenTypes(dishes);
+                hasPho = kitchenTypes.hasPho;
+                hasRice = kitchenTypes.hasRice;
+                
+                createPrintButtons();
+            } else {
+                // Dữ liệu mẫu
+                allDishes = [
+                    { quantity: '2', name: 'Phở bò tái chín', kitchenType: 'BẾP PHỞ', kitchenClass: 'pho-item' },
+                    { quantity: '1', name: 'Phở gà', kitchenType: 'BẾP PHỞ', kitchenClass: 'pho-item' },
+                    { quantity: '1', name: 'Cơm rang bò', kitchenType: 'BẾP CƠM', kitchenClass: 'rice-item' },
+                    { quantity: '2', name: 'Cơm rang thập cẩm', kitchenType: 'BẾP CƠM', kitchenClass: 'rice-item' }
+                ];
+                
+                showAllDishes();
+                hasPho = true;
+                hasRice = true;
+                orderNumber = '#0902-04-02';
+                tableInfo = 'BÀN 1';
+                createPrintButtons();
+            }
+            
+            // Sự kiện cho nút đóng message
+            document.getElementById('closeMessage').addEventListener('click', hideMessage);
         }
+        
+        // Khi trang tải xong
+        document.addEventListener('DOMContentLoaded', initPage);
     </script>
 </body>
 </html>
