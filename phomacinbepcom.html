@@ -1,559 +1,157 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHON IN BEP</title>
+    <title>TEST IN</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Arial', monospace;
-            line-height: 1.2;
-            padding: 10px;
+            font-family: Arial, sans-serif;
+            padding: 20px;
             max-width: 500px;
             margin: 0 auto;
-            background-color: #fff;
         }
         
-        .order-container {
-            border: 1px solid #000;
+        .test-section {
+            margin: 20px 0;
             padding: 15px;
-            font-size: 14px;
+            border: 2px solid #333;
         }
         
-        .order-header {
-            text-align: center;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #000;
+        h2 {
+            color: #333;
+            margin-top: 0;
         }
         
-        .order-number {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-        
-        .table-info {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-        
-        .service-name {
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-align: center;
-        }
-        
-        .dish-header {
-            display: grid;
-            grid-template-columns: 50px 1fr 70px;
-            margin-bottom: 5px;
-            font-weight: bold;
-            padding-bottom: 3px;
-            border-bottom: 1px solid #000;
-        }
-        
-        .dish-header > div {
-            padding: 0 5px;
-        }
-        
-        .dish-list {
-            margin-top: 10px;
-        }
-        
-        .dish-item {
-            display: grid;
-            grid-template-columns: 50px 1fr 70px;
-            margin-bottom: 8px;
-            padding: 3px 0;
-            min-height: 30px;
-            align-items: start;
-        }
-        
-        .dish-item > div {
-            padding: 0 5px;
-            word-break: break-word;
-        }
-        
-        .dish-quantity {
-            font-weight: bold;
-            text-align: center;
-        }
-        
-        .dish-name {
-            padding-left: 10px !important;
-        }
-        
-        .dish-kitchen-type {
-            font-size: 12px;
-            font-weight: bold;
-            text-align: center;
-            color: #d00;
-        }
-        
-        .divider {
-            border-bottom: 1px dashed #000;
-            margin: 10px 0;
-        }
-        
-        .print-buttons {
-            margin-top: 20px;
-            text-align: center;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .print-btn {
-            background-color: #333;
+        button {
+            background-color: #0066cc;
             color: white;
             border: none;
-            padding: 12px 16px;
-            font-family: 'Courier New', monospace;
+            padding: 15px 30px;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 14px;
-            flex: 1;
-            min-width: 140px;
-            max-width: 200px;
-            margin-bottom: 5px;
-            touch-action: manipulation;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-        
-        .print-btn:hover {
-            background-color: #555;
-        }
-        
-        .print-btn-pho {
-            background-color: #0066cc;
-        }
-        
-        .print-btn-rice {
-            background-color: #cc6600;
-        }
-        
-        .print-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .order-info {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 12px;
-        }
-        
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+            margin: 10px 5px;
             width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
+            max-width: 300px;
+        }
+        
+        button:hover {
+            background-color: #0052a3;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
             display: none;
         }
         
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #0066cc;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+        .error {
+            background: #ffebee;
+            color: #c62828;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .no-print {
-            display: block;
-        }
-        
-        @media (max-width: 480px) {
-            .print-btn {
-                padding: 14px 12px;
-                font-size: 13px;
-                min-width: 120px;
-            }
-            
-            .order-container {
-                padding: 10px;
-            }
-            
-            .dish-header {
-                grid-template-columns: 40px 1fr 60px;
-            }
-            
-            .dish-item {
-                grid-template-columns: 40px 1fr 60px;
-            }
-            
-            .dish-kitchen-type {
-                font-size: 11px;
-            }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
         }
     </style>
 </head>
 <body>
-    <div class="order-container">
-        <div class="order-header">
-            <div class="order-number" id="orderNumber">#0902-04-02</div>
-            <div class="table-info" id="tableInfo">BÀN 1</div>
-            <div class="service-name">ORDER BẾP</div>
-        </div>
-        
-        <div class="dish-header">
-            <div>SL</div>
-            <div>TÊN MÓN</div>
-            <div>LOẠI BẾP</div>
-        </div>
-        
-        <div class="dish-list" id="dishList"></div>
-        
-        <div class="divider"></div>
-        
-        <div class="order-footer">
-            <div class="order-info" id="orderInfo">Order Time: 14:30</div>
-        </div>
+    <h1>TEST IN LOOPED LABS</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: In HTML Đơn Giản (Data URI)</h2>
+        <p>Test in một trang HTML siêu đơn giản qua data URI</p>
+        <button onclick="testDataURI()">TEST DATA URI</button>
+        <div id="result1" class="result"></div>
     </div>
     
-    <div class="print-buttons no-print" id="printButtons"></div>
-
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <div id="loadingText">Đang chuẩn bị in...</div>
-        <button id="cancelPrint" style="margin-top: 20px; padding: 8px 16px; background: #ccc; border: none; cursor: pointer;">Hủy bỏ</button>
+    <div class="test-section">
+        <h2>Test 2: In Từ URL Thật</h2>
+        <p>Test in từ URL có sẵn của Looped Labs</p>
+        <button onclick="testRealURL()">TEST URL THẬT</button>
+        <div id="result2" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Thông Tin Debug</h2>
+        <button onclick="showDebugInfo()">XEM THÔNG TIN</button>
+        <div id="result3" class="result"></div>
     </div>
 
     <script>
-        let allDishes = [];
-        let hasPho = false;
-        let hasRice = false;
-        let orderNumber = '';
-        let tableInfo = '';
-        let isPrinting = false;
-        
-        function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
-        
-        function decodeHtmlEntities(text) {
-            const textarea = document.createElement('textarea');
-            textarea.innerHTML = text;
-            return textarea.value;
-        }
-        
-        function parseDishesFromUrl() {
-            const dishesParam = getUrlParameter('data');
-            if (!dishesParam) return null;
-            
-            const decodedParam = decodeURIComponent(dishesParam);
-            const cleanParam = decodeHtmlEntities(decodedParam);
-            const rows = cleanParam.split('_b_');
-            const dishes = [];
-            
-            rows.forEach(row => {
-                if (row.trim() === '') return;
-                const columns = row.split('_a_');
-                while (columns.length < 3) {
-                    columns.push('');
-                }
-                
-                const kitchenType = columns[2] || 'BẾP CHÍNH';
-                let kitchenClass = 'other-item';
-                
-                if (kitchenType.toLowerCase().includes('phở') || 
-                    kitchenType.toLowerCase().includes('pho')) {
-                    kitchenClass = 'pho-item';
-                } else if (kitchenType.toLowerCase().includes('cơm') || 
-                          kitchenType.toLowerCase().includes('com') || 
-                          kitchenType.toLowerCase().includes('rice')) {
-                    kitchenClass = 'rice-item';
-                }
-                
-                const dish = {
-                    quantity: columns[0] || '1',
-                    name: columns[1] || '',
-                    kitchenType: kitchenType,
-                    kitchenClass: kitchenClass
-                };
-                
-                dishes.push(dish);
-            });
-            
-            return dishes;
-        }
-        
-        function checkKitchenTypes(dishes) {
-            const hasPho = dishes.some(dish => dish.kitchenClass === 'pho-item');
-            const hasRice = dishes.some(dish => dish.kitchenClass === 'rice-item');
-            return { hasPho, hasRice };
-        }
-        
-        function createDishItem(dish) {
-            return `
-                <div class="dish-item">
-                    <div class="dish-quantity">${dish.quantity || 1}</div>
-                    <div class="dish-name">${dish.name || ''}</div>
-                    <div class="dish-kitchen-type">${dish.kitchenType || 'BẾP CHÍNH'}</div>
-                </div>
-            `;
-        }
-        
-        function showAllDishes() {
-            const dishListElement = document.getElementById('dishList');
-            let dishesHtml = '';
-            allDishes.forEach(dish => {
-                dishesHtml += createDishItem(dish);
-            });
-            dishListElement.innerHTML = dishesHtml;
-        }
-        
-        function createPrintButtons() {
-            const printButtonsDiv = document.getElementById('printButtons');
-            let buttonsHtml = '';
-            
-            if (hasPho) {
-                buttonsHtml += `
-                    <a href="#" class="print-btn print-btn-pho" onclick="handlePrint('pho'); return false;">
-                        IN BẾP PHỞ
-                    </a>
-                `;
-            }
-            
-            if (hasRice) {
-                buttonsHtml += `
-                    <a href="#" class="print-btn print-btn-rice" onclick="handlePrint('rice'); return false;">
-                        IN BẾP CƠM
-                    </a>
-                `;
-            }
-            
-            printButtonsDiv.innerHTML = buttonsHtml;
-        }
-        
-        function handlePrint(kitchenType) {
-            if (isPrinting) return;
-            updateOrderTime();
-            showLoading();
-            setTimeout(() => {
-                createAndPrintContent(kitchenType);
-            }, 100);
-        }
-        
-        function createAndPrintContent(kitchenType) {
-            let filteredDishes = [];
-            if (kitchenType === 'pho') {
-                filteredDishes = allDishes.filter(dish => dish.kitchenClass === 'pho-item');
-            } else if (kitchenType === 'rice') {
-                filteredDishes = allDishes.filter(dish => dish.kitchenClass === 'rice-item');
-            }
-            
-            if (filteredDishes.length === 0) {
-                hideLoading();
-                alert(`Không có món nào cho BẾP ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}`);
-                return;
-            }
-            
-            // Thử in bằng TEXT thay vì HTML
-            let printContent = createTextPrintContent(kitchenType, filteredDishes);
+        function testDataURI() {
+            const result = document.getElementById('result1');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.textContent = 'Đang thử in...';
             
             try {
-                // Mã hóa text content
-                const encodedContent = encodeURIComponent(printContent);
+                // HTML cực kỳ đơn giản
+                const simpleHTML = '<html><body><h1>TEST PRINT</h1><p>Day la test print</p></body></html>';
+                const encoded = encodeURIComponent(simpleHTML);
+                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&numCopies=1&src=data:text/html,${encoded}`;
                 
-                // Thử dùng text/plain thay vì HTML
-                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=text&numCopies=1&src=data:text/plain,${encodedContent}`;
-                
-                isPrinting = true;
-                disablePrintButtons(true);
-                
-                // Mở URL print://
+                result.textContent = 'URL đã tạo. Đang mở app in...';
                 window.location.href = printUrl;
                 
-                // Đợi 2 giây rồi ẩn loading
                 setTimeout(() => {
-                    hideLoading();
-                    disablePrintButtons(false);
-                    isPrinting = false;
+                    result.className = 'result success';
+                    result.textContent = 'Đã gửi lệnh in. Nếu không in được, kiểm tra app Looped Labs.';
                 }, 2000);
                 
             } catch (error) {
-                console.error('Lỗi khi in:', error);
-                hideLoading();
-                disablePrintButtons(false);
-                isPrinting = false;
-                alert('Không thể in. Vui lòng kiểm tra lại ứng dụng Looped Labs.');
+                result.className = 'result error';
+                result.textContent = 'Lỗi: ' + error.message;
             }
         }
         
-        function createTextPrintContent(kitchenType, filteredDishes) {
-            const kitchenName = kitchenType === 'pho' ? 'PHO' : 'COM';
-            let text = '';
+        function testRealURL() {
+            const result = document.getElementById('result2');
+            result.style.display = 'block';
+            result.className = 'result';
+            result.textContent = 'Đang thử in từ URL thật...';
             
-            // Header
-            text += '================================\n';
-            text += `       ${orderNumber}\n`;
-            text += `       ${tableInfo}\n`;
-            text += `     ORDER BEP ${kitchenName}\n`;
-            text += '================================\n\n';
-            
-            // Danh sách món
-            text += 'SL  TEN MON\n';
-            text += '--------------------------------\n';
-            
-            filteredDishes.forEach(dish => {
-                const qty = dish.quantity.padStart(2, ' ');
-                text += `${qty}  ${dish.name}\n`;
-            });
-            
-            text += '--------------------------------\n';
-            text += `Time: ${getCurrentTime()}\n`;
-            text += '================================\n';
-            
-            return text;
-        }
-        
-        function createSimplePrintContent(kitchenType, filteredDishes) {
-            let dishesRows = '';
-            filteredDishes.forEach(dish => {
-                // Loại bỏ hoàn toàn ký tự đặc biệt, chỉ giữ chữ và số
-                const cleanName = dish.name.replace(/[^\w\s]/gi, '');
-                dishesRows += `${dish.quantity} x ${cleanName}\n`;
-            });
-            
-            const kitchenName = kitchenType === 'pho' ? 'PHO' : 'COM';
-            
-            // Tạo HTML cực kỳ đơn giản - chỉ dùng text thuần
-            return `<html><head><meta charset="UTF-8"></head><body style="font-family:monospace;font-size:14px;width:300px;margin:0;padding:10px;"><div style="text-align:center;border-bottom:1px solid black;padding-bottom:10px;margin-bottom:10px;"><div style="font-weight:bold;font-size:18px;">${orderNumber}</div><div style="font-weight:bold;font-size:20px;">${tableInfo}</div><div style="font-weight:bold;">ORDER BEP ${kitchenName}</div></div><div style="border-bottom:1px solid black;padding:10px 0;"><div style="font-weight:bold;margin-bottom:5px;">SL - TEN MON</div><pre style="margin:0;font-family:monospace;">${dishesRows}</pre></div><div style="text-align:center;margin-top:10px;">Time: ${getCurrentTime()}</div></body></html>`;
-        }
-        
-        function showLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            const loadingText = document.getElementById('loadingText');
-            loadingText.textContent = 'Đang chuẩn bị in...';
-            overlay.style.display = 'flex';
-        }
-        
-        function hideLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.style.display = 'none';
-        }
-        
-        function disablePrintButtons(disable) {
-            const buttons = document.querySelectorAll('.print-btn');
-            buttons.forEach(btn => {
-                if (disable) {
-                    btn.classList.add('disabled');
-                    btn.style.pointerEvents = 'none';
-                } else {
-                    btn.classList.remove('disabled');
-                    btn.style.pointerEvents = 'auto';
-                }
-            });
-        }
-        
-        function updateOrderTime() {
-            const orderInfoElement = document.getElementById('orderInfo');
-            const currentTime = getCurrentTime();
-            orderInfoElement.textContent = `Order Time: ${currentTime}`;
-        }
-        
-        function updateOrderFromUrl() {
-            const table = getUrlParameter('table');
-            if (table) {
-                tableInfo = `BÀN ${table}`;
-                document.getElementById('tableInfo').textContent = tableInfo;
-            }
-            
-            const orderNum = getUrlParameter('order');
-            if (orderNum) {
-                orderNumber = `#${orderNum}`;
-                document.getElementById('orderNumber').textContent = orderNumber;
-            }
-            
-            updateOrderTime();
-            
-            const dishes = parseDishesFromUrl();
-            
-            if (dishes && dishes.length > 0) {
-                allDishes = dishes;
-                showAllDishes();
-                const kitchenTypes = checkKitchenTypes(dishes);
-                hasPho = kitchenTypes.hasPho;
-                hasRice = kitchenTypes.hasRice;
-                createPrintButtons();
-            } else {
-                allDishes = [
-                    {
-                        quantity: '2',
-                        name: 'Phở bò tái chín',
-                        kitchenType: 'BẾP PHỞ',
-                        kitchenClass: 'pho-item'
-                    },
-                    {
-                        quantity: '1',
-                        name: 'Phở gà',
-                        kitchenType: 'BẾP PHỞ',
-                        kitchenClass: 'pho-item'
-                    },
-                    {
-                        quantity: '1',
-                        name: 'Cơm rang bò',
-                        kitchenType: 'BẾP CƠM',
-                        kitchenClass: 'rice-item'
-                    },
-                    {
-                        quantity: '2',
-                        name: 'Cơm rang thập cẩm',
-                        kitchenType: 'BẾP CƠM',
-                        kitchenClass: 'rice-item'
-                    }
-                ];
+            try {
+                // Dùng URL mẫu từ tài liệu Looped Labs
+                const printUrl = "print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&numCopies=1&src=https://loopedlabs.com/web-print/bill.html";
                 
-                showAllDishes();
-                hasPho = true;
-                hasRice = true;
-                orderNumber = '#0902-04-02';
-                tableInfo = 'BÀN 1';
-                createPrintButtons();
+                result.textContent = 'Đang mở app in...';
+                window.location.href = printUrl;
+                
+                setTimeout(() => {
+                    result.className = 'result success';
+                    result.textContent = 'Đã gửi lệnh in từ URL. Nếu in được = App OK, nếu không = cấu hình app.';
+                }, 2000);
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = 'Lỗi: ' + error.message;
             }
         }
         
-        function getCurrentTime() {
-            const now = new Date();
-            return now.getHours().toString().padStart(2, '0') + ':' + 
-                   now.getMinutes().toString().padStart(2, '0');
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            updateOrderFromUrl();
+        function showDebugInfo() {
+            const result = document.getElementById('result3');
+            result.style.display = 'block';
+            result.className = 'result';
             
-            document.getElementById('cancelPrint').addEventListener('click', function() {
-                hideLoading();
-                disablePrintButtons(false);
-                isPrinting = false;
-            });
-        });
+            let info = '';
+            info += 'User Agent: ' + navigator.userAgent + '\n\n';
+            info += 'Platform: ' + navigator.platform + '\n\n';
+            info += 'Ngôn ngữ: ' + navigator.language + '\n\n';
+            info += 'Online: ' + navigator.onLine + '\n\n';
+            
+            // Kiểm tra xem có phải Android không
+            const isAndroid = /android/i.test(navigator.userAgent);
+            info += 'Là Android: ' + (isAndroid ? 'CÓ ✓' : 'KHÔNG ✗') + '\n\n';
+            
+            if (!isAndroid) {
+                info += '⚠️ CHÚ Ý: App Looped Labs chỉ hoạt động trên Android!\n\n';
+            }
+            
+            result.innerHTML = '<pre style="white-space: pre-wrap; word-wrap: break-word;">' + info + '</pre>';
+        }
     </script>
 </body>
 </html>
