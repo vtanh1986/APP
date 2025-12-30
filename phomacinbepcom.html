@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHON IN BEP</title>
     <style>
-        /* Reset và font chữ đơn giản */
         * {
             margin: 0;
             padding: 0;
@@ -21,14 +20,12 @@
             background-color: #fff;
         }
         
-        /* Container chính */
         .order-container {
             border: 1px solid #000;
             padding: 15px;
             font-size: 14px;
         }
         
-        /* Tiêu đề order */
         .order-header {
             text-align: center;
             margin-bottom: 15px;
@@ -48,14 +45,12 @@
             margin-bottom: 5px;
         }
         
-        /* Thông tin đơn hàng */
         .service-name {
             margin-bottom: 15px;
             font-weight: bold;
             text-align: center;
         }
         
-        /* Tiêu đề cột danh sách món */
         .dish-header {
             display: grid;
             grid-template-columns: 50px 1fr 70px;
@@ -69,7 +64,6 @@
             padding: 0 5px;
         }
         
-        /* Danh sách món ăn */
         .dish-list {
             margin-top: 10px;
         }
@@ -104,13 +98,11 @@
             color: #d00;
         }
         
-        /* Đường kẻ ngang */
         .divider {
             border-bottom: 1px dashed #000;
             margin: 10px 0;
         }
         
-        /* Nút in */
         .print-buttons {
             margin-top: 20px;
             text-align: center;
@@ -152,29 +144,25 @@
             cursor: not-allowed;
         }
         
-        /* Phần thông tin */
         .order-info {
             text-align: center;
             margin-top: 10px;
             font-size: 12px;
         }
         
-        /* Message box */
-        .message-box {
+        .status-message {
             position: fixed;
-            top: 50%;
+            top: 20px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            border: 2px solid #333;
-            padding: 20px;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
             z-index: 1000;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-            text-align: center;
             display: none;
         }
         
-        /* Tối ưu cho mobile */
         @media (max-width: 480px) {
             .print-btn {
                 padding: 14px 12px;
@@ -208,38 +196,24 @@
             <div class="service-name">ORDER BẾP</div>
         </div>
         
-        <!-- Tiêu đề cột -->
         <div class="dish-header">
             <div>SL</div>
             <div>TÊN MÓN</div>
             <div>LOẠI BẾP</div>
         </div>
         
-        <div class="dish-list" id="dishList">
-            <!-- Dữ liệu món ăn sẽ được thêm bằng JavaScript -->
-        </div>
+        <div class="dish-list" id="dishList"></div>
         
         <div class="divider"></div>
         
         <div class="order-footer">
-            <div class="order-info" id="orderInfo">
-                Order Time: 14:30
-            </div>
+            <div class="order-info" id="orderInfo">Order Time: 14:30</div>
         </div>
     </div>
     
-    <div class="print-buttons" id="printButtons">
-        <!-- Nút in sẽ được thêm bằng JavaScript -->
-    </div>
-
-    <!-- Message box -->
-    <div class="message-box" id="messageBox">
-        <div id="messageText">Đang xử lý...</div>
-        <button id="closeMessage" style="margin-top: 15px; padding: 8px 16px; background: #ccc; border: none; cursor: pointer;">Đóng</button>
-    </div>
-
-    <!-- Hidden iframe for printing -->
-    <iframe id="printFrame" name="printFrame" style="display:none; width:0; height:0; border:0;"></iframe>
+    <div class="print-buttons" id="printButtons"></div>
+    
+    <div class="status-message" id="statusMessage"></div>
 
     <script>
         // Biến toàn cục
@@ -248,6 +222,18 @@
         let hasRice = false;
         let orderNumber = '';
         let tableInfo = '';
+        
+        // Hiển thị thông báo
+        function showStatus(message, isError = false) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.style.background = isError ? '#d00' : 'rgba(0,0,0,0.8)';
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
         
         // Hàm lấy tham số từ URL
         function getUrlParameter(name) {
@@ -345,22 +331,171 @@
             
             printButtonsDiv.innerHTML = buttonsHtml;
             
-            // Thêm event listener
             if (hasPho) {
-                document.getElementById('printPhoBtn').addEventListener('click', () => printDirect('pho'));
+                document.getElementById('printPhoBtn').addEventListener('click', () => printKitchen('pho'));
             }
             
             if (hasRice) {
-                document.getElementById('printRiceBtn').addEventListener('click', () => printDirect('rice'));
+                document.getElementById('printRiceBtn').addEventListener('click', () => printKitchen('rice'));
             }
         }
         
-        // PHƯƠNG PHÁP MỚI: In trực tiếp một lần bấm
-        function printDirect(kitchenType) {
-            // Cập nhật thời gian
+        // PHƯƠNG PHÁP CHUẨN: Tạo HTML theo đúng format Looped Labs yêu cầu
+        function createProperPrintContent(kitchenType, filteredDishes) {
+            // Tạo nội dung PLAIN TEXT đơn giản nhất
+            let content = `<pre style="font-family: 'Courier New', monospace; font-size: 12px; margin: 0; padding: 5px;">`;
+            
+            // Header
+            content += `${orderNumber}\n`;
+            content += `<b>${tableInfo}</b>\n`;
+            content += `<b>ORDER BẾP ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}</b>\n\n`;
+            content += "════════════════════════════\n";
+            content += "SL  TÊN MÓN\n";
+            content += "════════════════════════════\n";
+            
+            // Dishes
+            filteredDishes.forEach(dish => {
+                const qty = dish.quantity.padEnd(3, ' ');
+                content += `${qty} ${dish.name}\n`;
+            });
+            
+            // Footer
+            content += "════════════════════════════\n";
+            content += `Order Time: ${getCurrentTime()}\n`;
+            content += `</pre>`;
+            
+            return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 5px;
+            width: 80mm;
+            font-family: 'Courier New', monospace;
+        }
+        pre {
+            margin: 0;
+            padding: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        b {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+${content}
+</body>
+</html>`;
+        }
+        
+        // PHƯƠNG PHÁP 1: Dùng data:text/html CHUẨN (theo tài liệu Looped Labs)
+        function printUsingDataURL(content) {
+            showStatus('Đang gửi lệnh in...');
+            
+            // Mã hóa nội dung đúng cách (không mã hóa toàn bộ URL)
+            const cleanContent = content.replace(/'/g, "\\'");
+            const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&src=data:text/html,${encodeURIComponent(cleanContent)}`;
+            
+            console.log('Print URL length:', printUrl.length);
+            
+            // Tạo thẻ a để click
+            const link = document.createElement('a');
+            link.href = printUrl;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            
+            // Thử click
+            try {
+                link.click();
+                showStatus('Đã gửi lệnh in đến máy');
+                
+                // Fallback sau 2 giây
+                setTimeout(() => {
+                    if (document.hasFocus()) {
+                        showStatus('Không thể in, đang thử phương pháp khác...');
+                        printUsingBase64(content);
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error with link click:', error);
+                printUsingBase64(content);
+            }
+            
+            setTimeout(() => {
+                document.body.removeChild(link);
+            }, 3000);
+        }
+        
+        // PHƯƠNG PHÁP 2: Dùng base64 encoding (ít lỗi hơn)
+        function printUsingBase64(content) {
+            showStatus('Đang mã hóa dữ liệu...');
+            
+            // Chuyển sang base64
+            const base64Content = btoa(unescape(encodeURIComponent(content)));
+            const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&src=data:text/html;base64,${base64Content}`;
+            
+            console.log('Base64 URL length:', printUrl.length);
+            
+            // Tạo iframe để mở URL
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.onload = () => {
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                    showStatus('Đã gửi qua base64');
+                }, 1000);
+            };
+            
+            iframe.onerror = () => {
+                document.body.removeChild(iframe);
+                showStatus('Lỗi base64, thử phương pháp cuối...', true);
+                printUsingSimpleText(content);
+            };
+            
+            iframe.src = printUrl;
+            document.body.appendChild(iframe);
+        }
+        
+        // PHƯƠNG PHÁP 3: Dùng plain text thay vì HTML
+        function printUsingSimpleText(content) {
+            showStatus('Đang tạo văn bản đơn giản...');
+            
+            // Trích xuất text từ HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            const plainText = tempDiv.textContent || tempDiv.innerText;
+            
+            // Tạo plain text content
+            const textContent = `data:text/plain,${encodeURIComponent(plainText)}`;
+            const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=text&src=${textContent}`;
+            
+            // Tạo form submit
+            const form = document.createElement('form');
+            form.style.display = 'none';
+            form.method = 'GET';
+            form.action = printUrl;
+            form.target = '_blank';
+            
+            document.body.appendChild(form);
+            form.submit();
+            
+            setTimeout(() => {
+                document.body.removeChild(form);
+            }, 1000);
+        }
+        
+        // Hàm in chính
+        function printKitchen(kitchenType) {
             updateOrderTime();
             
-            // Lọc món theo loại bếp
+            // Lọc món
             let filteredDishes = [];
             if (kitchenType === 'pho') {
                 filteredDishes = allDishes.filter(dish => dish.kitchenClass === 'pho-item');
@@ -369,202 +504,21 @@
             }
             
             if (filteredDishes.length === 0) {
-                showMessage('Không có món nào để in');
+                showStatus('Không có món để in', true);
                 return;
             }
             
-            // Tạo nội dung in đơn giản nhất
-            const printContent = createSimpleESCContent(kitchenType, filteredDishes);
+            // Tạo nội dung IN CHUẨN
+            const printContent = createProperPrintContent(kitchenType, filteredDishes);
             
-            // PHƯƠNG PHÁP 1: Thử in qua Looped Labs trước
-            tryLoopLabsPrint(printContent, kitchenType);
-        }
-        
-        // Tạo nội dung ESC/POS đơn giản (cho máy in nhiệt)
-        function createSimpleESCContent(kitchenType, filteredDishes) {
-            let content = '';
+            // LOG để debug
+            console.log('=== PRINT CONTENT DEBUG ===');
+            console.log('Length:', printContent.length);
+            console.log('First 500 chars:', printContent.substring(0, 500));
+            console.log('======================');
             
-            // Tiêu đề
-            content += '\x1B\x21\x30'; // Bật chế độ in đậm
-            content += `\n${orderNumber}\n`;
-            content += `${tableInfo}\n`;
-            content += `ORDER BẾP ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}\n`;
-            content += '\x1B\x21\x00'; // Tắt chế độ in đậm
-            
-            content += '--------------------------------\n';
-            content += 'SL  TÊN MÓN\n';
-            content += '--------------------------------\n';
-            
-            // Danh sách món
-            filteredDishes.forEach(dish => {
-                const qty = dish.quantity.padEnd(3, ' ');
-                const name = dish.name;
-                content += `${qty} ${name}\n`;
-            });
-            
-            content += '--------------------------------\n';
-            content += `Order Time: ${getCurrentTime()}\n\n\n\n\n`;
-            
-            return content;
-        }
-        
-        // PHƯƠNG PHÁP CHÍNH: Thử in qua Looped Labs
-        function tryLoopLabsPrint(content, kitchenType) {
-            showMessage('Đang gửi đến máy in...');
-            
-            // Tạo HTML đơn giản nhất có thể
-            const simpleHtml = createSimpleHTMLContent(kitchenType, 
-                allDishes.filter(dish => kitchenType === 'pho' ? 
-                    dish.kitchenClass === 'pho-item' : 
-                    dish.kitchenClass === 'rice-item'));
-            
-            // Mã hóa HTML
-            const encodedHtml = encodeURIComponent(simpleHtml);
-            
-            // Tạo URL cho Looped Labs - ĐỊNH DẠNG ĐƠN GIẢN HƠN
-            const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&src=data:text/html,${encodedHtml}`;
-            
-            // THỬ PHƯƠNG PHÁP 1A: Dùng location.replace (không lịch sử)
-            setTimeout(() => {
-                try {
-                    window.location.replace(printUrl);
-                    
-                    // Sau 2 giây, nếu vẫn còn trên trang này -> chuyển sang phương pháp khác
-                    setTimeout(() => {
-                        if (!document.hidden) {
-                            // PHƯƠNG PHÁP 1B: Dùng form submit
-                            tryFormSubmitPrint(simpleHtml);
-                        }
-                    }, 2000);
-                    
-                } catch (error) {
-                    // PHƯƠNG PHÁP 2: Form submit
-                    tryFormSubmitPrint(simpleHtml);
-                }
-            }, 100);
-        }
-        
-        // Tạo HTML cực kỳ đơn giản
-        function createSimpleHTMLContent(kitchenType, filteredDishes) {
-            let items = '';
-            filteredDishes.forEach(dish => {
-                items += `<div>${dish.quantity} ${dish.name}</div>`;
-            });
-            
-            return `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"></head>
-<body style="font-family:monospace;font-size:12pt;margin:0;padding:10px;width:80mm;">
-<div style="text-align:center;font-weight:bold;">
-<div>${orderNumber}</div>
-<div style="font-size:14pt;">${tableInfo}</div>
-<div>ORDER BẾP ${kitchenType === 'pho' ? 'PHỞ' : 'CƠM'}</div>
-</div>
-<hr style="border:none;border-top:1px solid #000;margin:10px 0;">
-<div style="font-weight:bold;">SL TÊN MÓN</div>
-<hr style="border:none;border-top:1px solid #000;margin:5px 0 10px 0;">
-${items}
-<hr style="border:none;border-top:1px dashed #000;margin:10px 0;">
-<div style="text-align:center;font-size:10pt;">
-Order Time: ${getCurrentTime()}
-</div>
-</body>
-</html>`;
-        }
-        
-        // PHƯƠNG PHÁP 2: Dùng form submit
-        function tryFormSubmitPrint(htmlContent) {
-            showMessage('Đang kết nối máy in...');
-            
-            try {
-                // Tạo form ẩn
-                const form = document.createElement('form');
-                form.style.display = 'none';
-                form.method = 'POST';
-                form.action = 'about:blank';
-                form.target = 'printFrame';
-                
-                // Tạo iframe để nhận kết quả
-                const iframe = document.getElementById('printFrame');
-                
-                // Khi iframe load xong
-                iframe.onload = function() {
-                    try {
-                        // Đợi một chút rồi đóng message
-                        setTimeout(() => {
-                            hideMessage();
-                        }, 1000);
-                    } catch (e) {
-                        hideMessage();
-                    }
-                };
-                
-                // Tạo input ẩn
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'html';
-                input.value = htmlContent;
-                
-                form.appendChild(input);
-                document.body.appendChild(form);
-                
-                // Submit form
-                form.submit();
-                
-                // Xóa form sau 3 giây
-                setTimeout(() => {
-                    document.body.removeChild(form);
-                }, 3000);
-                
-            } catch (error) {
-                // PHƯƠNG PHÁP 3: Tạo blob URL
-                tryBlobPrint(htmlContent);
-            }
-        }
-        
-        // PHƯƠNG PHÁP 3: Dùng blob URL
-        function tryBlobPrint(htmlContent) {
-            showMessage('Đang tạo lệnh in...');
-            
-            try {
-                // Tạo blob từ HTML
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const blobUrl = URL.createObjectURL(blob);
-                
-                // Tạo URL print:// với blob
-                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&src=${encodeURIComponent(blobUrl)}`;
-                
-                // Tạo iframe để mở URL
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = printUrl;
-                
-                iframe.onload = function() {
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                        URL.revokeObjectURL(blobUrl);
-                        hideMessage();
-                    }, 1000);
-                };
-                
-                document.body.appendChild(iframe);
-                
-            } catch (error) {
-                // PHƯƠNG PHÁP CUỐI: Thông báo lỗi
-                showMessage('Không thể kết nối máy in. Vui lòng kiểm tra ứng dụng in.');
-                setTimeout(hideMessage, 3000);
-            }
-        }
-        
-        // Hàm hiển thị thông báo
-        function showMessage(text) {
-            document.getElementById('messageText').textContent = text;
-            document.getElementById('messageBox').style.display = 'block';
-        }
-        
-        // Hàm ẩn thông báo
-        function hideMessage() {
-            document.getElementById('messageBox').style.display = 'none';
+            // Thử in
+            printUsingDataURL(printContent);
         }
         
         // Hàm cập nhật thời gian
@@ -630,13 +584,17 @@ Order Time: ${getCurrentTime()}
                 tableInfo = 'BÀN 1';
                 createPrintButtons();
             }
-            
-            // Sự kiện cho nút đóng message
-            document.getElementById('closeMessage').addEventListener('click', hideMessage);
         }
         
         // Khi trang tải xong
         document.addEventListener('DOMContentLoaded', initPage);
+        
+        // Test function để kiểm tra
+        window.testPrint = function() {
+            console.log('Testing print function...');
+            const testContent = `<!DOCTYPE html><html><body><h1>Test Print</h1><p>This is a test.</p></body></html>`;
+            printUsingDataURL(testContent);
+        };
     </script>
 </body>
 </html>
