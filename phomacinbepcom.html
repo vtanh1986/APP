@@ -374,14 +374,15 @@
                 return;
             }
             
-            let printContent = createSimplePrintContent(kitchenType, filteredDishes);
+            // Thử in bằng TEXT thay vì HTML
+            let printContent = createTextPrintContent(kitchenType, filteredDishes);
             
             try {
-                // Mã hóa HTML cho data URI - loại bỏ xuống dòng và khoảng trắng thừa
-                const encodedHtml = encodeURIComponent(printContent);
+                // Mã hóa text content
+                const encodedContent = encodeURIComponent(printContent);
                 
-                // Tạo URL theo đúng chuẩn Looped Labs: srcTp=uri với data:text/html
-                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=html&numCopies=1&src=data:text/html,${encodedHtml}`;
+                // Thử dùng text/plain thay vì HTML
+                const printUrl = `print://escpos.org/escpos/net/print?srcTp=uri&srcObj=text&numCopies=1&src=data:text/plain,${encodedContent}`;
                 
                 isPrinting = true;
                 disablePrintButtons(true);
@@ -405,13 +406,45 @@
             }
         }
         
-        function createSimplePrintContent(kitchenType, filteredDishes) {
-            let dishesHtml = '';
+        function createTextPrintContent(kitchenType, filteredDishes) {
+            const kitchenName = kitchenType === 'pho' ? 'PHO' : 'COM';
+            let text = '';
+            
+            // Header
+            text += '================================\n';
+            text += `       ${orderNumber}\n`;
+            text += `       ${tableInfo}\n`;
+            text += `     ORDER BEP ${kitchenName}\n`;
+            text += '================================\n\n';
+            
+            // Danh sách món
+            text += 'SL  TEN MON\n';
+            text += '--------------------------------\n';
+            
             filteredDishes.forEach(dish => {
-                dishesHtml += `<tr><td style="text-align:center;font-weight:bold;width:50px;">${dish.quantity}</td><td style="padding-left:10px;">${dish.name}</td></tr>`;
+                const qty = dish.quantity.padStart(2, ' ');
+                text += `${qty}  ${dish.name}\n`;
             });
             
-            return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,monospace;font-size:14px;line-height:1.2;margin:0;padding:10px;max-width:80mm;}.header{text-align:center;border-bottom:1px dashed #000;padding-bottom:8px;margin-bottom:15px;}.order-number{font-weight:bold;font-size:16px;}.table-info{font-weight:bold;font-size:18px;margin:5px 0;}.service-name{font-weight:bold;font-size:16px;}table{width:100%;border-collapse:collapse;}th{text-align:left;border-bottom:1px solid #000;padding-bottom:3px;font-weight:bold;}td{padding:3px 0;}.footer{border-top:1px dashed #000;margin-top:15px;padding-top:10px;text-align:center;font-size:12px;}</style></head><body><div class="header"><div class="order-number">${orderNumber}</div><div class="table-info">${tableInfo}</div><div class="service-name">ORDER BEP ${kitchenType === 'pho' ? 'PHO' : 'COM'}</div></div><table><thead><tr><th style="width:50px;">SL</th><th>TEN MON</th></tr></thead><tbody>${dishesHtml}</tbody></table><div class="footer">Order Time: ${getCurrentTime()}</div></body></html>`;
+            text += '--------------------------------\n';
+            text += `Time: ${getCurrentTime()}\n`;
+            text += '================================\n';
+            
+            return text;
+        }
+        
+        function createSimplePrintContent(kitchenType, filteredDishes) {
+            let dishesRows = '';
+            filteredDishes.forEach(dish => {
+                // Loại bỏ hoàn toàn ký tự đặc biệt, chỉ giữ chữ và số
+                const cleanName = dish.name.replace(/[^\w\s]/gi, '');
+                dishesRows += `${dish.quantity} x ${cleanName}\n`;
+            });
+            
+            const kitchenName = kitchenType === 'pho' ? 'PHO' : 'COM';
+            
+            // Tạo HTML cực kỳ đơn giản - chỉ dùng text thuần
+            return `<html><head><meta charset="UTF-8"></head><body style="font-family:monospace;font-size:14px;width:300px;margin:0;padding:10px;"><div style="text-align:center;border-bottom:1px solid black;padding-bottom:10px;margin-bottom:10px;"><div style="font-weight:bold;font-size:18px;">${orderNumber}</div><div style="font-weight:bold;font-size:20px;">${tableInfo}</div><div style="font-weight:bold;">ORDER BEP ${kitchenName}</div></div><div style="border-bottom:1px solid black;padding:10px 0;"><div style="font-weight:bold;margin-bottom:5px;">SL - TEN MON</div><pre style="margin:0;font-family:monospace;">${dishesRows}</pre></div><div style="text-align:center;margin-top:10px;">Time: ${getCurrentTime()}</div></body></html>`;
         }
         
         function showLoading() {
