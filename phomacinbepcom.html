@@ -134,62 +134,57 @@
         
         @media print {
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            html { width: 80mm !important; min-width: 80mm !important; max-width: 80mm !important; }
             body { 
                 margin: 0 !important; 
-                padding: 3mm 2mm !important; 
-                width: 80mm !important; 
-                min-width: 80mm !important; 
-                max-width: 80mm !important; 
+                padding: 5mm 3mm !important; 
                 background: white;
-                transform: scale(1) !important;
-                transform-origin: top left;
+                font-size: 18px !important;
             }
             .order-container, .print-buttons, .modal { display: none !important; }
             .print-content { 
-                display: block !important; 
-                width: 80mm !important;
-                min-width: 80mm !important;
+                display: block !important;
             }
             
             .print-header {
                 text-align: center;
                 margin-bottom: 10px;
-                padding-bottom: 8px;
+                padding-bottom: 10px;
                 border-bottom: 2px solid #000;
             }
             
-            .print-order-num { font-weight: bold; font-size: 16px; margin: 3px 0; }
-            .print-table-num { font-weight: bold; font-size: 20px; margin: 3px 0; }
-            .print-kitchen-name { font-weight: bold; font-size: 18px; margin: 5px 0; }
+            .print-order-num { font-weight: bold; font-size: 20px; margin: 5px 0; }
+            .print-table-num { font-weight: bold; font-size: 28px; margin: 5px 0; }
+            .print-kitchen-name { font-weight: bold; font-size: 24px; margin: 8px 0; }
             
             .print-dish-header {
                 display: flex;
                 font-weight: bold;
                 border-bottom: 2px solid #000;
-                padding: 5px 0;
-                margin: 8px 0;
+                padding: 8px 0;
+                margin: 10px 0;
+                font-size: 18px;
             }
             
-            .print-dish-header > div:first-child { width: 50px; text-align: center; }
+            .print-dish-header > div:first-child { width: 60px; text-align: center; }
             .print-dish-header > div:last-child { flex: 1; padding-left: 10px; }
             
             .print-dish-item {
                 display: flex;
-                margin: 5px 0;
-                padding: 3px 0;
-                border-bottom: 1px dotted #ccc;
+                margin: 8px 0;
+                padding: 5px 0;
+                border-bottom: 1px dotted #999;
+                font-size: 18px;
             }
             
-            .print-dish-item > div:first-child { width: 50px; font-weight: bold; text-align: center; }
-            .print-dish-item > div:last-child { flex: 1; padding-left: 10px; }
+            .print-dish-item > div:first-child { width: 60px; font-weight: bold; text-align: center; }
+            .print-dish-item > div:last-child { flex: 1; padding-left: 10px; line-height: 1.4; }
             
             .print-footer {
                 text-align: center;
-                margin-top: 10px;
-                padding-top: 8px;
+                margin-top: 15px;
+                padding-top: 10px;
                 border-top: 2px solid #000;
-                font-size: 12px;
+                font-size: 16px;
             }
             
             @page { 
@@ -351,27 +346,29 @@
             }
             
             const dishesHtml = dishes.map(d => `
-                <div style="display:flex;margin:5px 0;padding:3px 0;border-bottom:1px dotted #ccc;">
-                    <div style="width:40px;font-weight:bold;text-align:center;">${d.quantity}</div>
-                    <div style="flex:1;padding-left:10px;">${d.name}</div>
+                <div class="dish">
+                    <div>${d.quantity}</div>
+                    <div>${d.name}</div>
                 </div>
             `).join('');
             
             return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
 *{margin:0;padding:0;box-sizing:border-box}
-@page{margin:0;size:80mm auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html{width:80mm}
-body{margin:0;padding:3mm 2mm;width:80mm;min-width:80mm;max-width:80mm;font-family:monospace;font-size:14px;transform-origin:top left}
-.header{text-align:center;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid #000}
-.order-num{font-weight:bold;font-size:16px;margin:3px 0}
-.table-num{font-weight:bold;font-size:20px;margin:3px 0}
-.kitchen-name{font-weight:bold;font-size:18px;margin:5px 0}
-.col-header{display:flex;font-weight:bold;border-bottom:2px solid #000;padding:5px 0;margin:8px 0}
-.col-header>div:first-child{width:40px;text-align:center}
+@page{margin:0;size:80mm auto}
+html,body{width:100%;margin:0;padding:0}
+body{padding:5mm 3mm;font-family:monospace;font-size:18px;line-height:1.3}
+.header{text-align:center;margin-bottom:10px;padding-bottom:10px;border-bottom:2px solid #000}
+.order-num{font-weight:bold;font-size:20px;margin:5px 0}
+.table-num{font-weight:bold;font-size:28px;margin:5px 0}
+.kitchen-name{font-weight:bold;font-size:24px;margin:8px 0}
+.col-header{display:flex;font-weight:bold;border-bottom:2px solid #000;padding:8px 0;margin:10px 0;font-size:18px}
+.col-header>div:first-child{width:50px;text-align:center}
 .col-header>div:last-child{flex:1;padding-left:10px}
-.footer{text-align:center;margin-top:10px;padding-top:8px;border-top:2px solid #000;font-size:12px}
-@media print{html,body{width:80mm!important;min-width:80mm!important;max-width:80mm!important}}
+.dish{display:flex;margin:8px 0;padding:5px 0;border-bottom:1px dotted #999;font-size:18px}
+.dish>div:first-child{width:50px;font-weight:bold;text-align:center}
+.dish>div:last-child{flex:1;padding-left:10px;line-height:1.4}
+.footer{text-align:center;margin-top:15px;padding-top:10px;border-top:2px solid #000;font-size:16px}
 </style></head><body>
 <div class="header">
 <div class="order-num">${orderNumber}</div>
