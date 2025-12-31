@@ -134,10 +134,23 @@
         
         @media print {
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            html, body { margin: 0; padding: 0; width: 80mm; background: white; }
-            body { padding: 3mm 2mm; }
+            html { width: 80mm !important; min-width: 80mm !important; max-width: 80mm !important; }
+            body { 
+                margin: 0 !important; 
+                padding: 3mm 2mm !important; 
+                width: 80mm !important; 
+                min-width: 80mm !important; 
+                max-width: 80mm !important; 
+                background: white;
+                transform: scale(1) !important;
+                transform-origin: top left;
+            }
             .order-container, .print-buttons, .modal { display: none !important; }
-            .print-content { display: block !important; }
+            .print-content { 
+                display: block !important; 
+                width: 80mm !important;
+                min-width: 80mm !important;
+            }
             
             .print-header {
                 text-align: center;
@@ -179,7 +192,10 @@
                 font-size: 12px;
             }
             
-            @page { margin: 0; size: 80mm auto; }
+            @page { 
+                margin: 0; 
+                size: 80mm auto;
+            }
         }
     </style>
 </head>
@@ -342,11 +358,11 @@
             `).join('');
             
             return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><style>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
 *{margin:0;padding:0;box-sizing:border-box}
-@page{margin:0;size:80mm auto}
-html,body{margin:0;padding:0;width:80mm;font-family:monospace;font-size:14px}
-body{padding:3mm 2mm}
+@page{margin:0;size:80mm auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html{width:80mm}
+body{margin:0;padding:3mm 2mm;width:80mm;min-width:80mm;max-width:80mm;font-family:monospace;font-size:14px;transform-origin:top left}
 .header{text-align:center;margin-bottom:8px;padding-bottom:8px;border-bottom:2px solid #000}
 .order-num{font-weight:bold;font-size:16px;margin:3px 0}
 .table-num{font-weight:bold;font-size:20px;margin:3px 0}
@@ -355,6 +371,7 @@ body{padding:3mm 2mm}
 .col-header>div:first-child{width:40px;text-align:center}
 .col-header>div:last-child{flex:1;padding-left:10px}
 .footer{text-align:center;margin-top:10px;padding-top:8px;border-top:2px solid #000;font-size:12px}
+@media print{html,body{width:80mm!important;min-width:80mm!important;max-width:80mm!important}}
 </style></head><body>
 <div class="header">
 <div class="order-num">${orderNumber}</div>
