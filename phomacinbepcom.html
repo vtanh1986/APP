@@ -132,6 +132,18 @@
         
         .print-content { display: none; }
         
+        .config-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .config-warning strong { color: #856404; }
+        
         @media print {
             * { margin: 0; padding: 0; box-sizing: border-box; }
             
@@ -155,7 +167,7 @@
                 font-weight: bold !important;
             }
             
-            .order-container, .print-buttons, .modal, .status-message { 
+            .order-container, .print-buttons, .modal, .status-message, .config-warning { 
                 display: none !important; 
             }
             
@@ -281,6 +293,21 @@
         </div>
     </div>
 
+    <div class="config-warning">
+        <strong>⚠️ QUAN TRỌNG - CẤU HÌNH MÁY IN:</strong><br><br>
+        Nếu cả 2 nút đều in cùng 1 máy, nguyên nhân là <strong>Open ESC/POS</strong> chỉ nhận máy in mặc định.<br><br>
+        <strong>✅ GIẢI PHÁP:</strong><br>
+        1️⃣ <strong>Tạo 2 file HTML riêng biệt:</strong><br>
+        &nbsp;&nbsp;&nbsp;• File 1: chỉ có nút "IN BẾP PHỞ" (IP: <span id="ipPho">192.168.1.100</span>)<br>
+        &nbsp;&nbsp;&nbsp;• File 2: chỉ có nút "IN BẾP CƠM" (IP: <span id="ipRice">192.168.1.101</span>)<br><br>
+        2️⃣ <strong>Hoặc sử dụng 2 thiết bị khác nhau:</strong><br>
+        &nbsp;&nbsp;&nbsp;• Tablet 1 → chỉ in Bếp Phở<br>
+        &nbsp;&nbsp;&nbsp;• Tablet 2 → chỉ in Bếp Cơm<br><br>
+        3️⃣ <strong>Hoặc trong app Open ESC/POS:</strong><br>
+        &nbsp;&nbsp;&nbsp;• Vào Settings → thay đổi IP máy in trước khi bấm nút<br>
+        &nbsp;&nbsp;&nbsp;• (Nếu app hỗ trợ cấu hình nhiều máy in)
+    </div>
+
     <div class="order-container">
         <div class="order-header">
             <div class="order-number" id="orderNumber">#0902-04-02</div>
@@ -312,11 +339,11 @@
         // ========================================
         const PRINTER_CONFIG = {
             pho: {
-                ip: '192.168.100.234',
+                ip: '192.168.1.100',
                 port: '9100'
             },
             rice: {
-                ip: '192.168.100.235',
+                ip: '192.168.1.101',
                 port: '9100'
             }
         };
@@ -408,8 +435,8 @@
         
         function createPrintButtons() {
             let html = '';
-            if (hasPho) html += '<button class="print-btn print-btn-pho" onclick="printKitchen(\'pho\')">🖨️ IN BẾP PHỞ</button>';
-            if (hasRice) html += '<button class="print-btn print-btn-rice" onclick="printKitchen(\'rice\')">🖨️ IN BẾP CƠM</button>';
+            if (hasPho) html += '<button class="print-btn print-btn-pho" onclick="printKitchen(\'pho\')">🖨️ IN BẾP PHỞ ('+PRINTER_CONFIG.pho.ip+')</button>';
+            if (hasRice) html += '<button class="print-btn print-btn-rice" onclick="printKitchen(\'rice\')">🖨️ IN BẾP CƠM ('+PRINTER_CONFIG.rice.ip+')</button>';
             document.getElementById('printButtons').innerHTML = html;
         }
         
@@ -506,11 +533,11 @@ body{padding:10mm 8mm;font-family:monospace;font-size:28px;line-height:1.7;font-
                 return;
             }
             
-            // Hiển thị log để debug
             console.log('========================================');
-            console.log('🖨️ THÔNG TIN IN:', type.toUpperCase());
-            console.log('📍 IP:', printerInfo.ip);
-            console.log('🔌 Port:', printerInfo.port);
+            console.log('🖨️ PRINT REQUEST:', type.toUpperCase());
+            console.log('📍 Target IP:', printerInfo.ip);
+            console.log('🔌 Target Port:', printerInfo.port);
+            console.log('⏰ Time:', new Date().toLocaleTimeString());
             console.log('========================================');
             
             showStatus(`Đang in ${type === 'pho' ? 'PHỞ' : 'CƠM'} → ${printerInfo.ip}:${printerInfo.port}`, 'success');
@@ -521,26 +548,37 @@ body{padding:10mm 8mm;font-family:monospace;font-size:28px;line-height:1.7;font-
                 const compressed = pako.gzip(json);
                 const base64 = btoa(String.fromCharCode.apply(null, compressed));
                 
-                // Tạo intent URL riêng biệt cho từng máy in
-                const intentUrl = `intent://#Intent;scheme=print-intent;S.content=${base64};S.printer_ip=${printerInfo.ip};S.printer_port=${printerInfo.port};S.kitchen_type=${type};end`;
+                // Thử nhiều format khác nhau của Intent URL
+                const intentUrl = `intent://#Intent;scheme=print-intent;` +
+                    `S.content=${base64};` +
+                    `S.printer_ip=${printerInfo.ip};` +
+                    `S.printer_port=${printerInfo.port};` +
+                    `S.ip=${printerInfo.ip};` +
+                    `S.port=${printerInfo.port};` +
+                    `S.printerIp=${printerInfo.ip};` +
+                    `S.printerPort=${printerInfo.port};` +
+                    `i.printer_ip=${printerInfo.ip};` +
+                    `i.printer_port=${printerInfo.port};` +
+                    `end`;
                 
-                console.log('📤 Intent URL:', intentUrl.substring(0, 150) + '...');
+                console.log('📤 Intent Parameters:');
+                console.log('   - S.printer_ip:', printerInfo.ip);
+                console.log('   - S.printer_port:', printerInfo.port);
                 
-                showStatus(`✅ Gửi đến máy in ${type === 'pho' ? 'PHỞ' : 'CƠM'} (${printerInfo.ip})`, 'success');
+                showStatus(`✅ Gửi → ${type.toUpperCase()} (${printerInfo.ip})`, 'success');
                 
                 intentTimeout = setTimeout(() => showModal(), 3000);
                 window.addEventListener('blur', () => {
                     if (intentTimeout) clearTimeout(intentTimeout);
                 }, { once: true });
                 
-                // Redirect đến intent URL
                 setTimeout(() => {
-                    console.log('🚀 Đang chuyển đến intent...');
+                    console.log('🚀 Redirecting to Intent URL...');
                     window.location.href = intentUrl;
                 }, 500);
                 
             } catch (e) {
-                console.error('❌ Lỗi khi in:', e);
+                console.error('❌ Print Error:', e);
                 showStatus('❌ Lỗi: ' + e.message, 'error');
                 setTimeout(() => showModal(), 1000);
             }
@@ -552,6 +590,10 @@ body{padding:10mm 8mm;font-family:monospace;font-size:28px;line-height:1.7;font-
         }
         
         function init() {
+            // Hiển thị IP trong warning box
+            document.getElementById('ipPho').textContent = PRINTER_CONFIG.pho.ip;
+            document.getElementById('ipRice').textContent = PRINTER_CONFIG.rice.ip;
+            
             const table = getUrlParameter('table');
             if (table) {
                 tableInfo = `BÀN ${table}`;
@@ -587,10 +629,9 @@ body{padding:10mm 8mm;font-family:monospace;font-size:28px;line-height:1.7;font-
             showAllDishes();
             createPrintButtons();
             
-            // Log cấu hình máy in khi khởi động
-            console.log('⚙️ CẤU HÌNH MÁY IN:');
-            console.log('Bếp Phở:', PRINTER_CONFIG.pho);
-            console.log('Bếp Cơm:', PRINTER_CONFIG.rice);
+            console.log('⚙️ PRINTER CONFIGURATION:');
+            console.log('PHO Kitchen:', PRINTER_CONFIG.pho);
+            console.log('RICE Kitchen:', PRINTER_CONFIG.rice);
         }
         
         document.addEventListener('DOMContentLoaded', init);
