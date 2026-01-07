@@ -212,9 +212,9 @@
                 showStatus('❌ Không tìm thấy cấu hình máy in', 'error');
                 return;
             }
-            const kitchenName = type === 'pho' ? 'PHỞ' : 'CƠM';
+            const displayName = printerInfo.displayName;
             const targetInfo = printerInfo.useIp ? `${printerInfo.ip}:${printerInfo.port}` : printerInfo.name;
-            showStatus(`⏳ Đang in ${kitchenName} → ${targetInfo}`, 'success');
+            showStatus(`⏳ Đang in ${displayName}...`, 'success');
             try {
                 const html = createPrintHTML(type);
                 try {
@@ -226,7 +226,7 @@
                     });
                     if (response.ok) {
                         const result = await response.json();
-                        showStatus(`✅ In thành công qua ${targetInfo}!`, 'success');
+                        showStatus(`✅ In thành công qua ${displayName}!`, 'success');
                         console.log('✅ HTTP API Success:', result);
                         return;
                     } else {
@@ -244,7 +244,7 @@
                 } else {
                     intentUrl = `intent://#Intent;scheme=print-intent;S.content=${base64};S.printer_name=${encodeURIComponent(printerInfo.name)};end`;
                 }
-                showStatus(`✅ Gửi lệnh in đến ${targetInfo}`, 'success');
+                showStatus(`✅ Gửi lệnh in đến ${displayName}`, 'success');
                 intentTimeout = setTimeout(() => { showModal(); }, 3000);
                 window.addEventListener('blur', () => {
                     if (intentTimeout) {
