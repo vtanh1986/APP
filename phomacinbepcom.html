@@ -118,14 +118,19 @@
             const phoPort = getUrlParameter('pho_port');
             const riceIp = getUrlParameter('rice_ip');
             const ricePort = getUrlParameter('rice_port');
+            const phoDisplay = getUrlParameter('pho_display');
+            const riceDisplay = getUrlParameter('rice_display');
+            
             PRINTER_CONFIG.pho = {
                 name: phoName || DEFAULT_PRINTER_CONFIG.pho.name,
+                displayName: phoDisplay || phoName || DEFAULT_PRINTER_CONFIG.pho.name,
                 ip: phoIp || DEFAULT_PRINTER_CONFIG.pho.ip,
                 port: phoPort || DEFAULT_PRINTER_CONFIG.pho.port,
                 useIp: !!phoIp
             };
             PRINTER_CONFIG.rice = {
                 name: riceName || DEFAULT_PRINTER_CONFIG.rice.name,
+                displayName: riceDisplay || riceName || DEFAULT_PRINTER_CONFIG.rice.name,
                 ip: riceIp || DEFAULT_PRINTER_CONFIG.rice.ip,
                 port: ricePort || DEFAULT_PRINTER_CONFIG.rice.port,
                 useIp: !!riceIp
@@ -177,10 +182,10 @@
             let dishes = [], name = '';
             if (type === 'pho') {
                 dishes = allDishes.filter(d => d.kitchenClass === 'pho-item');
-                name = getUrlParameter('pho_display') || 'BẾP PHỞ';
+                name = PRINTER_CONFIG.pho.displayName;
             } else if (type === 'rice') {
                 dishes = allDishes.filter(d => d.kitchenClass === 'rice-item');
-                name = getUrlParameter('rice_display') || 'BẾP CƠM';
+                name = PRINTER_CONFIG.rice.displayName;
             }
             const dishesHtml = dishes.map(d => `<div class="dish"><div>${d.quantity}</div><div>${d.name}</div></div>`).join('');
             return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{margin:0!important;padding:0!important;box-sizing:border-box!important}html{margin:0!important;padding:0!important;width:100%!important;height:100%!important}body{padding:1mm 2mm;font-family:monospace;font-size:17px;line-height:1.2;font-weight:normal;width:100%;max-width:80mm;margin:0 auto}.header{text-align:center;margin-bottom:4px;padding-bottom:2px;border-bottom:0.5px solid #888;width:100%}.order-num{font-weight:normal;font-size:16px;margin:1px 0;line-height:1.1}.table-num{font-weight:normal;font-size:21px;margin:2px 0;line-height:1.1}.kitchen-name{font-weight:normal;font-size:19px;margin:3px 0 6px 0;line-height:1.1}.col-header{display:flex;width:100%;border-bottom:0.5px solid #888;padding:2px 0;margin:5px 0 4px 0;font-size:16px;font-weight:normal}.col-header>div:first-child{width:30px;text-align:center;flex-shrink:0}.col-header>div:last-child{flex:1;padding-left:6px;font-size:16px}.dish{display:flex;width:100%;margin:3px 0;padding:2px 0;border-bottom:0.3px dotted #aaa;font-size:16px;min-height:18px}.dish>div:first-child{width:30px;text-align:center;font-size:16px;flex-shrink:0;font-weight:normal}.dish>div:last-child{flex:1;padding-left:6px;line-height:1.2;word-wrap:break-word;font-weight:normal;font-size:16px}.footer{text-align:center;margin-top:8px;padding-top:4px;border-top:0.5px solid #888;font-size:14px;line-height:1.2;width:100%;font-weight:normal}@page{margin:0.5mm!important;size:auto}</style></head><body><div class="header"><div class="order-num">${orderNumber}</div><div class="table-num">${tableInfo}</div><div class="kitchen-name">ORDER ${name}</div></div><div class="col-header"><div>SL</div><div>TÊN MÓN</div></div><div>${dishesHtml}</div><div class="footer"><div>Order Time: ${time}</div></div></body></html>`;
@@ -190,10 +195,10 @@
             let dishes = [], name = '';
             if (type === 'pho') {
                 dishes = allDishes.filter(d => d.kitchenClass === 'pho-item');
-                name = getUrlParameter('pho_display') || 'BẾP PHỞ';
+                name = PRINTER_CONFIG.pho.displayName;
             } else {
                 dishes = allDishes.filter(d => d.kitchenClass === 'rice-item');
-                name = getUrlParameter('rice_display') || 'BẾP CƠM';
+                name = PRINTER_CONFIG.rice.displayName;
             }
             const dishesHtml = dishes.map(d => `<div class="print-dish-item"><div>${d.quantity}</div><div>${d.name}</div></div>`).join('');
             document.getElementById('printContent').innerHTML = `<div class="print-header"><div class="print-order-num">${orderNumber}</div><div class="print-table-num">${tableInfo}</div><div class="print-kitchen-name">ORDER ${name}</div></div><div class="print-dish-header"><div>SL</div><div>TÊN MÓN</div></div><div>${dishesHtml}</div><div class="print-footer"><div>Order Time: ${time}</div></div>`;
