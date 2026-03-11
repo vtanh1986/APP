@@ -194,13 +194,6 @@
         .first-summary {
             border-top: 0.5px solid #eee;
         }
-
-        /* ===== GIÁ GỐC GẠch NGANG ===== */
-        .gia-goc {
-            text-decoration: line-through;
-            color: #999;
-            font-size: 12px;
-        }
         
         .qrcode-section {
             text-align: center;
@@ -341,13 +334,6 @@
 
             .first-summary {
                 border-top: 0.5px solid #ccc !important;
-            }
-
-            /* Giữ style gạch ngang khi in */
-            .gia-goc {
-                text-decoration: line-through !important;
-                color: #999 !important;
-                font-size: 12px !important;
             }
         }
 
@@ -539,12 +525,6 @@
         }
         
         window.addEventListener('load', autoPrint);
-
-        // Hàm format tên hàng: tự động gạch ngang phần giá gốc dạng "đ20.000.000"
-        function formatTenHang(tenHang) {
-            // Match pattern: đ theo sau là các chữ số, dấu chấm, dấu phẩy
-            return tenHang.replace(/(đ[\d.,]+)/g, '<span class="gia-goc">$1</span>');
-        }
         
         const urlParams = new URLSearchParams(window.location.search);
         
@@ -606,14 +586,16 @@
                 if (trimmedRow) {
                     const cols = trimmedRow.split('_a_').map(col => col.trim());
                     if (cols.length >= 3) {
-                        const tenHang  = cols[0];
+                        // Thay _c_ bằng <br> + gạch ngang chữ cho phần sau
+                        const tenHang  = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
                         const soLuong  = parseInt(cols[1]) || 0;
                         const donGia   = parseInt(cols[2]) || 0;
-                        const productKey = `${tenHang}_${donGia}`;
+                        // Dùng tên gốc (không có <br>) làm key để gộp sản phẩm giống nhau
+                        const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
-                            p.soLuong  += soLuong;
-                            p.thanhTien = p.soLuong * p.donGia;
+                            p.soLuong   += soLuong;
+                            p.thanhTien  = p.soLuong * p.donGia;
                         } else {
                             productMap.set(productKey, {
                                 tenHang, soLuong, donGia,
@@ -630,7 +612,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${stt}</td>
-                    <td>${formatTenHang(product.tenHang)}</td>
+                    <td>${product.tenHang}</td>
                     <td>${product.soLuong}</td>
                     <td>${product.donGia.toLocaleString('vi-VN')}</td>
                     <td>${product.thanhTien.toLocaleString('vi-VN')}</td>
