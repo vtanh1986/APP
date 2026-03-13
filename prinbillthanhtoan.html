@@ -541,6 +541,8 @@
         const footerText       = urlParams.get('footer');
         const chietKhau        = urlParams.get('chietkhau');
         const thanhToan        = urlParams.get('thanhtoan');
+        const khachTrao        = urlParams.get('khachtrao');
+        const conNo            = urlParams.get('conno');
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
         const ghiChu           = urlParams.get('ghichu');
         const qrcodeUrl        = urlParams.get('qrcode');
@@ -652,6 +654,29 @@
                 trTT.className = 'summary-row';
                 trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td>${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
+
+                // KHÁCH HÀNG TRẢ
+                if (khachTrao && khachTrao !== 'null') {
+                    const chiTietKhachTrao = parseInt(decodeURIComponent(khachTrao)) || 0;
+                    if (chiTietKhachTrao > 0) {
+                        const trKT = document.createElement('tr');
+                        trKT.className = 'summary-row';
+                        trKT.innerHTML = `<td colspan="4">KHÁCH HÀNG TRẢ</td><td>${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
+                        tableBody.appendChild(trKT);
+                    }
+                }
+
+                // CÒN NỢ
+                if (conNo && conNo !== 'null') {
+                    const chiTietConNo = parseInt(decodeURIComponent(conNo)) || 0;
+                    if (chiTietConNo > 0) {
+                        const trCN = document.createElement('tr');
+                        trCN.className = 'summary-row';
+                        trCN.style.color = '#e53935';
+                        trCN.innerHTML = `<td colspan="4">CÒN NỢ</td><td>${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
+                        tableBody.appendChild(trCN);
+                    }
+                }
 
                 // Chỉ hiển thị khi có nội dung thực (sau khi bỏ prefix)
                 if (noiDungThuc !== "") {
