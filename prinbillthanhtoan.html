@@ -644,7 +644,7 @@
                 tableBody.appendChild(trTT);
                 
                 // ✅ CHỈ kiểm tra noiDungChiTiet khác rỗng — không phụ thuộc chiết khấu hay bất kỳ điều kiện nào khác
-                if (noiDungChiTiet !== "") {
+                if (noiDungChiTiet !== "Ghi chú: ") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
                     trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
