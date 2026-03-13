@@ -542,6 +542,7 @@
         const chietKhau        = urlParams.get('chietkhau');
         const thanhToan        = urlParams.get('thanhtoan');
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
+        const ghiChu           = urlParams.get('ghichu');
         const qrcodeUrl        = urlParams.get('qrcode');
         const qrcodeContent    = urlParams.get('qrcodecontent');
         const qrcodeText       = urlParams.get('qrcodetext');
@@ -624,8 +625,17 @@
             if (stt > 0) {
                 let chiTietChietKhau = chietKhau ? (parseInt(chietKhau) || 0) : 0;
                 let chiTietThanhToan = thanhToan ? (parseInt(thanhToan) || 0) : (tongTien - chiTietChietKhau);
-                let noiDungChiTiet   = noiDungChietKhau ? decodeURIComponent(noiDungChietKhau).trim() : "";
-                
+                // Decode noidungchietkhau — AppSheet truyền dạng "Ghi chú: <nội dung>"
+                const rawGhiChu    = ghiChu || noiDungChietKhau;
+                let noiDungChiTiet = (rawGhiChu && rawGhiChu !== 'null')
+                                     ? decodeURIComponent(rawGhiChu).trim()
+                                     : "";
+
+                // Bóc bỏ prefix "Ghi chú:" hoặc "Ghi chú: " nếu có
+                // → chỉ lấy phần nội dung thực sau prefix
+                const PREFIX_REGEX = /^Ghi\s*chú\s*:\s*/i;
+                let noiDungThuc = noiDungChiTiet.replace(PREFIX_REGEX, '').trim();
+
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
                 trTongTien.innerHTML = `<td colspan="4">TỔNG TIỀN</td><td>${tongTien.toLocaleString('vi-VN')}đ</td>`;
@@ -642,9 +652,9 @@
                 trTT.className = 'summary-row';
                 trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td>${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
-                
-                // ✅ CHỈ kiểm tra noiDungChiTiet khác rỗng — không phụ thuộc chiết khấu hay bất kỳ điều kiện nào khác
-                if (noiDungChiTiet !== "Ghi chú: ") {
+
+                // Chỉ hiển thị khi có nội dung thực (sau khi bỏ prefix)
+                if (noiDungThuc !== "") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
                     trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
