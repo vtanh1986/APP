@@ -179,6 +179,10 @@
         .summary-row td {
             padding: 8px;
         }
+
+        .summary-row td:last-child {
+            text-align: right;
+        }
         
         .discount-reason {
             background: white;
@@ -640,19 +644,19 @@
 
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="4">TỔNG TIỀN</td><td>${tongTien.toLocaleString('vi-VN')}đ</td>`;
+                trTongTien.innerHTML = `<td colspan="4">TỔNG TIỀN</td><td style="text-align:right">${tongTien.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongTien);
                 
                 if (chiTietChietKhau > 0) {
                     const trCK = document.createElement('tr');
                     trCK.className = 'summary-row';
-                    trCK.innerHTML = `<td colspan="4">CHIẾT KHẤU</td><td>-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
+                    trCK.innerHTML = `<td colspan="4">CHIẾT KHẤU</td><td style="text-align:right">-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
                     tableBody.appendChild(trCK);
                 }
                 
                 const trTT = document.createElement('tr');
                 trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td>${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
 
                 // KHÁCH HÀNG TRẢ
@@ -661,7 +665,7 @@
                     if (chiTietKhachTrao > 0) {
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
-                        trKT.innerHTML = `<td colspan="4">KHÁCH HÀNG TRẢ</td><td>${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
+                        trKT.innerHTML = `<td colspan="4">KHÁCH HÀNG TRẢ</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
                         tableBody.appendChild(trKT);
                     }
                 }
@@ -673,7 +677,7 @@
                         const trCN = document.createElement('tr');
                         trCN.className = 'summary-row';
                         trCN.style.color = '#e53935';
-                        trCN.innerHTML = `<td colspan="4">CÒN NỢ</td><td>${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
+                        trCN.innerHTML = `<td colspan="4">CÒN NỢ</td><td style="text-align:right">${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
                         tableBody.appendChild(trCN);
                     }
                 }
