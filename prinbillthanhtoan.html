@@ -588,11 +588,9 @@
                 if (trimmedRow) {
                     const cols = trimmedRow.split('_a_').map(col => col.trim());
                     if (cols.length >= 3) {
-                        // Thay _c_ bằng <br> + gạch ngang chữ cho phần sau
                         const tenHang  = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
                         const soLuong  = parseInt(cols[1]) || 0;
                         const donGia   = parseInt(cols[2]) || 0;
-                        // Dùng tên gốc (không có <br>) làm key để gộp sản phẩm giống nhau
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
@@ -626,7 +624,7 @@
             if (stt > 0) {
                 let chiTietChietKhau = chietKhau ? (parseInt(chietKhau) || 0) : 0;
                 let chiTietThanhToan = thanhToan ? (parseInt(thanhToan) || 0) : (tongTien - chiTietChietKhau);
-                let noiDungChiTiet   = noiDungChietKhau ? decodeURIComponent(noiDungChietKhau) : "Chiết khấu";
+                let noiDungChiTiet   = noiDungChietKhau ? decodeURIComponent(noiDungChietKhau).trim() : "";
                 
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
@@ -645,7 +643,8 @@
                 trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td>${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
                 
-                if (chiTietChietKhau > 0 && noiDungChiTiet && noiDungChiTiet !== "Chiết khấu") {
+                // ✅ CHỈ kiểm tra noiDungChiTiet khác rỗng — không phụ thuộc chiết khấu hay bất kỳ điều kiện nào khác
+                if (noiDungChiTiet !== "") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
                     trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
