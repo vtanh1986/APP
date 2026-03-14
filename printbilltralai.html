@@ -592,6 +592,7 @@
         const khachTrao        = urlParams.get('khachtrao');
         const conNo            = urlParams.get('conno');
         const phiDoiTra        = urlParams.get('phidoitra');
+        const tongTienDonMoi   = urlParams.get('tongtiendonmoi');
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
         const ghiChu           = urlParams.get('ghichu');
         const qrcodeUrl        = urlParams.get('qrcode');
@@ -759,7 +760,7 @@
                 if (chiTietChietKhau >= 0) {
                     const trCK = document.createElement('tr');
                     trCK.className = 'summary-row';
-                    trCK.innerHTML = `<td colspan="4">CHIẾT KHẤU</td><td style="text-align:right">-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
+                    trCK.innerHTML = `<td colspan="4">CHIẾT KHẤU</td><td style="text-align:right">${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
                     tableBody.appendChild(trCK);
                 }
 
@@ -767,7 +768,10 @@
                     const trTTTra = document.createElement('tr');
                     trTTTra.className = 'summary-row';
                     const absTra = Math.abs(tongTienTraGlobal);
-                    trTTTra.innerHTML = `<td colspan="4">TỔNG TIỀN HÀNG TRẢ</td><td style="text-align:right">${absTra.toLocaleString('vi-VN')}đ</td>`;
+                    const labelTTDonMoi = tongTienDonMoi
+                        ? decodeURIComponent(tongTienDonMoi).trim()
+                        : 'TỔNG TIỀN ĐƠN MỚI';
+                    trTTTra.innerHTML = `<td colspan="4">${labelTTDonMoi}</td><td style="text-align:right">${absTra.toLocaleString('vi-VN')}đ</td>`;
                     tableBody.appendChild(trTTTra);
                 }
                 
