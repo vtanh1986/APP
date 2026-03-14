@@ -192,6 +192,18 @@
             text-align: right;
         }
         
+        .section-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #555;
+            background: #ececec;
+            padding: 4px 8px;
+            margin-bottom: 0;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            letter-spacing: 0.5px;
+        }
+
         .discount-reason {
             background: white;
             font-size: 14px;
@@ -476,8 +488,31 @@
             </div>
         </div>
         
-        <table>
-            <thead>
+        <!-- BẢNG HÀNG TRẢ -->
+        <div id="sectionTraHang" style="display:none">
+            <div class="section-label">HÀNG TRẢ LẠI</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>TT</th>
+                        <th>Tên hàng</th>
+                        <th>SL</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBodyTra">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- BẢNG HÀNG MUA -->
+        <div id="sectionMuaHang" style="display:none">
+            <div class="section-label">HÀNG MUA MỚI</div>
+        </div>
+
+        <table id="tableMua">
+            <thead id="theadMua">
                 <tr>
                     <th>TT</th>
                     <th>Tên hàng</th>
@@ -548,6 +583,7 @@
         const thoiGian         = urlParams.get('thoigian');
         const ban              = urlParams.get('ban');
         const data             = urlParams.get('data');
+        const dataTra          = urlParams.get('data_tra');
         const thuNgan          = urlParams.get('thungan');
         const dienThoai        = urlParams.get('dienthoai');
         const footerText       = urlParams.get('footer');
@@ -590,6 +626,67 @@
             qrcodeSection.style.display = 'none';
         }
         
+        // ===== XỬ LÝ BẢNG HÀNG TRẢ =====
+        if (dataTra) {
+            document.getElementById('sectionTraHang').style.display = 'block';
+            document.getElementById('sectionMuaHang').style.display = 'block';
+            // Ẩn thead bảng mua vì đã có section label thay thế
+            document.getElementById('theadMua').style.display = 'none';
+
+            const tableBodyTra = document.getElementById('tableBodyTra');
+            tableBodyTra.innerHTML = '';
+
+            const rowsTra = dataTra.split('_b_');
+            const productMapTra = new Map();
+            let tongTienTra = 0;
+
+            rowsTra.forEach((row) => {
+                const trimmedRow = row.trim();
+                if (trimmedRow) {
+                    const cols = trimmedRow.split('_a_').map(col => col.trim());
+                    if (cols.length >= 3) {
+                        const tenHang    = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
+                        const soLuong    = parseInt(cols[1]) || 0;
+                        const donGia     = parseInt(cols[2]) || 0;
+                        const productKey = `${cols[0]}_${donGia}`;
+                        if (productMapTra.has(productKey)) {
+                            const p = productMapTra.get(productKey);
+                            p.soLuong  += soLuong;
+                            p.thanhTien = p.soLuong * p.donGia;
+                        } else {
+                            productMapTra.set(productKey, {
+                                tenHang, soLuong, donGia,
+                                thanhTien: soLuong * donGia
+                            });
+                        }
+                    }
+                }
+            });
+
+            let sttTra = 0;
+            productMapTra.forEach((product) => {
+                sttTra++;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${sttTra}</td>
+                    <td>${product.tenHang}</td>
+                    <td>${product.soLuong}</td>
+                    <td>${product.donGia.toLocaleString('vi-VN')}</td>
+                    <td>${product.thanhTien.toLocaleString('vi-VN')}</td>
+                `;
+                tableBodyTra.appendChild(tr);
+                tongTienTra += product.thanhTien;
+            });
+
+            if (sttTra > 0) {
+                const trTongTra = document.createElement('tr');
+                trTongTra.className = 'summary-row first-summary';
+                trTongTra.innerHTML = `<td colspan="4">TỔNG TIỀN HÀNG TRẢ</td><td style="text-align:right">${tongTienTra.toLocaleString('vi-VN')}đ</td>`;
+                tableBodyTra.appendChild(trTongTra);
+            }
+        }
+
+        // ===== XỬ LÝ BẢNG HÀNG MUA =====
         if (data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
