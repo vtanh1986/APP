@@ -590,6 +590,7 @@
         const chietKhau        = urlParams.get('chietkhau');
         const thanhToan        = urlParams.get('thanhtoan');
         const khachTrao        = urlParams.get('khachtrao');
+        const tenKhachTrao     = urlParams.get('tenkhachtrao');
         const conNo            = urlParams.get('conno');
         const phiDoiTra        = urlParams.get('phidoitra');
         const tongTienDonMoi   = urlParams.get('tongtiendonmoi');
@@ -794,9 +795,12 @@
                 if (khachTrao && khachTrao !== 'null') {
                     const chiTietKhachTrao = parseInt(decodeURIComponent(khachTrao)) || 0;
                     if (chiTietKhachTrao > 0) {
+                        const labelKhachTrao = (tenKhachTrao && tenKhachTrao !== 'null')
+                            ? decodeURIComponent(tenKhachTrao).trim()
+                            : 'KHÁCH HÀNG TRẢ';
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
-                        trKT.innerHTML = `<td colspan="4">KHÁCH HÀNG TRẢ</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
+                        trKT.innerHTML = `<td colspan="4">${labelKhachTrao}</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
                         tableBody.appendChild(trKT);
                     }
                 }
