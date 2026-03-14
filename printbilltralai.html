@@ -764,15 +764,14 @@
                     tableBody.appendChild(trCK);
                 }
 
-                if (tongTienTraGlobal !== 0) {
-                    const trTTTra = document.createElement('tr');
-                    trTTTra.className = 'summary-row';
-                    const absTra = Math.abs(tongTienTraGlobal);
-                    const labelTTDonMoi = tongTienDonMoi
-                        ? decodeURIComponent(tongTienDonMoi).trim()
-                        : 'TỔNG TIỀN ĐƠN MỚI';
-                    trTTTra.innerHTML = `<td colspan="4">${labelTTDonMoi}</td><td style="text-align:right">${absTra.toLocaleString('vi-VN')}đ</td>`;
-                    tableBody.appendChild(trTTTra);
+                if (tongTienDonMoi && tongTienDonMoi !== 'null') {
+                    const chiTietTTDonMoi = parseInt(decodeURIComponent(tongTienDonMoi)) || 0;
+                    if (chiTietTTDonMoi > 0) {
+                        const trTTTra = document.createElement('tr');
+                        trTTTra.className = 'summary-row';
+                        trTTTra.innerHTML = `<td colspan="4">TỔNG TIỀN ĐƠN MỚI</td><td style="text-align:right">${chiTietTTDonMoi.toLocaleString('vi-VN')}đ</td>`;
+                        tableBody.appendChild(trTTTra);
+                    }
                 }
                 
                 // PHÍ ĐỔI TRẢ
