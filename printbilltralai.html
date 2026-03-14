@@ -591,6 +591,7 @@
         const thanhToan        = urlParams.get('thanhtoan');
         const khachTrao        = urlParams.get('khachtrao');
         const conNo            = urlParams.get('conno');
+        const phiDoiTra        = urlParams.get('phidoitra');
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
         const ghiChu           = urlParams.get('ghichu');
         const qrcodeUrl        = urlParams.get('qrcode');
@@ -772,8 +773,19 @@
                 
                 const trTT = document.createElement('tr');
                 trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="4">CHÊNH LỆCH</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
+
+                // PHÍ ĐỔI TRẢ
+                if (phiDoiTra && phiDoiTra !== 'null') {
+                    const chiTietPhiDoiTra = parseInt(decodeURIComponent(phiDoiTra)) || 0;
+                    if (chiTietPhiDoiTra > 0) {
+                        const trPDT = document.createElement('tr');
+                        trPDT.className = 'summary-row';
+                        trPDT.innerHTML = `<td colspan="4">PHÍ ĐỔI TRẢ</td><td style="text-align:right">${chiTietPhiDoiTra.toLocaleString('vi-VN')}đ</td>`;
+                        tableBody.appendChild(trPDT);
+                    }
+                }
 
                 // KHÁCH HÀNG TRẢ
                 if (khachTrao && khachTrao !== 'null') {
