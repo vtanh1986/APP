@@ -771,11 +771,6 @@
                     tableBody.appendChild(trTTTra);
                 }
                 
-                const trTT = document.createElement('tr');
-                trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trTT);
-
                 // PHÍ ĐỔI TRẢ
                 if (phiDoiTra && phiDoiTra !== 'null') {
                     const chiTietPhiDoiTra = parseInt(decodeURIComponent(phiDoiTra)) || 0;
@@ -786,6 +781,11 @@
                         tableBody.appendChild(trPDT);
                     }
                 }
+
+                const trTT = document.createElement('tr');
+                trTT.className = 'summary-row';
+                trTT.innerHTML = `<td colspan="4">THANH TOÁN</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                tableBody.appendChild(trTT);
 
                 // KHÁCH HÀNG TRẢ
                 if (khachTrao && khachTrao !== 'null') {
