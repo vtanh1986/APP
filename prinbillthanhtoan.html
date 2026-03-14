@@ -655,7 +655,7 @@
                 trTongTien.innerHTML = `<td colspan="4">TỔNG TIỀN</td><td style="text-align:right">${tongTien.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongTien);
                 
-                if (chiTietChietKhau > 0) {
+                if (chiTietChietKhau >= 0) {
                     const trCK = document.createElement('tr');
                     trCK.className = 'summary-row';
                     trCK.innerHTML = `<td colspan="4">CHIẾT KHẤU</td><td style="text-align:right">-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
@@ -681,13 +681,11 @@
                 // CÒN NỢ
                 if (conNo && conNo !== 'null') {
                     const chiTietConNo = parseInt(decodeURIComponent(conNo)) || 0;
-                    if (chiTietConNo > 0) {
-                        const trCN = document.createElement('tr');
-                        trCN.className = 'summary-row';
-                        trCN.style.color = '#e53935';
-                        trCN.innerHTML = `<td colspan="4">CÒN NỢ</td><td style="text-align:right">${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
-                        tableBody.appendChild(trCN);
-                    }
+                    const trCN = document.createElement('tr');
+                    trCN.className = 'summary-row';
+                    trCN.style.color = '#e53935';
+                    trCN.innerHTML = `<td colspan="4">CÒN NỢ</td><td style="text-align:right">${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
+                    tableBody.appendChild(trCN);
                 }
 
                 // Chỉ hiển thị khi có nội dung thực (sau khi bỏ prefix)
