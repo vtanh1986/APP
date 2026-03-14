@@ -648,8 +648,8 @@
                     const cols = trimmedRow.split('_a_').map(col => col.trim());
                     if (cols.length >= 3) {
                         const tenHang    = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        const soLuong    = parseInt(cols[1]) || 0;
-                        const donGia     = parseInt(cols[2]) || 0;
+                        const soLuong    = Math.abs(parseInt(cols[1]) || 0);
+                        const donGia     = Math.abs(parseInt(cols[2]) || 0);
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMapTra.has(productKey)) {
                             const p = productMapTra.get(productKey);
@@ -762,10 +762,11 @@
                     tableBody.appendChild(trCK);
                 }
 
-                if (tongTienTraGlobal > 0) {
+                if (tongTienTraGlobal !== 0) {
                     const trTTTra = document.createElement('tr');
                     trTTTra.className = 'summary-row';
-                    trTTTra.innerHTML = `<td colspan="4">TỔNG TIỀN HÀNG TRẢ</td><td style="text-align:right">-${tongTienTraGlobal.toLocaleString('vi-VN')}đ</td>`;
+                    const absTra = Math.abs(tongTienTraGlobal);
+                    trTTTra.innerHTML = `<td colspan="4">TỔNG TIỀN HÀNG TRẢ</td><td style="text-align:right">-${absTra.toLocaleString('vi-VN')}đ</td>`;
                     tableBody.appendChild(trTTTra);
                 }
                 
