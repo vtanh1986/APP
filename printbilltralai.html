@@ -626,6 +626,8 @@
             qrcodeSection.style.display = 'none';
         }
         
+        let tongTienTraGlobal = 0;
+
         // ===== XỬ LÝ BẢNG HÀNG TRẢ =====
         if (dataTra) {
             document.getElementById('sectionTraHang').style.display = 'block';
@@ -677,6 +679,7 @@
                 tableBodyTra.appendChild(tr);
                 tongTienTra += product.thanhTien;
             });
+            tongTienTraGlobal = tongTienTra;
 
             if (sttTra > 0) {
                 const trTongTra = document.createElement('tr');
@@ -749,7 +752,7 @@
 
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="4">TỔNG TIỀN MUA MỚI</td><td style="text-align:right">${tongTien.toLocaleString('vi-VN')}đ</td>`;
+                trTongTien.innerHTML = `<td colspan="4">TỔNG TIỀN</td><td style="text-align:right">${tongTien.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongTien);
                 
                 if (chiTietChietKhau >= 0) {
@@ -757,6 +760,13 @@
                     trCK.className = 'summary-row';
                     trCK.innerHTML = `<td colspan="4">CHIẾT KHẤU</td><td style="text-align:right">-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
                     tableBody.appendChild(trCK);
+                }
+
+                if (tongTienTraGlobal > 0) {
+                    const trTTTra = document.createElement('tr');
+                    trTTTra.className = 'summary-row';
+                    trTTTra.innerHTML = `<td colspan="4">TỔNG TIỀN HÀNG TRẢ</td><td style="text-align:right">-${tongTienTraGlobal.toLocaleString('vi-VN')}đ</td>`;
+                    tableBody.appendChild(trTTTra);
                 }
                 
                 const trTT = document.createElement('tr');
