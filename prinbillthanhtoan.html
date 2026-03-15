@@ -118,6 +118,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 8px;
+            table-layout: fixed; /* Cho phép kiểm soát độ rộng cột chặt chẽ hơn */
         }
         
         thead {
@@ -127,28 +128,40 @@
         }
         
         th {
-            padding: 12px 8px;
+            padding: 8px 4px; /* Giảm padding ngang từ 8px xuống 4px */
             text-align: center;
             font-size: 14px;
             font-weight: 600;
+            white-space: nowrap;
         }
         
+        /* Cột TT (số thứ tự) */
         th:first-child {
-            width: 30px;
+            width: 28px;
             text-align: center;
         }
 
+        /* Cột Tên hàng — mở rộng hơn, chiếm phần lớn không gian */
         th:nth-child(2) {
-            width: auto;
+            width: auto; /* Tự động chiếm phần còn lại */
+            text-align: center;
         }
 
+        /* Cột SL */
         th:nth-child(3) {
-            width: 45px;
+            width: 32px;
             text-align: right;
         }
 
-        th:nth-child(4),
+        /* Cột Đơn giá */
+        th:nth-child(4) {
+            width: 75px;
+            text-align: right;
+        }
+
+        /* Cột Thành tiền */
         th:nth-child(5) {
+            width: 80px;
             text-align: right;
         }
         
@@ -161,20 +174,28 @@
         }
         
         td {
-            padding: 10px 8px;
+            padding: 6px 4px; /* Giảm padding ngang từ 8px xuống 4px, dọc từ 10px xuống 6px */
             font-size: 14px;
             color: #333;
+            overflow: hidden;
         }
         
         td:first-child {
             text-align: center;
             font-weight: bold;
         }
+
+        /* Tên hàng căn trái */
+        td:nth-child(2) {
+            text-align: left;
+            word-break: break-word;
+        }
         
         td:nth-child(3),
         td:nth-child(4),
         td:nth-child(5) {
             text-align: right;
+            white-space: nowrap;
         }
         
         .summary-row {
@@ -185,7 +206,7 @@
         }
         
         .summary-row td {
-            padding: 3px 8px;
+            padding: 3px 4px; /* Giảm padding ngang */
         }
 
         .summary-row td:last-child {
@@ -200,7 +221,7 @@
         }
         
         .discount-reason td {
-            padding: 10px 8px;
+            padding: 6px 4px;
             text-align: left;
             font-weight: normal;
         }
@@ -325,15 +346,15 @@
             }
 
             th {
-                padding: 6px 8px !important;
+                padding: 5px 4px !important;
             }
 
             td {
-                padding: 5px 8px !important;
+                padding: 4px 4px !important;
             }
 
             .summary-row td {
-                padding: 2px 8px !important;
+                padding: 2px 4px !important;
             }
 
             .qrcode-section {
@@ -413,7 +434,7 @@
             }
             
             th, td {
-                padding: 8px 5px;
+                padding: 6px 3px;
                 font-size: 12px;
             }
         }
@@ -639,14 +660,11 @@
             if (stt > 0) {
                 let chiTietChietKhau = chietKhau ? (parseInt(chietKhau) || 0) : 0;
                 let chiTietThanhToan = thanhToan ? (parseInt(thanhToan) || 0) : (tongTien - chiTietChietKhau);
-                // Decode noidungchietkhau — AppSheet truyền dạng "Ghi chú: <nội dung>"
                 const rawGhiChu    = ghiChu || noiDungChietKhau;
                 let noiDungChiTiet = (rawGhiChu && rawGhiChu !== 'null')
                                      ? decodeURIComponent(rawGhiChu).trim()
                                      : "";
 
-                // Bóc bỏ prefix "Ghi chú:" hoặc "Ghi chú: " nếu có
-                // → chỉ lấy phần nội dung thực sau prefix
                 const PREFIX_REGEX = /^Ghi\s*chú\s*:\s*/i;
                 let noiDungThuc = noiDungChiTiet.replace(PREFIX_REGEX, '').trim();
 
@@ -667,7 +685,6 @@
                 trTT.innerHTML = `<td colspan="4">Phải thu khách</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
 
-                // KHÁCH HÀNG TRẢ
                 if (khachTrao && khachTrao !== 'null') {
                     const chiTietKhachTrao = parseInt(decodeURIComponent(khachTrao)) || 0;
                     if (chiTietKhachTrao > 0) {
@@ -678,7 +695,6 @@
                     }
                 }
 
-                // CÒN NỢ
                 if (conNo && conNo !== 'null') {
                     const chiTietConNo = parseInt(decodeURIComponent(conNo)) || 0;
                     const trCN = document.createElement('tr');
@@ -688,7 +704,6 @@
                     tableBody.appendChild(trCN);
                 }
 
-                // Chỉ hiển thị khi có nội dung thực (sau khi bỏ prefix)
                 if (noiDungThuc !== "") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
