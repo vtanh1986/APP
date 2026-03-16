@@ -522,20 +522,6 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr>
-                    <td>1</td>
-                    <td>Cà phê đen</td>
-                    <td>2</td>
-                    <td>25,000</td>
-                    <td>50,000</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Cà phê sữa</td>
-                    <td>1</td>
-                    <td>30,000</td>
-                    <td>30,000</td>
-                </tr>
             </tbody>
         </table>
         
@@ -693,135 +679,139 @@
         }
 
         // ===== XỬ LÝ BẢNG HÀNG MUA =====
-        if (data) {
+        // Luôn hiển thị header và summary rows dù có hay không có data
+        {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
-            
-            const rows = data.split('_b_');
-            const productMap = new Map();
+
             let tongTien = 0;
-            
-            rows.forEach((row) => {
-                const trimmedRow = row.trim();
-                if (trimmedRow) {
-                    const cols = trimmedRow.split('_a_').map(col => col.trim());
-                    if (cols.length >= 3) {
-                        const tenHang  = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        const soLuong  = parseInt(cols[1]) || 0;
-                        const donGia   = parseInt(cols[2]) || 0;
-                        const productKey = `${cols[0]}_${donGia}`;
-                        if (productMap.has(productKey)) {
-                            const p = productMap.get(productKey);
-                            p.soLuong   += soLuong;
-                            p.thanhTien  = p.soLuong * p.donGia;
-                        } else {
-                            productMap.set(productKey, {
-                                tenHang, soLuong, donGia,
-                                thanhTien: soLuong * donGia
-                            });
+
+            if (data) {
+                const rows = data.split('_b_');
+                const productMap = new Map();
+
+                rows.forEach((row) => {
+                    const trimmedRow = row.trim();
+                    if (trimmedRow) {
+                        const cols = trimmedRow.split('_a_').map(col => col.trim());
+                        if (cols.length >= 3) {
+                            const tenHang  = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
+                            const soLuong  = parseInt(cols[1]) || 0;
+                            const donGia   = parseInt(cols[2]) || 0;
+                            const productKey = `${cols[0]}_${donGia}`;
+                            if (productMap.has(productKey)) {
+                                const p = productMap.get(productKey);
+                                p.soLuong   += soLuong;
+                                p.thanhTien  = p.soLuong * p.donGia;
+                            } else {
+                                productMap.set(productKey, {
+                                    tenHang, soLuong, donGia,
+                                    thanhTien: soLuong * donGia
+                                });
+                            }
                         }
                     }
-                }
-            });
-            
-            let stt = 0;
-            productMap.forEach((product) => {
-                stt++;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${stt}</td>
-                    <td>${product.tenHang}</td>
-                    <td>${product.soLuong}</td>
-                    <td>${product.donGia.toLocaleString('vi-VN')}</td>
-                    <td>${product.thanhTien.toLocaleString('vi-VN')}</td>
-                `;
-                tableBody.appendChild(tr);
-                tongTien += product.thanhTien;
-            });
-            
-            if (stt > 0) {
-                let chiTietChietKhau = chietKhau ? (parseInt(chietKhau) || 0) : 0;
-                let chiTietThanhToan = thanhToan ? (parseInt(thanhToan) || 0) : (tongTien - chiTietChietKhau);
-                // Decode noidungchietkhau — AppSheet truyền dạng "Ghi chú: <nội dung>"
-                const rawGhiChu    = ghiChu || noiDungChietKhau;
-                let noiDungChiTiet = (rawGhiChu && rawGhiChu !== 'null')
-                                     ? decodeURIComponent(rawGhiChu).trim()
-                                     : "";
+                });
 
-                // Bóc bỏ prefix "Ghi chú:" hoặc "Ghi chú: " nếu có
-                // → chỉ lấy phần nội dung thực sau prefix
-                const PREFIX_REGEX = /^Ghi\s*chú\s*:\s*/i;
-                let noiDungThuc = noiDungChiTiet.replace(PREFIX_REGEX, '').trim();
+                let stt = 0;
+                productMap.forEach((product) => {
+                    stt++;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${stt}</td>
+                        <td>${product.tenHang}</td>
+                        <td>${product.soLuong}</td>
+                        <td>${product.donGia.toLocaleString('vi-VN')}</td>
+                        <td>${product.thanhTien.toLocaleString('vi-VN')}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                    tongTien += product.thanhTien;
+                });
+            }
 
-                const trTongTien = document.createElement('tr');
-                trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="4">Tổng tiền</td><td style="text-align:right">${tongTien.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trTongTien);
-                
-                if (chiTietChietKhau >= 0) {
-                    const trCK = document.createElement('tr');
-                    trCK.className = 'summary-row';
-                    trCK.innerHTML = `<td colspan="4">Chiết khấu</td><td style="text-align:right">${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
-                    tableBody.appendChild(trCK);
-                }
+            // ===== LUÔN HIỂN THỊ SUMMARY ROWS (kể cả khi không có data) =====
+            let chiTietChietKhau = chietKhau ? (parseInt(chietKhau) || 0) : 0;
+            let chiTietThanhToan = thanhToan ? (parseInt(thanhToan) || 0) : (tongTien - chiTietChietKhau);
 
-                if (tongTienDonMoi && tongTienDonMoi !== 'null') {
-                    const chiTietTTDonMoi = parseInt(decodeURIComponent(tongTienDonMoi)) || 0;
-                    if (chiTietTTDonMoi > 0) {
-                        const trTTTra = document.createElement('tr');
-                        trTTTra.className = 'summary-row';
-                        trTTTra.innerHTML = `<td colspan="4">Tổng tiền sau chiết khấu</td><td style="text-align:right">${chiTietTTDonMoi.toLocaleString('vi-VN')}đ</td>`;
-                        tableBody.appendChild(trTTTra);
-                    }
-                }
-                
-                // PHÍ ĐỔI TRẢ
-                if (phiDoiTra && phiDoiTra !== 'null') {
-                    const chiTietPhiDoiTra = parseInt(decodeURIComponent(phiDoiTra)) || 0;
-                    if (chiTietPhiDoiTra > 0) {
-                        const trPDT = document.createElement('tr');
-                        trPDT.className = 'summary-row';
-                        trPDT.innerHTML = `<td colspan="4">Phí đổi trả hàng</td><td style="text-align:right">${chiTietPhiDoiTra.toLocaleString('vi-VN')}đ</td>`;
-                        tableBody.appendChild(trPDT);
-                    }
-                }
+            const rawGhiChu    = ghiChu || noiDungChietKhau;
+            let noiDungChiTiet = (rawGhiChu && rawGhiChu !== 'null')
+                                 ? decodeURIComponent(rawGhiChu).trim()
+                                 : "";
+            const PREFIX_REGEX = /^Ghi\s*chú\s*:\s*/i;
+            let noiDungThuc = noiDungChiTiet.replace(PREFIX_REGEX, '').trim();
 
-                const trTT = document.createElement('tr');
-                trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="4">Chênh lệch mới - cũ</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trTT);
+            // Tổng tiền
+            const trTongTien = document.createElement('tr');
+            trTongTien.className = 'summary-row first-summary';
+            trTongTien.innerHTML = `<td colspan="4">Tổng tiền</td><td style="text-align:right">${tongTien.toLocaleString('vi-VN')}đ</td>`;
+            tableBody.appendChild(trTongTien);
 
-                // KHÁCH HÀNG TRẢ
-                if (khachTrao && khachTrao !== 'null') {
-                    const chiTietKhachTrao = parseInt(decodeURIComponent(khachTrao)) || 0;
-                    if (chiTietKhachTrao > 0) {
-                        const labelKhachTrao = (tenKhachTrao && tenKhachTrao !== 'null')
-                            ? decodeURIComponent(tenKhachTrao).trim()
-                            : 'KHÁCH HÀNG TRẢ';
-                        const trKT = document.createElement('tr');
-                        trKT.className = 'summary-row';
-                        trKT.innerHTML = `<td colspan="4">${labelKhachTrao}</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
-                        tableBody.appendChild(trKT);
-                    }
-                }
+            // Chiết khấu
+            if (chiTietChietKhau >= 0) {
+                const trCK = document.createElement('tr');
+                trCK.className = 'summary-row';
+                trCK.innerHTML = `<td colspan="4">Chiết khấu</td><td style="text-align:right">${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
+                tableBody.appendChild(trCK);
+            }
 
-                // CÒN NỢ
-                if (conNo && conNo !== 'null') {
-                    const chiTietConNo = parseInt(decodeURIComponent(conNo)) || 0;
-                    const trCN = document.createElement('tr');
-                    trCN.className = 'summary-row';
-                    trCN.style.color = '#e53935';
-                    trCN.innerHTML = `<td colspan="4">Còn nợ</td><td style="text-align:right">${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
-                    tableBody.appendChild(trCN);
+            // Tổng tiền sau chiết khấu
+            if (tongTienDonMoi && tongTienDonMoi !== 'null') {
+                const chiTietTTDonMoi = parseInt(decodeURIComponent(tongTienDonMoi)) || 0;
+                if (chiTietTTDonMoi > 0) {
+                    const trTTTra = document.createElement('tr');
+                    trTTTra.className = 'summary-row';
+                    trTTTra.innerHTML = `<td colspan="4">Tổng tiền sau chiết khấu</td><td style="text-align:right">${chiTietTTDonMoi.toLocaleString('vi-VN')}đ</td>`;
+                    tableBody.appendChild(trTTTra);
                 }
+            }
 
-                // Chỉ hiển thị khi có nội dung thực (sau khi bỏ prefix)
-                if (noiDungThuc !== "") {
-                    const trND = document.createElement('tr');
-                    trND.className = 'discount-reason';
-                    trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
-                    tableBody.appendChild(trND);
+            // Phí đổi trả
+            if (phiDoiTra && phiDoiTra !== 'null') {
+                const chiTietPhiDoiTra = parseInt(decodeURIComponent(phiDoiTra)) || 0;
+                if (chiTietPhiDoiTra > 0) {
+                    const trPDT = document.createElement('tr');
+                    trPDT.className = 'summary-row';
+                    trPDT.innerHTML = `<td colspan="4">Phí đổi trả hàng</td><td style="text-align:right">${chiTietPhiDoiTra.toLocaleString('vi-VN')}đ</td>`;
+                    tableBody.appendChild(trPDT);
                 }
+            }
+
+            // Chênh lệch mới - cũ
+            const trTT = document.createElement('tr');
+            trTT.className = 'summary-row';
+            trTT.innerHTML = `<td colspan="4">Chênh lệch mới - cũ</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
+            tableBody.appendChild(trTT);
+
+            // Khách hàng trả
+            if (khachTrao && khachTrao !== 'null') {
+                const chiTietKhachTrao = parseInt(decodeURIComponent(khachTrao)) || 0;
+                if (chiTietKhachTrao > 0) {
+                    const labelKhachTrao = (tenKhachTrao && tenKhachTrao !== 'null')
+                        ? decodeURIComponent(tenKhachTrao).trim()
+                        : 'KHÁCH HÀNG TRẢ';
+                    const trKT = document.createElement('tr');
+                    trKT.className = 'summary-row';
+                    trKT.innerHTML = `<td colspan="4">${labelKhachTrao}</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
+                    tableBody.appendChild(trKT);
+                }
+            }
+
+            // Còn nợ
+            if (conNo && conNo !== 'null') {
+                const chiTietConNo = parseInt(decodeURIComponent(conNo)) || 0;
+                const trCN = document.createElement('tr');
+                trCN.className = 'summary-row';
+                trCN.style.color = '#e53935';
+                trCN.innerHTML = `<td colspan="4">Còn nợ</td><td style="text-align:right">${chiTietConNo.toLocaleString('vi-VN')}đ</td>`;
+                tableBody.appendChild(trCN);
+            }
+
+            // Ghi chú / nội dung chiết khấu
+            if (noiDungThuc !== "") {
+                const trND = document.createElement('tr');
+                trND.className = 'discount-reason';
+                trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
+                tableBody.appendChild(trND);
             }
         }
     </script>
