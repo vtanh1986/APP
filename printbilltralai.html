@@ -782,18 +782,18 @@
             trTT.innerHTML = `<td colspan="4">Chênh lệch mới - cũ</td><td style="text-align:right">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
             tableBody.appendChild(trTT);
 
-            // Khách hàng trả
-            if (khachTrao && khachTrao !== 'null') {
-                const chiTietKhachTrao = parseInt(decodeURIComponent(khachTrao)) || 0;
-                if (chiTietKhachTrao > 0) {
-                    const labelKhachTrao = (tenKhachTrao && tenKhachTrao !== 'null')
-                        ? decodeURIComponent(tenKhachTrao).trim()
-                        : 'KHÁCH HÀNG TRẢ';
-                    const trKT = document.createElement('tr');
-                    trKT.className = 'summary-row';
-                    trKT.innerHTML = `<td colspan="4">${labelKhachTrao}</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
-                    tableBody.appendChild(trKT);
-                }
+            // Khách hàng trả — luôn hiển thị kể cả = 0
+            {
+                const chiTietKhachTrao = (khachTrao && khachTrao !== 'null')
+                    ? (parseInt(decodeURIComponent(khachTrao)) || 0)
+                    : 0;
+                const labelKhachTrao = (tenKhachTrao && tenKhachTrao !== 'null')
+                    ? decodeURIComponent(tenKhachTrao).trim()
+                    : 'KHÁCH HÀNG TRẢ';
+                const trKT = document.createElement('tr');
+                trKT.className = 'summary-row';
+                trKT.innerHTML = `<td colspan="4">${labelKhachTrao}</td><td style="text-align:right">${chiTietKhachTrao.toLocaleString('vi-VN')}đ</td>`;
+                tableBody.appendChild(trKT);
             }
 
             // Còn nợ
