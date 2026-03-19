@@ -104,12 +104,10 @@
             white-space: nowrap;
         }
 
-        /* Header: TT | Tên hàng / SL | Đơn giá | Thành tiền */
+        /* Header: TT | Tên hàng | Thành tiền */
         th.col-tt   { width: 22px;  text-align: center; }
         th.col-name { text-align: left; }
-        th.col-sl   { width: 30px;  text-align: center; }
-        th.col-dg   { width: 72px;  text-align: right; }
-        th.col-tt2  { width: 76px;  text-align: right; }
+        th.col-tt2  { width: 80px;  text-align: right; }
 
         /* Dòng sản phẩm - dòng 1: TT | Tên hàng đầy đủ trải dài */
         tr.item-row-1 td {
@@ -284,7 +282,7 @@
             <thead>
                 <tr>
                     <th class="col-tt">TT</th>
-                    <th class="col-name" colspan="2">Tên hàng</th>
+                    <th class="col-name">Tên hàng</th>
                     <th class="col-tt2">Thành tiền</th>
                 </tr>
             </thead>
@@ -297,8 +295,7 @@
                 </tr>
                 <tr class="item-row-2">
                     <td></td>
-                    <td class="cell-sub-sl">2 x 25,000</td>
-                    <td></td>
+                    <td class="cell-sub-sl" colspan="2">2 x 25,000</td>
                 </tr>
                 <tr class="item-row-1">
                     <td class="cell-tt">2</td>
@@ -307,8 +304,7 @@
                 </tr>
                 <tr class="item-row-2">
                     <td></td>
-                    <td class="cell-sub-sl">1 x 30,000</td>
-                    <td></td>
+                    <td class="cell-sub-sl" colspan="2">1 x 30,000</td>
                 </tr>
             </tbody>
         </table>
@@ -440,13 +436,12 @@
                 `;
                 tableBody.appendChild(tr1);
 
-                // Dòng 2: (trống) + SL x đơn giá
+                // Dòng 2: (trống) + SL x đơn giá (colspan 2 để lấp đầy)
                 const tr2 = document.createElement('tr');
                 tr2.className = 'item-row-2';
                 tr2.innerHTML = `
                     <td></td>
-                    <td class="cell-sub-sl">${product.soLuong} x ${product.donGia.toLocaleString('vi-VN')}</td>
-                    <td></td>
+                    <td class="cell-sub-sl" colspan="2">${product.soLuong} x ${product.donGia.toLocaleString('vi-VN')}</td>
                 `;
                 tableBody.appendChild(tr2);
 
