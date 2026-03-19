@@ -106,8 +106,8 @@
 
         /* Header: TT | Tên hàng | Thành tiền */
         th.col-tt   { width: 22px;  text-align: center; }
-        th.col-name { text-align: left; }
-        th.col-tt2  { width: 80px;  text-align: right; }
+        th.col-name { text-align: center; }
+        th.col-tt2  { width: 80px;  text-align: center; }
 
         /* Dòng sản phẩm - dòng 1: TT | Tên hàng đầy đủ trải dài */
         tr.item-row-1 td {
@@ -127,7 +127,14 @@
             text-align: left;
             word-break: break-word;
             font-weight: 500;
-            /* trải sang hết cột SL, đơn giá, thành tiền */
+        }
+
+        tr.item-row-1 td.cell-sub-total {
+            text-align: right;
+            font-weight: 600;
+            color: #222;
+            white-space: nowrap;
+            vertical-align: top;
         }
 
         /* Dòng sản phẩm - dòng 2: (trống) | SL x Đơn giá | = Thành tiền */
