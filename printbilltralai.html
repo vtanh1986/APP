@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hóa Đơn Thanh Toán</title>
+    <title>Bill đổi trả</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -39,6 +39,19 @@
         .header { text-align: center; border-bottom: 0.5px solid #ccc; padding-bottom: 8px; margin-bottom: 8px; }
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
         .header p { color: #666; font-size: 14px; }
+
+        /* ===== DÒNG LOẠI PHIẾU ===== */
+        .loai-phieu {
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 5px 0 3px 0;
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #bbb;
+        }
 
         .info-section {
             display: flex; flex-direction: column; gap: 2px;
@@ -101,7 +114,7 @@
         .summary-row td { padding: 3px 4px; }
         .summary-row td:last-child { text-align: right; white-space: nowrap; }
 
-        .first-summary { border-top: 0.5px solid #ccc; }
+        .first-summary { border-top: 0.5px solid #ccc !important; }
 
         .section-label {
             font-size: 13px; font-weight: 700; color: #555;
@@ -184,6 +197,9 @@
             <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
             <p id="dienThoai">ĐT: 0123 456 789</p>
         </div>
+
+        <!-- DÒNG LOẠI PHIẾU (ẩn mặc định, hiện khi có param loaiphieu) -->
+        <div class="loai-phieu" id="loaiPhieu" style="display:none"></div>
 
         <div class="info-section">
             <div class="info-item">
@@ -339,6 +355,7 @@
         const qrcodeContent    = urlParams.get('qrcodecontent');
         const qrcodeText       = urlParams.get('qrcodetext');
         const showQrcode       = urlParams.get('showqrcode');
+        const loaiPhieu        = urlParams.get('loaiphieu');   // ← THAM SỐ MỚI
 
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
         if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
@@ -348,6 +365,14 @@
         if (thuNgan)    document.getElementById('thuNgan').textContent    = decodeURIComponent(thuNgan);
         if (dienThoai)  document.getElementById('dienThoai').textContent  = `ĐT: ${decodeURIComponent(dienThoai)}`;
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
+
+        // ===== LOẠI PHIẾU =====
+        // Truyền qua URL: ?loaiphieu=PHIẾU TẠM TÍNH  hoặc  ?loaiphieu=H%C3%93A%20%C4%90%C6%A0N
+        if (loaiPhieu && loaiPhieu.trim() !== '') {
+            const el = document.getElementById('loaiPhieu');
+            el.textContent = decodeURIComponent(loaiPhieu).trim();
+            el.style.display = 'block';
+        }
 
         // QR Code
         const qrcodeSection    = document.getElementById('qrcodeSection');
