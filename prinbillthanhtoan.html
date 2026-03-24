@@ -71,6 +71,19 @@
         
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
         .header p  { color: #666; font-size: 14px; }
+
+        /* ===== DÒNG LOẠI PHIẾU ===== */
+        .loai-phieu {
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 5px 0 3px 0;
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #bbb;
+        }
         
         .info-section {
             display: flex;
@@ -104,12 +117,10 @@
             white-space: nowrap;
         }
 
-        /* Header: TT | Tên hàng | Thành tiền */
         th.col-tt   { width: 22px;  text-align: center; }
         th.col-name { text-align: center; }
         th.col-tt2  { width: 80px;  text-align: center; }
 
-        /* Dòng sản phẩm - dòng 1: TT | Tên hàng đầy đủ trải dài */
         tr.item-row-1 td {
             padding: 5px 4px 0px 4px;
             font-size: 13px;
@@ -137,7 +148,6 @@
             vertical-align: top;
         }
 
-        /* Dòng sản phẩm - dòng 2: (trống) | SL x Đơn giá | = Thành tiền */
         tr.item-row-2 td {
             padding: 0px 4px 5px 4px;
             font-size: 13px;
@@ -147,7 +157,6 @@
 
         tr.item-row-2 td.cell-sub-sl {
             text-align: left;
-            /* "SL x đơn giá" */
         }
 
         tr.item-row-2 td.cell-sub-total {
@@ -157,7 +166,6 @@
             white-space: nowrap;
         }
         
-        /* Summary rows */
         .summary-row {
             background: #f7f7f7;
             font-weight: bold;
@@ -265,6 +273,9 @@
             <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
             <p id="dienThoai">ĐT: 0123 456 789</p>
         </div>
+
+        <!-- DÒNG LOẠI PHIẾU (ẩn mặc định, hiện khi có param loaiphieu) -->
+        <div class="loai-phieu" id="loaiPhieu" style="display:none"></div>
         
         <div class="info-section">
             <div class="info-item">
@@ -370,6 +381,7 @@
         const qrcodeContent    = urlParams.get('qrcodecontent');
         const qrcodeText       = urlParams.get('qrcodetext');
         const showQrcode       = urlParams.get('showqrcode');
+        const loaiPhieu        = urlParams.get('loaiphieu');   // ← THAM SỐ MỚI
         
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
         if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
@@ -379,6 +391,14 @@
         if (thuNgan)    document.getElementById('thuNgan').textContent    = decodeURIComponent(thuNgan);
         if (dienThoai)  document.getElementById('dienThoai').textContent  = `ĐT: ${decodeURIComponent(dienThoai)}`;
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
+
+        // ===== LOẠI PHIẾU =====
+        // Truyền qua URL: ?loaiphieu=PHIẾU TẠM TÍNH  hoặc  ?loaiphieu=H%C3%93A%20%C4%90%C6%A0N
+        if (loaiPhieu && loaiPhieu.trim() !== '') {
+            const el = document.getElementById('loaiPhieu');
+            el.textContent = decodeURIComponent(loaiPhieu).trim();
+            el.style.display = 'block';
+        }
         
         // QR Code
         const qrcodeSection     = document.getElementById('qrcodeSection');
@@ -433,7 +453,6 @@
             productMap.forEach((product) => {
                 stt++;
 
-                // Dòng 1: số thứ tự + tên hàng + thành tiền
                 const tr1 = document.createElement('tr');
                 tr1.className = 'item-row-1';
                 tr1.innerHTML = `
@@ -443,7 +462,6 @@
                 `;
                 tableBody.appendChild(tr1);
 
-                // Dòng 2: (trống) + SL x đơn giá (colspan 2 để lấp đầy)
                 const tr2 = document.createElement('tr');
                 tr2.className = 'item-row-2';
                 tr2.innerHTML = `
