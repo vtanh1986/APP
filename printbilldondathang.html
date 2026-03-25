@@ -501,17 +501,13 @@
                 trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
 
-                // ===== SỐ TIỀN CỌC =====
+                // ===== SỐ TIỀN CỌC (luôn hiển thị) =====
                 // Truyền qua URL: ?tiencoc=200000
-                if (tienCoc && tienCoc !== 'null') {
-                    const tc = parseInt(decodeURIComponent(tienCoc)) || 0;
-                    if (tc > 0) {
-                        const trTC = document.createElement('tr');
-                        trTC.className = 'summary-row';
-                        trTC.innerHTML = `<td colspan="2">Số tiền cọc</td><td style="text-align:right;white-space:nowrap">-${tc.toLocaleString('vi-VN')}đ</td>`;
-                        tableBody.appendChild(trTC);
-                    }
-                }
+                const tc = (tienCoc && tienCoc !== 'null') ? (parseInt(decodeURIComponent(tienCoc)) || 0) : 0;
+                const trTC = document.createElement('tr');
+                trTC.className = 'summary-row';
+                trTC.innerHTML = `<td colspan="2">Số tiền cọc</td><td style="text-align:right;white-space:nowrap">-${tc.toLocaleString('vi-VN')}đ</td>`;
+                tableBody.appendChild(trTC);
 
                 // Khách trả
                 if (khachTrao && khachTrao !== 'null') {
