@@ -381,7 +381,8 @@
         const qrcodeContent    = urlParams.get('qrcodecontent');
         const qrcodeText       = urlParams.get('qrcodetext');
         const showQrcode       = urlParams.get('showqrcode');
-        const loaiPhieu        = urlParams.get('loaiphieu');   // ← THAM SỐ MỚI
+        const loaiPhieu        = urlParams.get('loaiphieu');
+        const tienCoc          = urlParams.get('tiencoc');   // ← THAM SỐ MỚI: số tiền cọc
         
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
         if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
@@ -393,7 +394,6 @@
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
 
         // ===== LOẠI PHIẾU =====
-        // Truyền qua URL: ?loaiphieu=PHIẾU TẠM TÍNH  hoặc  ?loaiphieu=H%C3%93A%20%C4%90%C6%A0N
         if (loaiPhieu && loaiPhieu.trim() !== '') {
             const el = document.getElementById('loaiPhieu');
             el.textContent = decodeURIComponent(loaiPhieu).trim();
@@ -481,11 +481,13 @@
                                       ? decodeURIComponent(rawGhiChu).trim() : "";
                 let noiDungThuc     = noiDungChiTiet.replace(/^Ghi\s*chú\s*:\s*/i, '').trim();
 
+                // Tổng tiền
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
                 trTongTien.innerHTML = `<td colspan="2">Tổng tiền</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongTien);
                 
+                // Chiết khấu
                 if (chiTietChietKhau >= 0) {
                     const trCK = document.createElement('tr');
                     trCK.className = 'summary-row';
@@ -493,11 +495,25 @@
                     tableBody.appendChild(trCK);
                 }
                 
+                // Phải thu khách
                 const trTT = document.createElement('tr');
                 trTT.className = 'summary-row';
                 trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
 
+                // ===== SỐ TIỀN CỌC =====
+                // Truyền qua URL: ?tiencoc=200000
+                if (tienCoc && tienCoc !== 'null') {
+                    const tc = parseInt(decodeURIComponent(tienCoc)) || 0;
+                    if (tc > 0) {
+                        const trTC = document.createElement('tr');
+                        trTC.className = 'summary-row';
+                        trTC.innerHTML = `<td colspan="2">Số tiền cọc</td><td style="text-align:right;white-space:nowrap">-${tc.toLocaleString('vi-VN')}đ</td>`;
+                        tableBody.appendChild(trTC);
+                    }
+                }
+
+                // Khách trả
                 if (khachTrao && khachTrao !== 'null') {
                     const kt = parseInt(decodeURIComponent(khachTrao)) || 0;
                     if (kt > 0) {
@@ -508,6 +524,7 @@
                     }
                 }
 
+                // Còn nợ
                 if (conNo && conNo !== 'null') {
                     const cn = parseInt(decodeURIComponent(conNo)) || 0;
                     const trCN = document.createElement('tr');
@@ -517,6 +534,7 @@
                     tableBody.appendChild(trCN);
                 }
 
+                // Ghi chú / nội dung chiết khấu
                 if (noiDungThuc !== "") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
