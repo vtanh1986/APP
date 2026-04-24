@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Phiếu Xuất Nhập Kho</title>
+<title>Phiếu Nhập Kho</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -184,11 +184,12 @@
   function getParams() {
     const p = new URLSearchParams(window.location.search);
     return {
-      ngay:    p.get('ngay')    || '',   // vd: 24/04/2025
+      tieude:  p.get('tieude') || 'Phiếu Nhập Kho',
+      ngay:    p.get('ngay')   || '',
       donvi:   p.get('donvi')  || '',
-      data:    p.get('data')   || '',    // "TenHang_a_DVT_a_SoLuong_a_DonGia_a_ThanhTien_b_..."
-      ckhaU:   p.get('ck')     || '',   // chiết khấu
-      datraU:  p.get('datra')  || '',   // đã trả
+      data:    p.get('data')   || '',    // "TenHang_a_DVT_a_SoLuong_a_DonGia_b_..."
+      ckhaU:   p.get('ck')     || '',
+      datraU:  p.get('datra')  || '',
     };
   }
 
@@ -212,7 +213,11 @@
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    const { ngay, donvi, data, ckhaU, datraU } = getParams();
+    const { tieude, ngay, donvi, data, ckhaU, datraU } = getParams();
+
+    // --- Tiêu đề ---
+    document.getElementById('txt-tieude').textContent = tieude;
+    document.title = tieude;
 
     // --- Ngày tháng năm ---
     const d = parseDate(ngay);
@@ -224,8 +229,8 @@
     document.getElementById('txt-donvi').textContent = donvi;
 
     // --- Bảng dữ liệu ---
-    // Mỗi dòng cách nhau bằng _b_, mỗi cột cách nhau bằng _a_
-    // Thứ tự cột: Tên hàng | ĐV Tính | Số lượng | Đơn giá | Thành tiền
+    // Thứ tự cột: Tên hàng | ĐV Tính | Số lượng | Đơn giá
+    // Thành tiền tự tính = Số lượng × Đơn giá
     const tbody = document.getElementById('main-tbody');
     tbody.innerHTML = '';
 
@@ -236,14 +241,15 @@
       rows.forEach(function (row, idx) {
         if (!row.trim()) return;
         const cols = row.split('_a_');
-        const tenHang  = cols[0] || '';
-        const dvt      = cols[1] || '';
-        const soLuong  = cols[2] || '';
-        const donGia   = cols[3] || '';
-        const thanhTien = cols[4] || '';
+        const tenHang = cols[0] || '';
+        const dvt     = cols[1] || '';
+        const soLuong = cols[2] || '';
+        const donGia  = cols[3] || '';
 
-        // Cộng thành tiền vào tổng (bỏ định dạng số nếu có)
-        tongTien += parseNumber(thanhTien);
+        const sl = parseNumber(soLuong);
+        const dg = parseNumber(donGia);
+        const tt = sl * dg;
+        tongTien += tt;
 
         const tr = document.createElement('tr');
         tr.innerHTML =
@@ -251,8 +257,8 @@
           '<td class="col-ten">' + tenHang + '</td>' +
           '<td class="col-dvt">' + dvt + '</td>' +
           '<td class="col-sl">'  + soLuong + '</td>' +
-          '<td class="col-dg">'  + donGia + '</td>' +
-          '<td class="col-tt">'  + thanhTien + '</td>';
+          '<td class="col-dg">'  + formatNum(dg) + '</td>' +
+          '<td class="col-tt">'  + formatNum(tt) + '</td>';
         tbody.appendChild(tr);
       });
     }
@@ -278,7 +284,7 @@
 
   <!-- Header -->
   <div class="header">
-    <div class="title">Phiếu Nhập Kho</div>
+    <div class="title" id="txt-tieude">Phiếu Nhập Kho</div>
     <div class="subtitle">
       Ngày <span id="txt-ngay">…………</span>
       tháng <span id="txt-thang">…………</span>
