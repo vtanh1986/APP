@@ -219,11 +219,8 @@
     document.getElementById('txt-tieude').textContent = tieude;
     document.title = tieude;
 
-    // --- Ngày tháng năm ---
-    const d = parseDate(ngay);
-    document.getElementById('txt-ngay').textContent   = d.ngay;
-    document.getElementById('txt-thang').textContent  = d.thang;
-    document.getElementById('txt-nam').textContent    = d.nam;
+    // --- Ngày ---
+    document.getElementById('txt-ngay').textContent = ngay;
 
     // --- Đơn vị ---
     document.getElementById('txt-donvi').textContent = donvi;
@@ -285,11 +282,7 @@
   <!-- Header -->
   <div class="header">
     <div class="title" id="txt-tieude">Phiếu Nhập Kho</div>
-    <div class="subtitle">
-      Ngày <span id="txt-ngay">…………</span>
-      tháng <span id="txt-thang">…………</span>
-      năm <span id="txt-nam">………</span>
-    </div>
+    <div class="subtitle">Ngày: <span id="txt-ngay"></span></div>
   </div>
 
   <!-- Info -->
