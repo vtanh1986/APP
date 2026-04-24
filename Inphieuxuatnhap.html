@@ -219,8 +219,16 @@
     document.getElementById('txt-tieude').textContent = tieude;
     document.title = tieude;
 
-    // --- Ngày ---
-    document.getElementById('txt-ngay').textContent = ngay;
+    // --- Ngày --- tự đổi mm/dd/yyyy sang dd/mm/yyyy nếu cần
+    let ngayHienThi = ngay;
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(ngay)) {
+      const parts = ngay.split('/');
+      // Nếu phần đầu > 12 thì đã là dd/mm, giữ nguyên; ngược lại đổi
+      if (parseInt(parts[0]) <= 12 && parseInt(parts[1]) > 12) {
+        ngayHienThi = parts[1] + '/' + parts[0] + '/' + parts[2];
+      }
+    }
+    document.getElementById('txt-ngay').textContent = ngayHienThi;
 
     // --- Đơn vị ---
     document.getElementById('txt-donvi').textContent = donvi;
