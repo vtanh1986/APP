@@ -257,17 +257,7 @@
       });
     }
 
-    // Nếu không đủ 5 dòng thì thêm dòng trống cho đẹp khi in
-    const minRows = 5;
-    const currentRows = tbody.querySelectorAll('tr').length;
-    for (let i = currentRows; i < minRows; i++) {
-      const tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td class="col-stt">' + (i + 1) + '</td>' +
-        '<td class="col-ten"></td><td class="col-dvt"></td>' +
-        '<td class="col-sl"></td><td class="col-dg"></td><td class="col-tt"></td>';
-      tbody.appendChild(tr);
-    }
+
 
     // --- Summary ---
     const ck     = parseNumber(ckhaU);
