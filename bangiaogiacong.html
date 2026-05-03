@@ -79,7 +79,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 8px;
   }
 
   .party-box {
@@ -130,20 +130,18 @@
   }
 
   .basis-section {
-    background: #f8f8f8;
-    border-left: 3px solid var(--navy);
-    padding: 9px 12px; margin-bottom: 18px;
+    padding: 4px 0; margin-bottom: 6px;
     font-size: clamp(10px, 1.5vw, 12.5px);
   }
 
   .section-title {
     font-size: clamp(10px, 1.5vw, 12px);
     font-weight: 700; color: var(--text); background: none;
-    padding: 6px 12px; letter-spacing: 1px;
-    text-transform: uppercase; margin-bottom: 12px;
+    padding: 6px 0; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 3px;
   }
 
-  .section-wrap { margin-bottom: 12px; }
+  .section-wrap { margin-bottom: 8px; }
 
   .goods-table {
     width: 100%; border-collapse: collapse;
@@ -189,8 +187,8 @@
 
   .resp-list { list-style: none; font-size: clamp(10px, 1.5vw, 12.5px); }
   .resp-list li {
-    padding: 2px 0 2px 18px; position: relative;
-    color: var(--text); line-height: 1.6;
+    padding: 1px 0 1px 18px; position: relative;
+    color: var(--text); line-height: 1.5;
   }
   .resp-list li::before {
     content: '▸'; position: absolute; left: 0;
@@ -237,19 +235,19 @@
     position: absolute;
     top: 14px;
     left: 14px;
-    width: 72px;
-    height: 72px;
+    width: 52px;
+    height: 52px;
   }
   .qr-corner canvas, .qr-corner img {
-    width: 72px !important;
-    height: 72px !important;
+    width: 52px !important;
+    height: 52px !important;
   }
   .qr-empty {
-    width: 72px; height: 72px;
+    width: 52px; height: 52px;
     border: 1.5px dashed #ccc;
     border-radius: 3px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 9px; color: #bbb; text-align: center; line-height: 1.3;
+    font-size: 8px; color: #bbb; text-align: center; line-height: 1.3;
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -362,20 +360,6 @@
           <td><input type="text" placeholder="0"></td>
           <td><input type="text" placeholder="..."></td>
         </tr>
-        <tr>
-          <td>2</td>
-          <td><input type="text" placeholder="Tên hàng hóa..."></td>
-          <td><input type="text" placeholder="Cái / kg..."></td>
-          <td><input type="text" placeholder="0"></td>
-          <td><input type="text" placeholder="..."></td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td><input type="text" placeholder="Tên hàng hóa..."></td>
-          <td><input type="text" placeholder="Cái / kg..."></td>
-          <td><input type="text" placeholder="0"></td>
-          <td><input type="text" placeholder="..."></td>
-        </tr>
       </tbody>
     </table>
     <button class="add-row-btn" onclick="addRow()">＋ Thêm dòng</button>
@@ -406,14 +390,10 @@
     <div class="sig-box">
       <div class="sig-title">Đại Diện Bên Giao</div>
       <div class="sig-sub">(Ký, ghi rõ họ tên, đóng dấu)</div>
-      <div class="sig-line"></div>
-      <div class="sig-name">Họ và tên</div>
     </div>
     <div class="sig-box">
       <div class="sig-title">Đại Diện Bên Nhận</div>
       <div class="sig-sub">(Ký, ghi rõ họ tên, đóng dấu)</div>
-      <div class="sig-line"></div>
-      <div class="sig-name">Họ và tên</div>
     </div>
   </div>
 </div>
@@ -435,8 +415,8 @@
       corner.innerHTML = '';
       new QRCode(corner, {
         text: decodeURIComponent(qrValue),
-        width: 72,
-        height: 72,
+        width: 52,
+        height: 52,
         colorDark: '#000000',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
@@ -444,19 +424,36 @@
     }
   })();
 
-  let rowCount = 3;
-  function addRow() {
-    rowCount++;
-    const tbody = document.getElementById('goodsBody');
+  let rowCount = 1;
+
+  function makeRow(stt, ten, dvt, sl, ghichu) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${rowCount}</td>
-      <td><input type="text" placeholder="Tên hàng hóa..."></td>
-      <td><input type="text" placeholder="Cái / kg..."></td>
-      <td><input type="text" placeholder="0"></td>
-      <td><input type="text" placeholder="..."></td>
+      <td>${stt}</td>
+      <td><input type="text" value="${ten||''}" placeholder="Tên hàng hóa..."></td>
+      <td><input type="text" value="${dvt||''}" placeholder="Cái / kg..."></td>
+      <td><input type="text" value="${sl||''}" placeholder="0"></td>
+      <td><input type="text" value="${ghichu||''}" placeholder="..."></td>
     `;
-    tbody.appendChild(tr);
+    return tr;
+  }
+
+  // Populate table from URL param `items` = "Tên|ĐVT|SL;Tên|ĐVT|SL;..."
+  const itemsParam = new URLSearchParams(window.location.search).get('items');
+  if (itemsParam) {
+    const tbody = document.getElementById('goodsBody');
+    tbody.innerHTML = '';
+    const rows = decodeURIComponent(itemsParam).split(';');
+    rows.forEach((row, i) => {
+      const [ten, dvt, sl, ghichu] = row.split('|');
+      tbody.appendChild(makeRow(i + 1, ten, dvt, sl, ghichu));
+      rowCount = i + 1;
+    });
+  }
+
+  function addRow() {
+    rowCount++;
+    document.getElementById('goodsBody').appendChild(makeRow(rowCount, '', '', '', ''));
   }
 </script>
 
