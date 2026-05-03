@@ -19,7 +19,7 @@
 
   body {
     font-family: 'Be Vietnam Pro', sans-serif;
-    background: #eae6dd;
+    background: white;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -28,30 +28,15 @@
   }
 
   .page {
-    background: var(--cream);
+    background: white;
     width: 100%;
     max-width: 794px;
     padding: clamp(16px, 4vw, 48px) clamp(14px, 5vw, 56px);
-    box-shadow: 0 4px 40px rgba(0,0,0,0.18);
+    
     position: relative;
-    border-top: 6px solid var(--gold);
+    
   }
 
-  .page::before, .page::after {
-    content: '';
-    position: absolute;
-    width: 24px; height: 24px;
-    border-color: var(--gold); border-style: solid;
-  }
-  .page::before { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
-  .page::after  { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
-  .corner-bl, .corner-br {
-    position: absolute;
-    width: 24px; height: 24px;
-    border-color: var(--gold); border-style: solid;
-  }
-  .corner-bl { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
-  .corner-br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
 
   .header { text-align: center; margin-bottom: 20px; }
 
@@ -100,7 +85,7 @@
   .party-box {
     border: 1.5px solid var(--border);
     border-radius: 4px;
-    padding: 16px 12px 12px;
+    padding: 14px 12px 10px;
     background: white;
     position: relative;
     min-width: 0; /* prevent grid blowout */
@@ -111,19 +96,15 @@
     top: -11px; left: 12px;
     background: white; padding: 0 6px;
     font-size: clamp(8px, 1.3vw, 11px);
-    font-weight: 700; color: var(--gold);
+    font-weight: 700; color: var(--text);
     letter-spacing: 0.8px; text-transform: uppercase;
     white-space: nowrap;
   }
 
-  .party-role {
-    font-size: 10px; color: var(--muted);
-    font-style: italic; margin-bottom: 10px;
-  }
 
   .field-row {
     display: flex; align-items: baseline;
-    margin-bottom: 7px; gap: 4px; min-width: 0;
+    margin-bottom: 3px; gap: 4px; min-width: 0;
   }
 
   .field-label {
@@ -149,7 +130,7 @@
   }
 
   .basis-section {
-    background: rgba(13,34,64,0.04);
+    background: #f8f8f8;
     border-left: 3px solid var(--navy);
     padding: 9px 12px; margin-bottom: 18px;
     font-size: clamp(10px, 1.5vw, 12.5px);
@@ -157,12 +138,12 @@
 
   .section-title {
     font-size: clamp(10px, 1.5vw, 12px);
-    font-weight: 700; color: white; background: var(--navy);
+    font-weight: 700; color: var(--text); background: none;
     padding: 6px 12px; letter-spacing: 1px;
     text-transform: uppercase; margin-bottom: 12px;
   }
 
-  .section-wrap { margin-bottom: 18px; }
+  .section-wrap { margin-bottom: 12px; }
 
   .goods-table {
     width: 100%; border-collapse: collapse;
@@ -218,12 +199,7 @@
   }
   .resp-list li:last-child { border-bottom: none; }
 
-  .notice-bar {
-    background: rgba(13,34,64,0.06); border: 1px solid var(--border);
-    padding: 9px 12px; font-size: clamp(10px, 1.5vw, 12px);
-    color: var(--muted); border-radius: 3px; margin-bottom: 24px;
-    font-style: italic; line-height: 1.6;
-  }
+  .notice-bar { font-size: clamp(10px, 1.5vw, 12px); color: var(--text); margin-bottom: 24px; line-height: 1.6; }
 
   .signature-grid {
     display: grid; grid-template-columns: 1fr 1fr;
@@ -263,15 +239,12 @@
 <body>
 
 <div class="page">
-  <div class="corner-bl"></div>
-  <div class="corner-br"></div>
 
   <div class="header">
     <div class="republic">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
     <div class="motto">Độc lập – Tự do – Hạnh phúc</div>
     <div class="divider-thin"></div>
     <div class="doc-title">Biên Bản Bàn Giao Gia Công</div>
-    <div class="doc-subtitle">Processing Handover Minutes</div>
   </div>
 
   <div class="date-line">
@@ -284,7 +257,6 @@
   <div class="party-grid">
     <div class="party-box">
       <div class="party-label">Bên Đặt Gia Công (Bên Giao)</div>
-      <div class="party-role">Processing Ordering Party</div>
       <div class="field-row">
         <span class="field-label">Tên đơn vị:</span>
         <input class="field-input" type="text" placeholder="..." data-param="bg_ten">
@@ -315,7 +287,6 @@
 
     <div class="party-box">
       <div class="party-label">Bên Gia Công (Bên Nhận)</div>
-      <div class="party-role">Processing Party</div>
       <div class="field-row">
         <span class="field-label">Tên đơn vị:</span>
         <input class="field-input" type="text" placeholder="..." data-param="bn_ten">
