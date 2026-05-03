@@ -233,11 +233,34 @@
     gap: 6px; z-index: 100;
   }
   .print-btn:hover { background: var(--gold); }
+  .qr-corner {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 72px;
+    height: 72px;
+  }
+  .qr-corner canvas, .qr-corner img {
+    width: 72px !important;
+    height: 72px !important;
+  }
+  .qr-empty {
+    width: 72px; height: 72px;
+    border: 1.5px dashed #ccc;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #bbb; text-align: center; line-height: 1.3;
+  }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
 <div class="page">
+
+  <div class="qr-corner" id="qrCorner">
+    <div class="qr-empty" id="qrEmpty">QR<br>Code</div>
+  </div>
 
   <div class="header">
     <div class="republic">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
@@ -404,6 +427,21 @@
       const el = document.querySelector(`[data-param="${key}"]`);
       if (el) el.value = decodeURIComponent(value);
     });
+
+    // Generate QR if param `qr` is present
+    const qrValue = params.get('qr');
+    if (qrValue) {
+      const corner = document.getElementById('qrCorner');
+      corner.innerHTML = '';
+      new QRCode(corner, {
+        text: decodeURIComponent(qrValue),
+        width: 72,
+        height: 72,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
   })();
 
   let rowCount = 3;
