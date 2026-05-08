@@ -11,7 +11,10 @@
         .print-button { background: #4CAF50; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
         .print-button:hover { background: #45a049; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.25); }
         .invoice { max-width: 600px; margin: 0 auto; background: white; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 0.5px solid #ccc; padding-bottom: 8px; margin-bottom: 8px; }
+        .header { display: flex; align-items: center; border-bottom: 0.5px solid #ccc; padding-bottom: 8px; margin-bottom: 8px; gap: 10px; }
+        .header-logo { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .header-logo img { max-width: 80px; max-height: 80px; object-fit: contain; display: block; }
+        .header-info { flex: 1; text-align: center; }
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
         .header p  { color: #666; font-size: 14px; }
         .loai-phieu { text-align: center; font-size: 15px; font-weight: 700; color: #333; letter-spacing: 1px; text-transform: uppercase; padding: 5px 0 3px 0; margin-bottom: 4px; border-bottom: 1px dashed #bbb; }
@@ -73,9 +76,14 @@
 
     <div class="invoice">
         <div class="header">
-            <h1 id="tenShop">QUÁN CAFE ABC</h1>
-            <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
-            <p id="dienThoai">ĐT: 0123 456 789</p>
+            <div class="header-logo" id="headerLogo" style="display:none">
+                <img id="logoImage" src="" alt="Logo">
+            </div>
+            <div class="header-info">
+                <h1 id="tenShop">QUÁN CAFE ABC</h1>
+                <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
+                <p id="dienThoai">ĐT: 0123 456 789</p>
+            </div>
         </div>
 
         <div class="loai-phieu" id="loaiPhieu" style="display:none"></div>
@@ -172,6 +180,7 @@
         const qrcodeText       = urlParams.get('qrcodetext');
         const showQrcode       = urlParams.get('showqrcode');
         const loaiPhieu        = urlParams.get('loaiphieu');
+        const logoUrl          = urlParams.get('logo');
 
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
         if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
@@ -179,6 +188,11 @@
         if (ban)        document.getElementById('ban').textContent        = decodeURIComponent(ban);
         if (dienThoai)  document.getElementById('dienThoai').textContent  = `ĐT: ${decodeURIComponent(dienThoai)}`;
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
+
+        if (logoUrl) {
+            document.getElementById('logoImage').src = decodeURIComponent(logoUrl);
+            document.getElementById('headerLogo').style.display = 'flex';
+        }
 
         if (loaiPhieu && loaiPhieu.trim() !== '') {
             const el = document.getElementById('loaiPhieu');
@@ -263,7 +277,7 @@
 
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="2">Tổng tiền hàng</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
+                trTongTien.innerHTML = `<td colspan="2">Tổng tiền</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongTien);
 
                 if (chiTietChietKhau >= 0) {
@@ -275,7 +289,7 @@
 
                 const trTT = document.createElement('tr');
                 trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="2">Tổng thanh toán</td><td style="text-align:right;white-space:nowrap">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
 
 
