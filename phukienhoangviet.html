@@ -164,8 +164,7 @@
         const footerText       = urlParams.get('footer');
         const chietKhau        = urlParams.get('chietkhau');
         const thanhToan        = urlParams.get('thanhtoan');
-        const khachTrao        = urlParams.get('khachtrao');
-        const conNo            = urlParams.get('conno');
+
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
         const ghiChu           = urlParams.get('ghichu');
         const qrcodeUrl        = urlParams.get('qrcode');
@@ -279,24 +278,6 @@
                 trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTT);
 
-                if (khachTrao && khachTrao !== 'null') {
-                    const kt = parseInt(decodeURIComponent(khachTrao)) || 0;
-                    if (kt > 0) {
-                        const trKT = document.createElement('tr');
-                        trKT.className = 'summary-row';
-                        trKT.innerHTML = `<td colspan="2">Khách trả</td><td style="text-align:right;white-space:nowrap">${kt.toLocaleString('vi-VN')}đ</td>`;
-                        tableBody.appendChild(trKT);
-                    }
-                }
-
-                if (conNo && conNo !== 'null') {
-                    const cn = parseInt(decodeURIComponent(conNo)) || 0;
-                    const trCN = document.createElement('tr');
-                    trCN.className = 'summary-row';
-                    trCN.style.color = '#e53935';
-                    trCN.innerHTML = `<td colspan="2">Còn nợ</td><td style="text-align:right;white-space:nowrap">${cn.toLocaleString('vi-VN')}đ</td>`;
-                    tableBody.appendChild(trCN);
-                }
 
                 if (noiDungThuc !== "") {
                     const trND = document.createElement('tr');
