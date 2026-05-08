@@ -72,6 +72,11 @@
             <span>🖨️</span>
             <span>In hóa đơn</span>
         </button>
+        <button class="print-button" style="background:#2196F3;margin-top:5px;font-size:13px;padding:8px 16px" onclick="document.getElementById('logoFileInput').click()">
+            <span>🖼️</span>
+            <span>Cài logo</span>
+        </button>
+        <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
     </div>
 
     <div class="invoice">
@@ -144,6 +149,23 @@
     </div>
 
     <script>
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const base64 = ev.target.result;
+                localStorage.setItem('invoice_logo', base64);
+                showLogo(base64);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showLogo(src) {
+            document.getElementById('logoImage').src = src;
+            document.getElementById('headerLogo').style.display = 'flex';
+        }
+
         function printInvoice() {
             document.getElementById('printStatus').style.display = 'block';
             setTimeout(() => {
@@ -181,6 +203,7 @@
         const showQrcode       = urlParams.get('showqrcode');
         const loaiPhieu        = urlParams.get('loaiphieu');
         const logoUrl          = urlParams.get('logo');
+        const logoId           = urlParams.get('logoid');
 
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
         if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
@@ -190,8 +213,12 @@
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
 
         if (logoUrl) {
-            document.getElementById('logoImage').src = decodeURIComponent(logoUrl);
-            document.getElementById('headerLogo').style.display = 'flex';
+            showLogo(decodeURIComponent(logoUrl));
+        } else if (logoId) {
+            showLogo(`https://drive.google.com/uc?export=view&id=${decodeURIComponent(logoId)}`);
+        } else {
+            const savedLogo = localStorage.getItem('invoice_logo');
+            if (savedLogo) showLogo(savedLogo);
         }
 
         if (loaiPhieu && loaiPhieu.trim() !== '') {
