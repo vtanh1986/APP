@@ -179,12 +179,15 @@
         function autoSizeStk() {
             var stkEl = document.getElementById('stk');
             if (!stkEl || stkEl.style.display === 'none') return;
-            var maxSize = 14, minSize = 7;
+            // Lay chieu rong thuc cua container cha
+            var parent = stkEl.parentElement;
+            var availW = parent ? parent.clientWidth : stkEl.offsetWidth;
+            var maxSize = 14, minSize = 6;
             stkEl.style.fontSize = maxSize + 'px';
-            // dung offsetParent de dam bao element da duoc render
-            for (var i = 0; i < 100; i++) {
-                if (stkEl.scrollWidth <= stkEl.offsetWidth) break;
-                maxSize -= 0.5;
+            stkEl.style.whiteSpace = 'nowrap';
+            for (var i = 0; i < 160; i++) {
+                if (stkEl.scrollWidth <= availW) break;
+                maxSize -= 0.25;
                 if (maxSize < minSize) { maxSize = minSize; break; }
                 stkEl.style.fontSize = maxSize + 'px';
             }
