@@ -94,7 +94,7 @@
                 <h1 id="tenShop">QUÁN CAFE ABC</h1>
                 <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
                 <p id="dienThoai">ĐT: 0123 456 789</p>
-                <p id="stk" style="display:none;color:#666;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:clip;"></p>
+                <p id="stk" style="display:none;color:#666;white-space:nowrap;overflow:hidden;"></p>
             </div>
         </div>
 
@@ -273,7 +273,18 @@
         if (thoiGian)   document.getElementById('thoiGian').textContent   = decodeURIComponent(thoiGian);
         if (ban)        document.getElementById('ban').textContent        = decodeURIComponent(ban);
         if (dienThoai)  document.getElementById('dienThoai').textContent  = `ĐT: ${decodeURIComponent(dienThoai)}`;
-        if (stk) { var stkEl = document.getElementById('stk'); stkEl.textContent = decodeURIComponent(stk); stkEl.style.display = 'block'; }
+        if (stk) {
+            var stkEl = document.getElementById('stk');
+            stkEl.textContent = decodeURIComponent(stk);
+            stkEl.style.display = 'block';
+            // Tu dong co chu vua khit 1 dong
+            var maxSize = 14, minSize = 8;
+            stkEl.style.fontSize = maxSize + 'px';
+            while (stkEl.scrollWidth > stkEl.offsetWidth && maxSize > minSize) {
+                maxSize -= 0.5;
+                stkEl.style.fontSize = maxSize + 'px';
+            }
+        }
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
 
         if (logoUrl) {
