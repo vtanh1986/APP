@@ -176,22 +176,31 @@
                 setTimeout(() => { document.getElementById('printStatus').style.display = 'none'; }, 2000);
             }, 500);
         }
-
         async function saveAsJpg() {
             const btn = document.getElementById('saveJpgBtn');
             btn.disabled = true;
             btn.innerHTML = '<span>⏳</span><span>Đang tạo ảnh...</span>';
 
+            // Backup src goc de restore sau
+            const qrcodeImg = document.getElementById('qrcodeImage');
+            const logoImg   = document.getElementById('logoImage');
+            const qrSrcOrig   = qrcodeImg.src;
+            const logoSrcOrig = logoImg.src;
+
             try {
+                // An QR truoc khi chup
+                const qrSection = document.getElementById('qrcodeSection');
+                const qrWasHidden = qrSection.style.display === 'none';
+                qrSection.style.display = 'none';
+
                 const invoice = document.getElementById('invoiceContent');
 
                 const canvas = await html2canvas(invoice, {
-                    scale: 2,               // độ phân giải x2 cho nét hơn
-                    useCORS: true,          // cho phép ảnh từ domain khác (QR, logo)
-                    allowTaint: false,
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
                     backgroundColor: '#ffffff',
                     logging: false,
-                    // chụp đúng kích thước thực của hóa đơn
                     width: invoice.offsetWidth,
                     height: invoice.offsetHeight,
                     windowWidth: invoice.offsetWidth,
@@ -217,8 +226,12 @@
                 alert('Không thể tạo ảnh: ' + err.message);
                 console.error(err);
             } finally {
+                // Hien lai QR neu truoc do dang hien
+                if (!qrWasHidden) document.getElementById('qrcodeSection').style.display = '';
+                if (qrSrcOrig)   qrcodeImg.src = qrSrcOrig;
+                if (logoSrcOrig) logoImg.src   = logoSrcOrig;
                 btn.disabled = false;
-                btn.innerHTML = '<span>🖼️</span><span>Lưu ảnh JPG</span>';
+                btn.innerHTML = '<span>&#x1F5BC;</span><span>Lưu ảnh JPG</span>';
             }
         }
 
