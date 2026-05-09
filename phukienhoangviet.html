@@ -176,6 +176,20 @@
                 setTimeout(() => { document.getElementById('printStatus').style.display = 'none'; }, 2000);
             }, 500);
         }
+        function autoSizeStk() {
+            var stkEl = document.getElementById('stk');
+            if (!stkEl || stkEl.style.display === 'none') return;
+            var maxSize = 14, minSize = 7;
+            stkEl.style.fontSize = maxSize + 'px';
+            // dung offsetParent de dam bao element da duoc render
+            for (var i = 0; i < 100; i++) {
+                if (stkEl.scrollWidth <= stkEl.offsetWidth) break;
+                maxSize -= 0.5;
+                if (maxSize < minSize) { maxSize = minSize; break; }
+                stkEl.style.fontSize = maxSize + 'px';
+            }
+        }
+
         async function saveAsJpg() {
             const btn = document.getElementById('saveJpgBtn');
             btn.disabled = true;
@@ -192,6 +206,7 @@
                 const qrSection = document.getElementById('qrcodeSection');
                 const qrPrevDisplay = qrSection.style.display;
                 qrSection.style.display = 'none';
+                autoSizeStk();
                 await new Promise(r => setTimeout(r, 100));
 
                 const invoice = document.getElementById('invoiceContent');
@@ -277,13 +292,7 @@
             var stkEl = document.getElementById('stk');
             stkEl.textContent = decodeURIComponent(stk);
             stkEl.style.display = 'block';
-            // Tu dong co chu vua khit 1 dong
-            var maxSize = 14, minSize = 8;
-            stkEl.style.fontSize = maxSize + 'px';
-            while (stkEl.scrollWidth > stkEl.offsetWidth && maxSize > minSize) {
-                maxSize -= 0.5;
-                stkEl.style.fontSize = maxSize + 'px';
-            }
+            autoSizeStk();
         }
         if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
 
