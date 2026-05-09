@@ -151,8 +151,16 @@
     <script>
 
         function showLogo(src) {
-            document.getElementById('logoImage').src = src;
-            document.getElementById('headerLogo').style.display = 'flex';
+            var img = document.getElementById('logoImage');
+            var wrap = document.getElementById('headerLogo');
+            img.onerror = function() {
+                console.warn('Logo load failed:', src);
+                wrap.style.display = 'none';
+            };
+            img.onload = function() {
+                wrap.style.display = 'flex';
+            };
+            img.src = src;
         }
 
         function printInvoice() {
@@ -249,7 +257,9 @@
         if (logoUrl) {
             showLogo(decodeURIComponent(logoUrl));
         } else if (logoId) {
-            showLogo(`https://drive.google.com/uc?export=view&id=${decodeURIComponent(logoId)}`);
+            var id = decodeURIComponent(logoId);
+            // Thu lan luot cac URL Google Drive con hoat dong
+            showLogo('https://lh3.googleusercontent.com/d/' + id + '=s0');
         }
 
         if (loaiPhieu && loaiPhieu.trim() !== '') {
