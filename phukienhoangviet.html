@@ -188,10 +188,11 @@
             const logoSrcOrig = logoImg.src;
 
             try {
-                // An QR truoc khi chup
+                // An QR truoc khi chup, doi browser re-render
                 const qrSection = document.getElementById('qrcodeSection');
-                const qrWasHidden = qrSection.style.display === 'none';
+                const qrPrevDisplay = qrSection.style.display;
                 qrSection.style.display = 'none';
+                await new Promise(r => setTimeout(r, 100));
 
                 const invoice = document.getElementById('invoiceContent');
 
@@ -227,7 +228,7 @@
                 console.error(err);
             } finally {
                 // Hien lai QR neu truoc do dang hien
-                if (!qrWasHidden) document.getElementById('qrcodeSection').style.display = '';
+                document.getElementById('qrcodeSection').style.display = qrPrevDisplay;
                 if (qrSrcOrig)   qrcodeImg.src = qrSrcOrig;
                 if (logoSrcOrig) logoImg.src   = logoSrcOrig;
                 btn.disabled = false;
