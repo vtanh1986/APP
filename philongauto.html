@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phiếu Dịch Vụ Kiểm Bảo Hành - Phi Long Auto</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --blue: #1a3a8f;
+    --yellow: #f5c500;
+    --yellow-light: #fffbe6;
+    --red: #d32f2f;
+    --border: #bbb;
+    --text: #1a1a1a;
+    --gray: #555;
+    --bg: #fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    background: #e8eaf0;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .page-wrapper {
+    max-width: 210mm;
+    margin: 0 auto;
+    background: #fff;
+    padding: 10mm 10mm 8mm 10mm;
+    min-height: 297mm;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-bottom: 3px solid var(--blue);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+
+  .logo-block {
+    flex: 0 0 auto;
+    min-width: 155px;
+  }
+
+  .logo-main {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--blue);
+    letter-spacing: -1px;
+    line-height: 1;
+    font-style: italic;
+  }
+
+  .logo-main .phi { color: var(--blue); }
+  .logo-main .long { color: var(--blue); }
+
+  .logo-sub {
+    background: var(--blue);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-top: 2px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+  }
+
+  .logo-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .logo-tag span {
+    background: var(--red);
+    color: #fff;
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .logo-tag .auto {
+    background: var(--yellow);
+    color: var(--blue);
+    font-style: italic;
+  }
+
+  .company-info {
+    flex: 1;
+    text-align: center;
+    padding-top: 2px;
+  }
+
+  .company-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--blue);
+    font-style: italic;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+
+  .company-contact {
+    font-size: 10.5px;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+
+  .company-contact strong {
+    color: var(--blue);
+    font-weight: 700;
+  }
+
+  /* ===== META INFO ===== */
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    border: 1.5px solid var(--border);
+    margin-bottom: 6px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .doc-title {
+    flex: 1;
+    background: var(--yellow-light);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--blue);
+    text-align: center;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.3px;
+    border-right: 1.5px solid var(--border);
+  }
+
+  .meta-fields {
+    flex: 0 0 auto;
+    min-width: 180px;
+  }
+
+  .meta-field {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .meta-field:last-child { border-bottom: none; }
+
+  .meta-label {
+    font-size: 10px;
+    color: var(--gray);
+    padding: 4px 8px;
+    border-right: 1px solid var(--border);
+    min-width: 80px;
+    background: #f5f6fa;
+  }
+
+  .meta-value {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--blue);
+    padding: 4px 8px;
+    flex: 1;
+  }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    background: var(--blue);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    margin-bottom: 0;
+    letter-spacing: 0.3px;
+  }
+
+  /* ===== CUSTOMER INFO TABLE ===== */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5px solid var(--border);
+    margin-bottom: 6px;
+    font-size: 11.5px;
+  }
+
+  .info-table td {
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+  }
+
+  .info-table .label {
+    background: #f5f6fa;
+    color: var(--gray);
+    font-size: 10.5px;
+    white-space: nowrap;
+    width: 90px;
+  }
+
+  .info-table .value {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ===== VEHICLE INFO ===== */
+  .vehicle-section {
+    margin-bottom: 6px;
+  }
+
+  .vehicle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--blue);
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .vehicle-header .km-note {
+    font-size: 9.5px;
+    font-weight: 400;
+    font-style: italic;
+    opacity: 0.85;
+  }
+
+  .vehicle-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5px solid var(--border);
+    border-top: none;
+    font-size: 11.5px;
+  }
+
+  .vehicle-table td {
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+  }
+
+  .vehicle-table .label {
+    background: #f5f6fa;
+    color: var(--gray);
+    font-size: 10.5px;
+    white-space: nowrap;
+    width: 110px;
+  }
+
+  .yc-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    padding: 4px 8px;
+    background: #f5f6fa;
+    border: 1.5px solid var(--border);
+    border-top: none;
+  }
+
+  /* ===== SERVICES TABLE ===== */
+  .services-wrapper {
+    border: 1.5px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .services-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+
+  .services-table th {
+    background: var(--yellow);
+    color: var(--blue);
+    font-weight: 700;
+    padding: 5px 4px;
+    border: 1px solid #e0b800;
+    text-align: center;
+    font-size: 10.5px;
+    line-height: 1.3;
+    vertical-align: middle;
+  }
+
+  .services-table td {
+    border: 1px solid var(--border);
+    padding: 4px 5px;
+    vertical-align: middle;
+  }
+
+  .services-table .col-no { text-align: center; width: 28px; }
+  .services-table .col-content { text-align: left; }
+  .services-table .col-dvt { text-align: center; width: 38px; }
+  .services-table .col-sl { text-align: center; width: 28px; }
+  .services-table .col-price { text-align: right; width: 72px; }
+  .services-table .col-pct { text-align: center; width: 28px; }
+  .services-table .col-after { text-align: right; width: 80px; }
+  .services-table .col-total { text-align: right; width: 80px; }
+  .services-table .col-tax { text-align: center; width: 32px; }
+
+  .services-table .sub-header td {
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  .services-table .row-alt { background: #fafbff; }
+
+  .services-table .row-total td {
+    background: var(--yellow-light);
+    font-weight: 700;
+    color: var(--blue);
+  }
+
+  /* ===== BOTTOM SECTION ===== */
+  .bottom-section {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .warranty-box {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    padding: 8px;
+    font-size: 10px;
+    color: var(--gray);
+    line-height: 1.6;
+    border-radius: 2px;
+  }
+
+  .warranty-box p { margin-bottom: 4px; }
+
+  .sum-box {
+    min-width: 195px;
+    border: 1.5px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .sum-row {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+  }
+
+  .sum-row:last-child { border-bottom: none; }
+
+  .sum-label {
+    flex: 1;
+    padding: 5px 8px;
+    color: var(--gray);
+    background: #f5f6fa;
+    border-right: 1px solid var(--border);
+    font-size: 10.5px;
+  }
+
+  .sum-value {
+    min-width: 90px;
+    padding: 5px 8px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .sum-row.grand {
+    background: var(--yellow);
+  }
+
+  .sum-row.grand .sum-label {
+    color: var(--blue);
+    font-weight: 700;
+    background: var(--yellow);
+    border-right-color: #e0b800;
+  }
+
+  .sum-row.grand .sum-value {
+    color: var(--blue);
+    font-size: 13px;
+  }
+
+  /* ===== AMOUNT IN WORDS ===== */
+  .amount-words {
+    border: 1.5px solid var(--border);
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    background: var(--yellow-light);
+    border-radius: 2px;
+  }
+
+  .amount-words span {
+    font-weight: 700;
+    color: var(--blue);
+  }
+
+  /* ===== SIGNATURES ===== */
+  .sig-section {
+    border-top: 2px solid var(--border);
+    padding-top: 8px;
+  }
+
+  .sig-date {
+    text-align: right;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--gray);
+    margin-bottom: 10px;
+  }
+
+  .sig-row {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    gap: 10px;
+  }
+
+  .sig-block {
+    flex: 1;
+    font-size: 11px;
+  }
+
+  .sig-title {
+    font-weight: 700;
+    color: var(--blue);
+    font-size: 11px;
+    margin-bottom: 40px;
+  }
+
+  .sig-name {
+    font-weight: 700;
+    color: var(--red);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+    margin-top: 2px;
+  }
+
+  /* ===== PRINT STYLES ===== */
+  @media print {
+    body { background: #fff; }
+    .page-wrapper {
+      margin: 0;
+      padding: 8mm;
+      box-shadow: none;
+      max-width: 100%;
+      min-height: auto;
+    }
+    @page {
+      size: A4;
+      margin: 5mm;
+    }
+  }
+
+  /* ===== RESPONSIVE MOBILE ===== */
+  @media (max-width: 600px) {
+    body { background: #fff; font-size: 11px; }
+
+    .page-wrapper {
+      padding: 10px;
+      box-shadow: none;
+    }
+
+    .header { flex-direction: column; gap: 6px; }
+    .company-title { font-size: 14px; }
+    .logo-main { font-size: 24px; }
+
+    .meta-row { flex-direction: column; }
+    .doc-title { font-size: 12px; padding: 8px; border-right: none; border-bottom: 1.5px solid var(--border); }
+    .meta-fields { min-width: unset; }
+
+    .bottom-section { flex-direction: column; }
+    .sum-box { min-width: unset; }
+
+    .sig-row { flex-direction: column; gap: 16px; }
+
+    .services-table { font-size: 9.5px; }
+    .services-table th, .services-table td { padding: 3px 3px; }
+
+    .col-price, .col-after, .col-total { width: auto; }
+    .col-dvt, .col-sl, .col-pct, .col-tax { display: none; }
+
+    .info-table td, .vehicle-table td { padding: 3px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-main">PHI LONG</div>
+      <div class="logo-sub">LỐP XE + BẢO DƯỠNG NHANH</div>
+      <div class="logo-tag">
+        <span class="auto">AUTO.COM</span>
+      </div>
+    </div>
+    <div class="company-info">
+      <div class="company-title">CUNG CẤP GIẢI PHÁP Ô TÔ TOÀN DIỆN</div>
+      <div class="company-contact">
+        www.philongauto.com &nbsp;|&nbsp; Lốp + Bảo Dưỡng Nhanh - Phụ Kiện ô tô<br>
+        Hotline: <strong>02716 267 777</strong> – <strong>0975 76 77 78</strong> &nbsp;|&nbsp; <strong>Philongtires@gmail.com</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- META ROW -->
+  <div class="meta-row">
+    <div class="doc-title">PHIẾU DỊCH VỤ KIỂM BẢO HÀNH</div>
+    <div class="meta-fields">
+      <div class="meta-field">
+        <div class="meta-label">NVKD</div>
+        <div class="meta-value">PHẠM THỊ NGỌC TRÂM</div>
+      </div>
+      <div class="meta-field">
+        <div class="meta-label">Ngày báo giá</div>
+        <div class="meta-value">04/05/2026</div>
+      </div>
+      <div class="meta-field">
+        <div class="meta-label">Số điện thoại</div>
+        <div class="meta-value">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER INFO -->
+  <div class="section-header">A &nbsp; THÔNG TIN KHÁCH HÀNG</div>
+  <table class="info-table">
+    <tr>
+      <td class="label">Khách hàng (*)</td>
+      <td class="value"></td>
+      <td class="label">Điện Thoại</td>
+      <td class="value"></td>
+    </tr>
+    <tr>
+      <td class="label">Công ty</td>
+      <td class="value"></td>
+      <td class="label">MST/CCCD</td>
+      <td class="value"></td>
+    </tr>
+    <tr>
+      <td class="label">Địa chỉ</td>
+      <td class="value" colspan="3"></td>
+    </tr>
+  </table>
+
+  <!-- VEHICLE INFO -->
+  <div class="vehicle-section">
+    <div class="vehicle-header">
+      <span>B &nbsp; THÔNG TIN XE</span>
+      <span class="km-note">Thời gian / Kilomet bảo dưỡng lần trước</span>
+    </div>
+    <table class="vehicle-table">
+      <tr>
+        <td class="label">Biển số</td>
+        <td class="value">93A44326</td>
+        <td class="label">Hãng xe</td>
+        <td class="value"></td>
+        <td class="label">Năm SX</td>
+        <td class="value"></td>
+      </tr>
+      <tr>
+        <td class="label">Loại xe</td>
+        <td class="value"></td>
+        <td class="label">Màu Xe</td>
+        <td class="value"></td>
+        <td class="label">Số vin/khung</td>
+        <td class="value"></td>
+      </tr>
+      <tr>
+        <td class="label">Kilomet vào xưởng</td>
+        <td class="value">48201</td>
+        <td class="label">Thời gian KH tới</td>
+        <td class="value"></td>
+        <td class="label">Dự kiến giao xe</td>
+        <td class="value"></td>
+      </tr>
+      <tr>
+        <td class="label">Hạn đăng kiểm</td>
+        <td class="value"></td>
+        <td class="label">Dự kiến bắt đầu</td>
+        <td class="value"></td>
+        <td class="label">Dự kiến kết thúc</td>
+        <td class="value"></td>
+      </tr>
+    </table>
+    <div class="yc-label">Yêu cầu khách hàng</div>
+  </div>
+
+  <!-- SERVICES TABLE -->
+  <div class="services-wrapper">
+    <table class="services-table">
+      <thead>
+        <tr>
+          <th class="col-no" rowspan="2">No</th>
+          <th class="col-content" rowspan="2">Nội Dung</th>
+          <th class="col-dvt" rowspan="2">ĐVT</th>
+          <th class="col-sl" rowspan="2">SL</th>
+          <th class="col-price" rowspan="2">Đơn giá</th>
+          <th colspan="2">Giảm giá</th>
+          <th class="col-total" rowspan="2">Thành tiền</th>
+          <th class="col-tax" rowspan="2">%<br>Thuế</th>
+        </tr>
+        <tr>
+          <th class="col-pct">%</th>
+          <th class="col-after">Đơn Giá Sau Giảm</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Sub header A -->
+        <tr class="sub-header">
+          <td class="col-no">A</td>
+          <td colspan="8">Thay thế ( Replace ) : Vật Tư/ Phụ Tùng</td>
+        </tr>
+        <!-- Item 1 -->
+        <tr>
+          <td class="col-no">1</td>
+          <td class="col-content">Nhớt Total Q7000 FutureGF-5 5W30 (1B4L)</td>
+          <td class="col-dvt">-</td>
+          <td class="col-sl">4</td>
+          <td class="col-price">150,000</td>
+          <td class="col-pct">-</td>
+          <td class="col-after">150,000</td>
+          <td class="col-total">525,000</td>
+          <td class="col-tax">-</td>
+        </tr>
+        <!-- Item 2 -->
+        <tr class="row-alt">
+          <td class="col-no">2</td>
+          <td class="col-content">Lọc nhớt sắt Toyota - Toyota Camry, Vios, Altis, Yaris,</td>
+          <td class="col-dvt">-</td>
+          <td class="col-sl">1</td>
+          <td class="col-price">120,000</td>
+          <td class="col-pct">-</td>
+          <td class="col-after">120,000</td>
+          <td class="col-total">120,000</td>
+          <td class="col-tax">-</td>
+        </tr>
+        <!-- Item 3 -->
+        <tr>
+          <td class="col-no">3</td>
+          <td class="col-content">Lọc gió động cơ - Toyota Veloz(2022-2023), Toyota</td>
+          <td class="col-dvt">-</td>
+          <td class="col-sl">1</td>
+          <td class="col-price">280,000</td>
+          <td class="col-pct">-</td>
+          <td class="col-after">280,000</td>
+          <td class="col-total">280,000</td>
+          <td class="col-tax">-</td>
+        </tr>
+        <!-- Item 5 -->
+        <tr class="row-alt">
+          <td class="col-no">5</td>
+          <td class="col-content">Lọc gió máy lạnh Toyota 0N010 - fortuner, vios, inova,</td>
+          <td class="col-dvt">Cái</td>
+          <td class="col-sl">1</td>
+          <td class="col-price">190,000</td>
+          <td class="col-pct">-</td>
+          <td class="col-after">190,000</td>
+          <td class="col-total">190,000</td>
+          <td class="col-tax">-</td>
+        </tr>
+        <!-- Sub header B -->
+        <tr class="sub-header">
+          <td class="col-no">B</td>
+          <td colspan="8">Vệ sinh hoặc căn chỉnh (Adjust)</td>
+        </tr>
+        <tr>
+          <td class="col-no"></td>
+          <td colspan="8"></td>
+        </tr>
+        <!-- Sub header C -->
+        <tr class="sub-header">
+          <td class="col-no">C</td>
+          <td colspan="8">Kiểm tra và xử lí theo tình trạng (Inspection)</td>
+        </tr>
+        <tr>
+          <td class="col-no"></td>
+          <td colspan="8"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BOTTOM: WARRANTY + TOTALS -->
+  <div class="bottom-section">
+    <div class="warranty-box">
+      <p><strong>Bảo hành:</strong></p>
+      <p>+ Phụ tùng thay thế mới bảo hành 06 tháng hoặc 6.000km tùy theo điều kiện nào đến trước.</p>
+      <p>+ Không bảo hành đối với các trường hợp hư hỏng do tác động bên ngoài hoặc các chi tiết hao mòn trong quá trình sử dụng.</p>
+      <p>2. Phụ thu 25% giá trị tiền đối với vật tư - phụ tùng quý khách mang đến.</p>
+      <p>3. Những phát sinh (nếu có) sẽ thông báo sau khi kiểm tra cụ thể. Sản phẩm sẽ được Công ty tiếp nhận và trả kết quả bảo hành trong vòng 14-30 ngày ( trừ ngày lễ và thứ 7 - CN ) theo chính sách của hãng.</p>
+    </div>
+    <div class="sum-box">
+      <div class="sum-row">
+        <div class="sum-label">Tổng Cộng</div>
+        <div class="sum-value">1,115,000</div>
+      </div>
+      <div class="sum-row">
+        <div class="sum-label">Tổng chiết khấu</div>
+        <div class="sum-value">-</div>
+      </div>
+      <div class="sum-row">
+        <div class="sum-label">Nợ cũ</div>
+        <div class="sum-value"></div>
+      </div>
+      <div class="sum-row">
+        <div class="sum-label">Đã thanh toán</div>
+        <div class="sum-value"></div>
+      </div>
+      <div class="sum-row">
+        <div class="sum-label">Thuế VAT</div>
+        <div class="sum-value">-</div>
+      </div>
+      <div class="sum-row grand">
+        <div class="sum-label">Thanh toán</div>
+        <div class="sum-value">1,115,000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AMOUNT IN WORDS -->
+  <div class="amount-words">
+    Số Tiền Bằng Chữ: <span>Một triệu một trăm mười lăm nghìn đồng chẵn</span>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div class="sig-section">
+    <div class="sig-date">Ngày 04 tháng 05 năm 2026</div>
+    <div class="sig-row">
+      <div class="sig-block">
+        <div class="sig-title">Khách Hàng</div>
+        <div class="sig-name">&nbsp;</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-title">Kỹ Thuật Viên</div>
+        <div class="sig-name">PHẠM KIM PHƯƠNG</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-title">Cố Vấn Dịch Vụ / PKD</div>
+        <div class="sig-name">PHẠM THỊ NGỌC TRÂM</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
