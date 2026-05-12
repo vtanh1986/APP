@@ -113,24 +113,79 @@
 
   /* PRINT */
   @media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
-    body { background: #fff; }
-    .page-wrapper { margin: 0; padding: 8mm; box-shadow: none; max-width: 100%; min-height: auto; }
-    @page { size: A4; margin: 5mm; }
-    .section-header,
-    .vehicle-header,
-    .sub-header td { background-color: #1a3a8f !important; color: #fff !important; }
+    /* ── Bắt buộc giữ màu nền + màu chữ khi in ── */
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+
+    @page { size: A4 portrait; margin: 8mm; }
+
+    html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+
+    .page-wrapper {
+      margin: 0 !important;
+      padding: 4mm !important;
+      box-shadow: none !important;
+      max-width: 100% !important;
+      min-height: auto !important;
+      width: 100% !important;
+    }
+
+    /* ── Giữ flex layout ── */
+    .header            { display: flex !important; }
+    .meta-row          { display: flex !important; }
+    .bottom-section    { display: flex !important; }
+    .sig-row           { display: flex !important; }
+    .meta-field        { display: flex !important; }
+    .sum-row           { display: flex !important; }
+    .logo-tag          { display: flex !important; }
+
+    /* ── Màu nền header xanh navy ── */
+    .section-header    { background-color: #1a3a8f !important; color: #fff !important; }
+    .vehicle-header    { background-color: #1a3a8f !important; color: #fff !important; }
+    .vehicle-header .km-note { color: #fff !important; }
+    .sub-header td     { background-color: #1a3a8f !important; color: #fff !important; }
+
+    /* ── Màu nền vàng ── */
     .services-table th { background-color: #f5c500 !important; color: #1a3a8f !important; }
-    .sum-row.grand { background-color: #f5c500 !important; }
-    .sum-row.grand .sum-label { background-color: #f5c500 !important; color: #1a3a8f !important; }
-    .info-table .lbl,
-    .vehicle-table .lbl,
-    .meta-label,
-    .sum-label,
-    .yc-label { background-color: #f5f6fa !important; }
-    .amount-words { background-color: #fffbe6 !important; }
-    .doc-title { background-color: #fffbe6 !important; }
-    .row-alt { background-color: #fafbff !important; }
+    .sum-row.grand     { background-color: #f5c500 !important; }
+    .sum-row.grand .sum-label { background-color: #f5c500 !important; color: #1a3a8f !important; border-right-color: #e0b800 !important; }
+    .sum-row.grand .sum-value { color: #1a3a8f !important; }
+
+    /* ── Màu nền ô nhãn xám nhạt ── */
+    .info-table .lbl   { background-color: #f5f6fa !important; }
+    .vehicle-table .lbl{ background-color: #f5f6fa !important; }
+    .meta-label        { background-color: #f5f6fa !important; }
+    .sum-label         { background-color: #f5f6fa !important; }
+    .yc-label          { background-color: #f5f6fa !important; }
+
+    /* ── Màu nền vàng nhạt ── */
+    .amount-words      { background-color: #fffbe6 !important; }
+    .doc-title         { background-color: #fffbe6 !important; }
+
+    /* ── Màu xen kẽ dòng ── */
+    .row-alt           { background-color: #fafbff !important; }
+
+    /* ── Giữ màu chữ xanh navy & đỏ ── */
+    .meta-value        { color: #1a3a8f !important; }
+    .company-title     { color: #1a3a8f !important; }
+    .doc-title         { color: #1a3a8f !important; }
+    .sig-title         { color: #1a3a8f !important; }
+    .sig-name          { color: #d32f2f !important; }
+    .amount-words span { color: #1a3a8f !important; }
+
+    /* ── Viền ── */
+    .meta-row, .info-table, .vehicle-table,
+    .services-wrapper, .sum-box,
+    .amount-words, .warranty-box { border-color: #bbb !important; }
+
+    /* ── Không ngắt trang giữa các phần quan trọng ── */
+    .header, .meta-row, .info-table,
+    .vehicle-section, .services-wrapper,
+    .bottom-section, .amount-words,
+    .sig-section { page-break-inside: avoid; }
   }
 
   /* MOBILE */
@@ -158,7 +213,7 @@
 <div class="page-wrapper">
 
   <!-- ── HEADER (cố định) ── -->
-  <div class="header">
+  <div class="header" style="display:flex;align-items:flex-start;gap:10px;border-bottom:3px solid #1a3a8f;padding-bottom:8px;margin-bottom:8px;">
     <div class="logo-block" id="logo-block">
       <!-- Sẽ được điền bằng JS: ảnh từ param logo= hoặc SVG mặc định -->
     </div>
@@ -172,7 +227,7 @@
   </div>
 
   <!-- ── META: nvkd | ngay | sdt ── -->
-  <div class="meta-row">
+  <div class="meta-row" style="display:flex;justify-content:space-between;align-items:stretch;border:1.5px solid #bbb;margin-bottom:6px;border-radius:2px;overflow:hidden;">
     <div class="doc-title">PHIẾU DỊCH VỤ KIỂM BẢO HÀNH</div>
     <div class="meta-fields">
       <div class="meta-field">
@@ -261,21 +316,21 @@
   </div>
 
   <!-- ── TỔNG TIỀN ── -->
-  <div class="bottom-section">
-    <div class="warranty-box">
+  <div class="bottom-section" style="display:flex;gap:8px;margin-bottom:6px;">
+    <div class="warranty-box" style="flex:1;">
       <p><strong>Bảo hành:</strong></p>
       <p>+ Phụ tùng thay thế mới bảo hành 06 tháng hoặc 6.000km tùy theo điều kiện nào đến trước.</p>
       <p>+ Không bảo hành đối với các trường hợp hư hỏng do tác động bên ngoài hoặc các chi tiết hao mòn trong quá trình sử dụng.</p>
       <p>2. Phụ thu 25% giá trị tiền đối với vật tư - phụ tùng quý khách mang đến.</p>
       <p>3. Những phát sinh (nếu có) sẽ thông báo sau khi kiểm tra cụ thể. Sản phẩm sẽ được Công ty tiếp nhận và trả kết quả bảo hành trong vòng 14-30 ngày (trừ ngày lễ và thứ 7 - CN) theo chính sách của hãng.</p>
     </div>
-    <div class="sum-box">
-      <div class="sum-row"><div class="sum-label">Tổng Cộng</div><div class="sum-value" id="el-tongcong"></div></div>
-      <div class="sum-row"><div class="sum-label">Tổng chiết khấu</div><div class="sum-value" id="el-ck"></div></div>
-      <div class="sum-row"><div class="sum-label">Nợ cũ</div><div class="sum-value" id="el-nocu"></div></div>
-      <div class="sum-row"><div class="sum-label">Đã thanh toán</div><div class="sum-value" id="el-datt"></div></div>
-      <div class="sum-row"><div class="sum-label">Thuế VAT</div><div class="sum-value" id="el-vat"></div></div>
-      <div class="sum-row grand"><div class="sum-label">Thanh toán</div><div class="sum-value" id="el-thanhtoan"></div></div>
+    <div class="sum-box" style="min-width:210px;">
+      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Tổng Cộng</div><div class="sum-value" id="el-tongcong" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
+      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Tổng chiết khấu</div><div class="sum-value" id="el-ck" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
+      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Nợ cũ</div><div class="sum-value" id="el-nocu" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
+      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Đã thanh toán</div><div class="sum-value" id="el-datt" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
+      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Thuế VAT</div><div class="sum-value" id="el-vat" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
+      <div class="sum-row grand" style="display:flex;background:#f5c500;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5c500;border-right:1px solid #e0b800;font-size:10.5px;font-weight:700;color:#1a3a8f;">Thanh toán</div><div class="sum-value" id="el-thanhtoan" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;color:#1a3a8f;font-size:13px;"></div></div>
     </div>
   </div>
 
@@ -284,7 +339,7 @@
   <!-- ── CHỮ KÝ ── -->
   <div class="sig-section">
     <div class="sig-date" id="el-ngayky"></div>
-    <div class="sig-row">
+    <div class="sig-row" style="display:flex;justify-content:space-between;text-align:center;gap:10px;">
       <div class="sig-block">
         <div class="sig-title">Khách Hàng</div>
         <div class="sig-name">&nbsp;</div>
@@ -549,9 +604,11 @@ function docSoTienBangChu(n) {
     var tr = document.createElement('tr');
     if (altCount % 2 === 1) tr.className = 'row-alt';
     altCount++;
+    /* Lọc ký tự | hoặc # thừa đầu cột nội dung (phòng trường hợp dữ liệu bị dính) */
+    var content = (cols[0] || '').replace(/^[|#]+/, '').trim();
     tr.innerHTML =
       '<td class="col-no">'      + itemNo                + '</td>' +
-      '<td class="col-content">' + esc(cols[0] || '')    + '</td>' +
+      '<td class="col-content">' + esc(content)          + '</td>' +
       '<td class="col-dvt">'     + esc(cols[1] || '-')   + '</td>' +
       '<td class="col-sl">'      + esc(cols[2] || '')    + '</td>' +
       '<td class="col-price">'   + fmtNum(cols[3] || '') + '</td>' +
