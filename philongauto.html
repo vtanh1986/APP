@@ -15,7 +15,6 @@
     --border: #bbb;
     --text: #1a1a1a;
     --gray: #555;
-    --bg: #fff;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,479 +36,121 @@
     box-shadow: 0 4px 32px rgba(0,0,0,0.13);
   }
 
-  /* ===== HEADER ===== */
-  .header {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    border-bottom: 3px solid var(--blue);
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-  }
+  /* HEADER */
+  .header { display: flex; align-items: flex-start; gap: 10px; border-bottom: 3px solid var(--blue); padding-bottom: 8px; margin-bottom: 8px; }
+  .logo-block { flex: 0 0 auto; min-width: 155px; }
+  .logo-main { font-size: 32px; font-weight: 800; color: var(--blue); letter-spacing: -1px; line-height: 1; font-style: italic; }
+  .logo-sub { background: var(--blue); color: #fff; font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 2px; margin-top: 2px; display: inline-block; letter-spacing: 0.5px; }
+  .logo-tag { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+  .logo-tag span { background: var(--yellow); color: var(--blue); font-size: 8.5px; font-weight: 700; padding: 2px 6px; border-radius: 2px; font-style: italic; }
+  .company-info { flex: 1; text-align: center; padding-top: 2px; }
+  .company-title { font-size: 20px; font-weight: 800; color: var(--blue); font-style: italic; letter-spacing: 0.5px; line-height: 1.2; }
+  .company-contact { font-size: 10.5px; color: var(--gray); margin-top: 4px; }
+  .company-contact strong { color: var(--blue); font-weight: 700; }
 
-  .logo-block {
-    flex: 0 0 auto;
-    min-width: 155px;
-  }
-
-  .logo-main {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--blue);
-    letter-spacing: -1px;
-    line-height: 1;
-    font-style: italic;
-  }
-
-  .logo-main .phi { color: var(--blue); }
-  .logo-main .long { color: var(--blue); }
-
-  .logo-sub {
-    background: var(--blue);
-    color: #fff;
-    font-size: 9.5px;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 2px;
-    margin-top: 2px;
-    display: inline-block;
-    letter-spacing: 0.5px;
-  }
-
-  .logo-tag {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
-  }
-
-  .logo-tag span {
-    background: var(--red);
-    color: #fff;
-    font-size: 8.5px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 2px;
-  }
-
-  .logo-tag .auto {
-    background: var(--yellow);
-    color: var(--blue);
-    font-style: italic;
-  }
-
-  .company-info {
-    flex: 1;
-    text-align: center;
-    padding-top: 2px;
-  }
-
-  .company-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--blue);
-    font-style: italic;
-    letter-spacing: 0.5px;
-    line-height: 1.2;
-  }
-
-  .company-contact {
-    font-size: 10.5px;
-    color: var(--gray);
-    margin-top: 4px;
-  }
-
-  .company-contact strong {
-    color: var(--blue);
-    font-weight: 700;
-  }
-
-  /* ===== META INFO ===== */
-  .meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    border: 1.5px solid var(--border);
-    margin-bottom: 6px;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .doc-title {
-    flex: 1;
-    background: var(--yellow-light);
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--blue);
-    text-align: center;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0.3px;
-    border-right: 1.5px solid var(--border);
-  }
-
-  .meta-fields {
-    flex: 0 0 auto;
-    min-width: 180px;
-  }
-
-  .meta-field {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-  }
-
+  /* META */
+  .meta-row { display: flex; justify-content: space-between; align-items: stretch; border: 1.5px solid var(--border); margin-bottom: 6px; border-radius: 2px; overflow: hidden; }
+  .doc-title { flex: 1; background: var(--yellow-light); font-size: 15px; font-weight: 800; color: var(--blue); text-align: center; padding: 8px 12px; display: flex; align-items: center; justify-content: center; letter-spacing: 0.3px; border-right: 1.5px solid var(--border); }
+  .meta-fields { flex: 0 0 auto; min-width: 210px; }
+  .meta-field { display: flex; border-bottom: 1px solid var(--border); }
   .meta-field:last-child { border-bottom: none; }
+  .meta-label { font-size: 10px; color: var(--gray); padding: 4px 8px; border-right: 1px solid var(--border); min-width: 85px; background: #f5f6fa; }
+  .meta-value { font-size: 10.5px; font-weight: 700; color: var(--blue); padding: 4px 8px; flex: 1; }
 
-  .meta-label {
-    font-size: 10px;
-    color: var(--gray);
-    padding: 4px 8px;
-    border-right: 1px solid var(--border);
-    min-width: 80px;
-    background: #f5f6fa;
-  }
+  /* SECTION HEADER */
+  .section-header { background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; letter-spacing: 0.3px; }
 
-  .meta-value {
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--blue);
-    padding: 4px 8px;
-    flex: 1;
-  }
+  /* INFO TABLE */
+  .info-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); margin-bottom: 6px; font-size: 11.5px; }
+  .info-table td { border: 1px solid var(--border); padding: 4px 8px; }
+  .info-table .lbl { background: #f5f6fa; color: var(--gray); font-size: 10.5px; white-space: nowrap; width: 90px; }
 
-  /* ===== SECTION HEADERS ===== */
-  .section-header {
-    background: var(--blue);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 8px;
-    margin-bottom: 0;
-    letter-spacing: 0.3px;
-  }
+  /* VEHICLE */
+  .vehicle-section { margin-bottom: 6px; }
+  .vehicle-header { display: flex; align-items: center; justify-content: space-between; background: var(--blue); color: #fff; padding: 4px 8px; font-size: 11px; font-weight: 700; }
+  .vehicle-header .km-note { font-size: 9.5px; font-weight: 400; font-style: italic; opacity: 0.85; }
+  .vehicle-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); border-top: none; font-size: 11.5px; }
+  .vehicle-table td { border: 1px solid var(--border); padding: 4px 8px; }
+  .vehicle-table .lbl { background: #f5f6fa; color: var(--gray); font-size: 10.5px; white-space: nowrap; width: 110px; }
+  .yc-label { font-size: 11px; font-weight: 700; color: var(--blue); padding: 4px 8px; background: #f5f6fa; border: 1.5px solid var(--border); border-top: none; }
 
-  /* ===== CUSTOMER INFO TABLE ===== */
-  .info-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1.5px solid var(--border);
-    margin-bottom: 6px;
-    font-size: 11.5px;
-  }
+  /* SERVICES TABLE */
+  .services-wrapper { border: 1.5px solid var(--border); margin-bottom: 6px; }
+  .services-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .services-table th { background: var(--yellow); color: var(--blue); font-weight: 700; padding: 5px 4px; border: 1px solid #e0b800; text-align: center; font-size: 10.5px; line-height: 1.3; vertical-align: middle; }
+  .services-table td { border: 1px solid var(--border); padding: 4px 5px; vertical-align: middle; }
+  .col-no    { text-align: center; width: 28px; }
+  .col-dvt   { text-align: center; width: 40px; }
+  .col-sl    { text-align: center; width: 32px; }
+  .col-price { text-align: right;  width: 82px; }
+  .col-total { text-align: right;  width: 88px; }
+  .col-tax   { text-align: center; width: 32px; }
+  .col-content { text-align: left; }
+  .sub-header td { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 6px; }
+  .row-alt { background: #fafbff; }
 
-  .info-table td {
-    border: 1px solid var(--border);
-    padding: 4px 8px;
-  }
-
-  .info-table .label {
-    background: #f5f6fa;
-    color: var(--gray);
-    font-size: 10.5px;
-    white-space: nowrap;
-    width: 90px;
-  }
-
-  .info-table .value {
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  /* ===== VEHICLE INFO ===== */
-  .vehicle-section {
-    margin-bottom: 6px;
-  }
-
-  .vehicle-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--blue);
-    color: #fff;
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  .vehicle-header .km-note {
-    font-size: 9.5px;
-    font-weight: 400;
-    font-style: italic;
-    opacity: 0.85;
-  }
-
-  .vehicle-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1.5px solid var(--border);
-    border-top: none;
-    font-size: 11.5px;
-  }
-
-  .vehicle-table td {
-    border: 1px solid var(--border);
-    padding: 4px 8px;
-  }
-
-  .vehicle-table .label {
-    background: #f5f6fa;
-    color: var(--gray);
-    font-size: 10.5px;
-    white-space: nowrap;
-    width: 110px;
-  }
-
-  .yc-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--blue);
-    padding: 4px 8px;
-    background: #f5f6fa;
-    border: 1.5px solid var(--border);
-    border-top: none;
-  }
-
-  /* ===== SERVICES TABLE ===== */
-  .services-wrapper {
-    border: 1.5px solid var(--border);
-    margin-bottom: 6px;
-  }
-
-  .services-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-  }
-
-  .services-table th {
-    background: var(--yellow);
-    color: var(--blue);
-    font-weight: 700;
-    padding: 5px 4px;
-    border: 1px solid #e0b800;
-    text-align: center;
-    font-size: 10.5px;
-    line-height: 1.3;
-    vertical-align: middle;
-  }
-
-  .services-table td {
-    border: 1px solid var(--border);
-    padding: 4px 5px;
-    vertical-align: middle;
-  }
-
-  .services-table .col-no { text-align: center; width: 28px; }
-  .services-table .col-content { text-align: left; }
-  .services-table .col-dvt { text-align: center; width: 38px; }
-  .services-table .col-sl { text-align: center; width: 28px; }
-  .services-table .col-price { text-align: right; width: 72px; }
-  .services-table .col-pct { text-align: center; width: 28px; }
-  .services-table .col-after { text-align: right; width: 80px; }
-  .services-table .col-total { text-align: right; width: 80px; }
-  .services-table .col-tax { text-align: center; width: 32px; }
-
-  .services-table .sub-header td {
-    background: var(--blue);
-    color: #fff;
-    font-weight: 700;
-    font-size: 11px;
-    padding: 4px 6px;
-  }
-
-  .services-table .row-alt { background: #fafbff; }
-
-  .services-table .row-total td {
-    background: var(--yellow-light);
-    font-weight: 700;
-    color: var(--blue);
-  }
-
-  /* ===== BOTTOM SECTION ===== */
-  .bottom-section {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .warranty-box {
-    flex: 1;
-    border: 1.5px solid var(--border);
-    padding: 8px;
-    font-size: 10px;
-    color: var(--gray);
-    line-height: 1.6;
-    border-radius: 2px;
-  }
-
+  /* BOTTOM */
+  .bottom-section { display: flex; gap: 8px; margin-bottom: 6px; }
+  .warranty-box { flex: 1; border: 1.5px solid var(--border); padding: 8px; font-size: 10px; color: var(--gray); line-height: 1.6; border-radius: 2px; }
   .warranty-box p { margin-bottom: 4px; }
-
-  .sum-box {
-    min-width: 195px;
-    border: 1.5px solid var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .sum-row {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    font-size: 11px;
-  }
-
+  .sum-box { min-width: 210px; border: 1.5px solid var(--border); border-radius: 2px; overflow: hidden; }
+  .sum-row { display: flex; border-bottom: 1px solid var(--border); font-size: 11px; }
   .sum-row:last-child { border-bottom: none; }
+  .sum-label { flex: 1; padding: 5px 8px; color: var(--gray); background: #f5f6fa; border-right: 1px solid var(--border); font-size: 10.5px; }
+  .sum-value { min-width: 98px; padding: 5px 8px; text-align: right; font-weight: 700; }
+  .sum-row.grand { background: var(--yellow); }
+  .sum-row.grand .sum-label { color: var(--blue); font-weight: 700; background: var(--yellow); border-right-color: #e0b800; }
+  .sum-row.grand .sum-value { color: var(--blue); font-size: 13px; }
 
-  .sum-label {
-    flex: 1;
-    padding: 5px 8px;
-    color: var(--gray);
-    background: #f5f6fa;
-    border-right: 1px solid var(--border);
-    font-size: 10.5px;
-  }
+  /* AMOUNT IN WORDS */
+  .amount-words { border: 1.5px solid var(--border); padding: 6px 10px; margin-bottom: 8px; font-size: 11px; background: var(--yellow-light); border-radius: 2px; }
+  .amount-words span { font-weight: 700; color: var(--blue); }
 
-  .sum-value {
-    min-width: 90px;
-    padding: 5px 8px;
-    text-align: right;
-    font-weight: 700;
-    color: var(--text);
-  }
+  /* SIGNATURES */
+  .sig-section { border-top: 2px solid var(--border); padding-top: 8px; }
+  .sig-date { text-align: right; font-size: 11px; font-style: italic; color: var(--gray); margin-bottom: 10px; }
+  .sig-row { display: flex; justify-content: space-between; text-align: center; gap: 10px; }
+  .sig-block { flex: 1; font-size: 11px; }
+  .sig-title { font-weight: 700; color: var(--blue); font-size: 11px; margin-bottom: 40px; }
+  .sig-name { font-weight: 700; color: var(--red); font-size: 12px; border-top: 1px solid var(--border); padding-top: 4px; }
 
-  .sum-row.grand {
-    background: var(--yellow);
-  }
-
-  .sum-row.grand .sum-label {
-    color: var(--blue);
-    font-weight: 700;
-    background: var(--yellow);
-    border-right-color: #e0b800;
-  }
-
-  .sum-row.grand .sum-value {
-    color: var(--blue);
-    font-size: 13px;
-  }
-
-  /* ===== AMOUNT IN WORDS ===== */
-  .amount-words {
-    border: 1.5px solid var(--border);
-    padding: 6px 10px;
-    margin-bottom: 8px;
-    font-size: 11px;
-    background: var(--yellow-light);
-    border-radius: 2px;
-  }
-
-  .amount-words span {
-    font-weight: 700;
-    color: var(--blue);
-  }
-
-  /* ===== SIGNATURES ===== */
-  .sig-section {
-    border-top: 2px solid var(--border);
-    padding-top: 8px;
-  }
-
-  .sig-date {
-    text-align: right;
-    font-size: 11px;
-    font-style: italic;
-    color: var(--gray);
-    margin-bottom: 10px;
-  }
-
-  .sig-row {
-    display: flex;
-    justify-content: space-between;
-    text-align: center;
-    gap: 10px;
-  }
-
-  .sig-block {
-    flex: 1;
-    font-size: 11px;
-  }
-
-  .sig-title {
-    font-weight: 700;
-    color: var(--blue);
-    font-size: 11px;
-    margin-bottom: 40px;
-  }
-
-  .sig-name {
-    font-weight: 700;
-    color: var(--red);
-    font-size: 12px;
-    border-top: 1px solid var(--border);
-    padding-top: 4px;
-    margin-top: 2px;
-  }
-
-  /* ===== PRINT STYLES ===== */
+  /* PRINT */
   @media print {
     body { background: #fff; }
-    .page-wrapper {
-      margin: 0;
-      padding: 8mm;
-      box-shadow: none;
-      max-width: 100%;
-      min-height: auto;
-    }
-    @page {
-      size: A4;
-      margin: 5mm;
-    }
+    .page-wrapper { margin: 0; padding: 8mm; box-shadow: none; max-width: 100%; min-height: auto; }
+    @page { size: A4; margin: 5mm; }
   }
 
-  /* ===== RESPONSIVE MOBILE ===== */
+  /* MOBILE */
   @media (max-width: 600px) {
     body { background: #fff; font-size: 11px; }
-
-    .page-wrapper {
-      padding: 10px;
-      box-shadow: none;
-    }
-
+    .page-wrapper { padding: 10px; box-shadow: none; }
     .header { flex-direction: column; gap: 6px; }
     .company-title { font-size: 14px; }
     .logo-main { font-size: 24px; }
-
     .meta-row { flex-direction: column; }
     .doc-title { font-size: 12px; padding: 8px; border-right: none; border-bottom: 1.5px solid var(--border); }
     .meta-fields { min-width: unset; }
-
     .bottom-section { flex-direction: column; }
     .sum-box { min-width: unset; }
-
     .sig-row { flex-direction: column; gap: 16px; }
-
     .services-table { font-size: 9.5px; }
     .services-table th, .services-table td { padding: 3px 3px; }
-
-    .col-price, .col-after, .col-total { width: auto; }
-    .col-dvt, .col-sl, .col-pct, .col-tax { display: none; }
-
+    .col-dvt, .col-tax { display: none; }
     .info-table td, .vehicle-table td { padding: 3px 6px; }
+    .vehicle-table .lbl { white-space: normal; width: 80px; }
   }
 </style>
 </head>
 <body>
 <div class="page-wrapper">
 
-  <!-- HEADER -->
+  <!-- ── HEADER (cố định) ── -->
   <div class="header">
     <div class="logo-block">
       <div class="logo-main">PHI LONG</div>
       <div class="logo-sub">LỐP XE + BẢO DƯỠNG NHANH</div>
-      <div class="logo-tag">
-        <span class="auto">AUTO.COM</span>
-      </div>
+      <div class="logo-tag"><span>AUTO.COM</span></div>
     </div>
     <div class="company-info">
       <div class="company-title">CUNG CẤP GIẢI PHÁP Ô TÔ TOÀN DIỆN</div>
@@ -520,47 +161,47 @@
     </div>
   </div>
 
-  <!-- META ROW -->
+  <!-- ── META: nvkd | ngay | sdt ── -->
   <div class="meta-row">
     <div class="doc-title">PHIẾU DỊCH VỤ KIỂM BẢO HÀNH</div>
     <div class="meta-fields">
       <div class="meta-field">
         <div class="meta-label">NVKD</div>
-        <div class="meta-value">PHẠM THỊ NGỌC TRÂM</div>
+        <div class="meta-value" id="el-nvkd"></div>
       </div>
       <div class="meta-field">
         <div class="meta-label">Ngày báo giá</div>
-        <div class="meta-value">04/05/2026</div>
+        <div class="meta-value" id="el-ngay"></div>
       </div>
       <div class="meta-field">
         <div class="meta-label">Số điện thoại</div>
-        <div class="meta-value">0</div>
+        <div class="meta-value" id="el-sdt"></div>
       </div>
     </div>
   </div>
 
-  <!-- CUSTOMER INFO -->
+  <!-- ── PHẦN A: kh | dt | cty | mst | dc ── -->
   <div class="section-header">A &nbsp; THÔNG TIN KHÁCH HÀNG</div>
   <table class="info-table">
     <tr>
-      <td class="label">Khách hàng (*)</td>
-      <td class="value"></td>
-      <td class="label">Điện Thoại</td>
-      <td class="value"></td>
+      <td class="lbl">Khách hàng (*)</td>
+      <td id="el-kh"></td>
+      <td class="lbl">Điện Thoại</td>
+      <td id="el-dt"></td>
     </tr>
     <tr>
-      <td class="label">Công ty</td>
-      <td class="value"></td>
-      <td class="label">MST/CCCD</td>
-      <td class="value"></td>
+      <td class="lbl">Công ty</td>
+      <td id="el-cty"></td>
+      <td class="lbl">MST/CCCD</td>
+      <td id="el-mst"></td>
     </tr>
     <tr>
-      <td class="label">Địa chỉ</td>
-      <td class="value" colspan="3"></td>
+      <td class="lbl">Địa chỉ</td>
+      <td colspan="3" id="el-dc"></td>
     </tr>
   </table>
 
-  <!-- VEHICLE INFO -->
+  <!-- ── PHẦN B: bs | hx | namsx | loai | mau | vin | km | tgkh | giao | hdk | batdau | ketthuc | yeucau ── -->
   <div class="vehicle-section">
     <div class="vehicle-header">
       <span>B &nbsp; THÔNG TIN XE</span>
@@ -568,181 +209,71 @@
     </div>
     <table class="vehicle-table">
       <tr>
-        <td class="label">Biển số</td>
-        <td class="value">93A44326</td>
-        <td class="label">Hãng xe</td>
-        <td class="value"></td>
-        <td class="label">Năm SX</td>
-        <td class="value"></td>
+        <td class="lbl">Biển số</td>       <td id="el-bs"></td>
+        <td class="lbl">Hãng xe</td>       <td id="el-hx"></td>
+        <td class="lbl">Năm SX</td>        <td id="el-namsx"></td>
       </tr>
       <tr>
-        <td class="label">Loại xe</td>
-        <td class="value"></td>
-        <td class="label">Màu Xe</td>
-        <td class="value"></td>
-        <td class="label">Số vin/khung</td>
-        <td class="value"></td>
+        <td class="lbl">Loại xe</td>       <td id="el-loai"></td>
+        <td class="lbl">Màu Xe</td>        <td id="el-mau"></td>
+        <td class="lbl">Số vin/khung</td>  <td id="el-vin"></td>
       </tr>
       <tr>
-        <td class="label">Kilomet vào xưởng</td>
-        <td class="value">48201</td>
-        <td class="label">Thời gian KH tới</td>
-        <td class="value"></td>
-        <td class="label">Dự kiến giao xe</td>
-        <td class="value"></td>
+        <td class="lbl">Kilomet vào xưởng</td> <td id="el-km"></td>
+        <td class="lbl">Thời gian KH tới</td>  <td id="el-tgkh"></td>
+        <td class="lbl">Dự kiến giao xe</td>   <td id="el-giao"></td>
       </tr>
       <tr>
-        <td class="label">Hạn đăng kiểm</td>
-        <td class="value"></td>
-        <td class="label">Dự kiến bắt đầu</td>
-        <td class="value"></td>
-        <td class="label">Dự kiến kết thúc</td>
-        <td class="value"></td>
+        <td class="lbl">Hạn đăng kiểm</td>    <td id="el-hdk"></td>
+        <td class="lbl">Dự kiến bắt đầu</td>  <td id="el-batdau"></td>
+        <td class="lbl">Dự kiến kết thúc</td> <td id="el-ketthuc"></td>
       </tr>
     </table>
-    <div class="yc-label">Yêu cầu khách hàng</div>
+    <div class="yc-label">Yêu cầu khách hàng: <span id="el-yeucau"></span></div>
   </div>
 
-  <!-- SERVICES TABLE -->
+  <!-- ── BẢNG DỊCH VỤ: param data, cột _a_, dòng _b_ ── -->
   <div class="services-wrapper">
     <table class="services-table">
       <thead>
         <tr>
-          <th class="col-no" rowspan="2">No</th>
-          <th class="col-content" rowspan="2">Nội Dung</th>
-          <th class="col-dvt" rowspan="2">ĐVT</th>
-          <th class="col-sl" rowspan="2">SL</th>
-          <th class="col-price" rowspan="2">Đơn giá</th>
-          <th colspan="2">Giảm giá</th>
-          <th class="col-total" rowspan="2">Thành tiền</th>
-          <th class="col-tax" rowspan="2">%<br>Thuế</th>
-        </tr>
-        <tr>
-          <th class="col-pct">%</th>
-          <th class="col-after">Đơn Giá Sau Giảm</th>
+          <th class="col-no">No</th>
+          <th class="col-content">Nội Dung</th>
+          <th class="col-dvt">ĐVT</th>
+          <th class="col-sl">SL</th>
+          <th class="col-price">Đơn giá</th>
+          <th class="col-total">Thành tiền</th>
+          <th class="col-tax">%<br>Thuế</th>
         </tr>
       </thead>
-      <tbody>
-        <!-- Sub header A -->
-        <tr class="sub-header">
-          <td class="col-no">A</td>
-          <td colspan="8">Thay thế ( Replace ) : Vật Tư/ Phụ Tùng</td>
-        </tr>
-        <!-- Item 1 -->
-        <tr>
-          <td class="col-no">1</td>
-          <td class="col-content">Nhớt Total Q7000 FutureGF-5 5W30 (1B4L)</td>
-          <td class="col-dvt">-</td>
-          <td class="col-sl">4</td>
-          <td class="col-price">150,000</td>
-          <td class="col-pct">-</td>
-          <td class="col-after">150,000</td>
-          <td class="col-total">525,000</td>
-          <td class="col-tax">-</td>
-        </tr>
-        <!-- Item 2 -->
-        <tr class="row-alt">
-          <td class="col-no">2</td>
-          <td class="col-content">Lọc nhớt sắt Toyota - Toyota Camry, Vios, Altis, Yaris,</td>
-          <td class="col-dvt">-</td>
-          <td class="col-sl">1</td>
-          <td class="col-price">120,000</td>
-          <td class="col-pct">-</td>
-          <td class="col-after">120,000</td>
-          <td class="col-total">120,000</td>
-          <td class="col-tax">-</td>
-        </tr>
-        <!-- Item 3 -->
-        <tr>
-          <td class="col-no">3</td>
-          <td class="col-content">Lọc gió động cơ - Toyota Veloz(2022-2023), Toyota</td>
-          <td class="col-dvt">-</td>
-          <td class="col-sl">1</td>
-          <td class="col-price">280,000</td>
-          <td class="col-pct">-</td>
-          <td class="col-after">280,000</td>
-          <td class="col-total">280,000</td>
-          <td class="col-tax">-</td>
-        </tr>
-        <!-- Item 5 -->
-        <tr class="row-alt">
-          <td class="col-no">5</td>
-          <td class="col-content">Lọc gió máy lạnh Toyota 0N010 - fortuner, vios, inova,</td>
-          <td class="col-dvt">Cái</td>
-          <td class="col-sl">1</td>
-          <td class="col-price">190,000</td>
-          <td class="col-pct">-</td>
-          <td class="col-after">190,000</td>
-          <td class="col-total">190,000</td>
-          <td class="col-tax">-</td>
-        </tr>
-        <!-- Sub header B -->
-        <tr class="sub-header">
-          <td class="col-no">B</td>
-          <td colspan="8">Vệ sinh hoặc căn chỉnh (Adjust)</td>
-        </tr>
-        <tr>
-          <td class="col-no"></td>
-          <td colspan="8"></td>
-        </tr>
-        <!-- Sub header C -->
-        <tr class="sub-header">
-          <td class="col-no">C</td>
-          <td colspan="8">Kiểm tra và xử lí theo tình trạng (Inspection)</td>
-        </tr>
-        <tr>
-          <td class="col-no"></td>
-          <td colspan="8"></td>
-        </tr>
-      </tbody>
+      <tbody id="tbody-data"></tbody>
     </table>
   </div>
 
-  <!-- BOTTOM: WARRANTY + TOTALS -->
+  <!-- ── TỔNG TIỀN: tongcong | ck | nocu | datt | vat | thanhtoan | sotienchu ── -->
   <div class="bottom-section">
     <div class="warranty-box">
       <p><strong>Bảo hành:</strong></p>
       <p>+ Phụ tùng thay thế mới bảo hành 06 tháng hoặc 6.000km tùy theo điều kiện nào đến trước.</p>
       <p>+ Không bảo hành đối với các trường hợp hư hỏng do tác động bên ngoài hoặc các chi tiết hao mòn trong quá trình sử dụng.</p>
       <p>2. Phụ thu 25% giá trị tiền đối với vật tư - phụ tùng quý khách mang đến.</p>
-      <p>3. Những phát sinh (nếu có) sẽ thông báo sau khi kiểm tra cụ thể. Sản phẩm sẽ được Công ty tiếp nhận và trả kết quả bảo hành trong vòng 14-30 ngày ( trừ ngày lễ và thứ 7 - CN ) theo chính sách của hãng.</p>
+      <p>3. Những phát sinh (nếu có) sẽ thông báo sau khi kiểm tra cụ thể. Sản phẩm sẽ được Công ty tiếp nhận và trả kết quả bảo hành trong vòng 14-30 ngày (trừ ngày lễ và thứ 7 - CN) theo chính sách của hãng.</p>
     </div>
     <div class="sum-box">
-      <div class="sum-row">
-        <div class="sum-label">Tổng Cộng</div>
-        <div class="sum-value">1,115,000</div>
-      </div>
-      <div class="sum-row">
-        <div class="sum-label">Tổng chiết khấu</div>
-        <div class="sum-value">-</div>
-      </div>
-      <div class="sum-row">
-        <div class="sum-label">Nợ cũ</div>
-        <div class="sum-value"></div>
-      </div>
-      <div class="sum-row">
-        <div class="sum-label">Đã thanh toán</div>
-        <div class="sum-value"></div>
-      </div>
-      <div class="sum-row">
-        <div class="sum-label">Thuế VAT</div>
-        <div class="sum-value">-</div>
-      </div>
-      <div class="sum-row grand">
-        <div class="sum-label">Thanh toán</div>
-        <div class="sum-value">1,115,000</div>
-      </div>
+      <div class="sum-row"><div class="sum-label">Tổng Cộng</div><div class="sum-value" id="el-tongcong"></div></div>
+      <div class="sum-row"><div class="sum-label">Tổng chiết khấu</div><div class="sum-value" id="el-ck"></div></div>
+      <div class="sum-row"><div class="sum-label">Nợ cũ</div><div class="sum-value" id="el-nocu"></div></div>
+      <div class="sum-row"><div class="sum-label">Đã thanh toán</div><div class="sum-value" id="el-datt"></div></div>
+      <div class="sum-row"><div class="sum-label">Thuế VAT</div><div class="sum-value" id="el-vat"></div></div>
+      <div class="sum-row grand"><div class="sum-label">Thanh toán</div><div class="sum-value" id="el-thanhtoan"></div></div>
     </div>
   </div>
 
-  <!-- AMOUNT IN WORDS -->
-  <div class="amount-words">
-    Số Tiền Bằng Chữ: <span>Một triệu một trăm mười lăm nghìn đồng chẵn</span>
-  </div>
+  <div class="amount-words">Số Tiền Bằng Chữ: <span id="el-sotienchu"></span></div>
 
-  <!-- SIGNATURES -->
+  <!-- ── CHỮ KÝ: ngayky | ktv | cvdv ── -->
   <div class="sig-section">
-    <div class="sig-date">Ngày 04 tháng 05 năm 2026</div>
+    <div class="sig-date" id="el-ngayky"></div>
     <div class="sig-row">
       <div class="sig-block">
         <div class="sig-title">Khách Hàng</div>
@@ -750,15 +281,231 @@
       </div>
       <div class="sig-block">
         <div class="sig-title">Kỹ Thuật Viên</div>
-        <div class="sig-name">PHẠM KIM PHƯƠNG</div>
+        <div class="sig-name" id="el-ktv"></div>
       </div>
       <div class="sig-block">
         <div class="sig-title">Cố Vấn Dịch Vụ / PKD</div>
-        <div class="sig-name">PHẠM THỊ NGỌC TRÂM</div>
+        <div class="sig-name" id="el-cvdv"></div>
       </div>
     </div>
   </div>
 
-</div>
+</div><!-- end page-wrapper -->
+
+<script>
+/*
+════════════════════════════════════════════════════════════════
+  HƯỚNG DẪN TRUYỀN BIẾN QUA URL
+════════════════════════════════════════════════════════════════
+
+  1. META
+     nvkd      Tên nhân viên kinh doanh
+     ngay      Ngày báo giá  (vd: 04/05/2026)
+     sdt       Số điện thoại NVKD
+
+  2. PHẦN A – Khách hàng
+     kh        Tên khách hàng
+     dt        Điện thoại khách hàng
+     cty       Công ty
+     mst       MST / CCCD
+     dc        Địa chỉ
+
+  3. PHẦN B – Thông tin xe
+     bs        Biển số
+     hx        Hãng xe
+     namsx     Năm sản xuất
+     loai      Loại xe
+     mau       Màu xe
+     vin       Số vin / khung
+     km        Kilomet vào xưởng
+     tgkh      Thời gian KH tới
+     giao      Dự kiến giao xe
+     hdk       Hạn đăng kiểm
+     batdau    Dự kiến bắt đầu
+     ketthuc   Dự kiến kết thúc
+     yeucau    Yêu cầu khách hàng
+
+  4. BẢNG DỊCH VỤ – param: data
+     ┌─────────────────────────────────────────────────────┐
+     │  _a_  =  phân cách CỘT (sang phải)                 │
+     │  _b_  =  phân cách DÒNG (xuống hàng)               │
+     └─────────────────────────────────────────────────────┘
+     Mỗi dòng dữ liệu gồm 6 cột theo thứ tự:
+       No _a_ Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
+
+     Nếu cột No là 1 chữ cái (A / B / C / ...) và cột kế
+     là tên nhóm → render dòng TIÊU ĐỀ NHÓM (nền xanh).
+     Khi đó chỉ cần 2 cột:  A _a_ Tên nhóm
+
+  5. TỔNG TIỀN
+     tongcong    Tổng cộng
+     ck          Tổng chiết khấu
+     nocu        Nợ cũ
+     datt        Đã thanh toán
+     vat         Thuế VAT
+     thanhtoan   Thanh toán cuối
+     sotienchu   Số tiền bằng chữ
+
+  6. CHỮ KÝ
+     ngayky    Dòng ngày (vd: Ngày 04 tháng 05 năm 2026)
+     ktv       Tên kỹ thuật viên
+     cvdv      Tên cố vấn dịch vụ
+
+════════════════════════════════════════════════════════════════
+  VÍ DỤ URL ĐẦY ĐỦ (gõ 1 dòng, xuống dòng chỉ để dễ đọc):
+────────────────────────────────────────────────────────────────
+  phieu.html
+    ?nvkd=PHẠM THỊ NGỌC TRÂM
+    &ngay=04/05/2026
+    &sdt=0975767778
+    &kh=Nguyễn Văn A
+    &dt=0901234567
+    &cty=Công ty ABC
+    &mst=0123456789
+    &dc=123 Đường Lê Lợi, TP Vinh
+    &bs=93A44326
+    &hx=Toyota
+    &namsx=2022
+    &loai=Veloz Cross
+    &mau=Trắng
+    &vin=VIN12345678
+    &km=48201
+    &tgkh=08:00 04/05/2026
+    &giao=17:00 04/05/2026
+    &hdk=12/2026
+    &batdau=08:30
+    &ketthuc=16:00
+    &yeucau=Thay nhớt + lọc gió
+    &data=A_a_Thay thế (Replace) : Vật Tư/ Phụ Tùng
+          _b_1_a_Nhớt Total Q7000 5W30 (1B4L)_a_-_a_4_a_150,000_a_525,000
+          _b_2_a_Lọc nhớt Toyota Camry Vios Altis_a_-_a_1_a_120,000_a_120,000
+          _b_3_a_Lọc gió động cơ Toyota Veloz 2022_a_-_a_1_a_280,000_a_280,000
+          _b_4_a_Lọc gió máy lạnh Toyota 0N010_a_Cái_a_1_a_190,000_a_190,000
+          _b_B_a_Vệ sinh hoặc căn chỉnh (Adjust)
+          _b_C_a_Kiểm tra và xử lí theo tình trạng (Inspection)
+    &tongcong=1,115,000
+    &ck=-
+    &vat=-
+    &thanhtoan=1,115,000
+    &sotienchu=Một triệu một trăm mười lăm nghìn đồng chẵn
+    &ngayky=Ngày 04 tháng 05 năm 2026
+    &ktv=PHẠM KIM PHƯƠNG
+    &cvdv=PHẠM THỊ NGỌC TRÂM
+════════════════════════════════════════════════════════════════
+*/
+
+(function () {
+  const p = new URLSearchParams(window.location.search);
+
+  /* ── gán text vào element ── */
+  function set(id, key) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = p.has(key) ? p.get(key) : '';
+  }
+
+  /* ── escape HTML ── */
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── format số nguyên thêm dấu phẩy ngàn nếu chưa có ── */
+  function fmtNum(s) {
+    s = (s || '').trim();
+    if (!s || s === '-') return esc(s);
+    if (/[,.]/.test(s)) return esc(s);      // đã format sẵn
+    var n = parseInt(s.replace(/\D/g,''), 10);
+    return isNaN(n) ? esc(s) : n.toLocaleString('vi-VN');
+  }
+
+  /* ══ META ══ */
+  set('el-nvkd', 'nvkd');
+  set('el-ngay', 'ngay');
+  set('el-sdt',  'sdt');
+
+  /* ══ PHẦN A ══ */
+  set('el-kh',  'kh');
+  set('el-dt',  'dt');
+  set('el-cty', 'cty');
+  set('el-mst', 'mst');
+  set('el-dc',  'dc');
+
+  /* ══ PHẦN B ══ */
+  set('el-bs',      'bs');
+  set('el-hx',      'hx');
+  set('el-namsx',   'namsx');
+  set('el-loai',    'loai');
+  set('el-mau',     'mau');
+  set('el-vin',     'vin');
+  set('el-km',      'km');
+  set('el-tgkh',    'tgkh');
+  set('el-giao',    'giao');
+  set('el-hdk',     'hdk');
+  set('el-batdau',  'batdau');
+  set('el-ketthuc', 'ketthuc');
+  set('el-yeucau',  'yeucau');
+
+  /* ══ BẢNG DỊCH VỤ ══
+     Phân tách: _b_ = xuống dòng | _a_ = sang cột
+     Cột: [0]No  [1]Nội dung  [2]ĐVT  [3]SL  [4]Đơn giá  [5]Thành tiền
+     Nếu cột [0] là 1 chữ cái → dòng header nhóm (chỉ cần [0] + [1])
+  */
+  var raw   = p.get('data') || '';
+  var tbody = document.getElementById('tbody-data');
+  var altToggle = 0;
+
+  if (raw.trim()) {
+    var rows = raw.split('_b_');
+    rows.forEach(function (rowStr) {
+      rowStr = rowStr.trim();
+      if (!rowStr) return;
+
+      var cols        = rowStr.split('_a_');
+      var no          = (cols[0] || '').trim();
+      var isGroupHdr  = /^[A-Za-z]$/.test(no);
+      var tr          = document.createElement('tr');
+
+      if (isGroupHdr) {
+        /* ── Dòng tiêu đề nhóm ── */
+        tr.className = 'sub-header';
+        tr.innerHTML =
+          '<td class="col-no">' + esc(no) + '</td>' +
+          '<td colspan="6">'   + esc(cols[1] || '') + '</td>';
+        altToggle = 0;   // reset màu xen kẽ sau mỗi nhóm
+      } else {
+        /* ── Dòng dữ liệu ── */
+        if (altToggle % 2 === 1) tr.className = 'row-alt';
+        altToggle++;
+        tr.innerHTML =
+          '<td class="col-no">'      + esc(no)                + '</td>' +
+          '<td class="col-content">' + esc(cols[1] || '')     + '</td>' +
+          '<td class="col-dvt">'     + esc(cols[2] || '-')    + '</td>' +
+          '<td class="col-sl">'      + esc(cols[3] || '')     + '</td>' +
+          '<td class="col-price">'   + fmtNum(cols[4] || '')  + '</td>' +
+          '<td class="col-total">'   + fmtNum(cols[5] || '')  + '</td>' +
+          '<td class="col-tax">-</td>';
+      }
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ══ TỔNG TIỀN ══ */
+  set('el-tongcong',  'tongcong');
+  set('el-ck',        'ck');
+  set('el-nocu',      'nocu');
+  set('el-datt',      'datt');
+  set('el-vat',       'vat');
+  set('el-thanhtoan', 'thanhtoan');
+  set('el-sotienchu', 'sotienchu');
+
+  /* ══ CHỮ KÝ ══ */
+  set('el-ngayky', 'ngayky');
+  set('el-ktv',    'ktv');
+  set('el-cvdv',   'cvdv');
+
+})();
+</script>
 </body>
 </html>
