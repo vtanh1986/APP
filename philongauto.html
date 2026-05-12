@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
 <title>Phiếu Dịch Vụ Kiểm Bảo Hành - Phi Long Auto</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
@@ -25,6 +26,41 @@
     color: var(--text);
     font-size: 13px;
     line-height: 1.4;
+  }
+
+  /* ── NÚT IN CỐ ĐỊNH ── */
+  #btn-print {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9999;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 13px 28px;
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px rgba(26,58,143,0.35);
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    letter-spacing: 0.2px;
+  }
+  #btn-print:hover {
+    background: #2650c0;
+    box-shadow: 0 6px 24px rgba(26,58,143,0.45);
+    transform: translateY(-2px);
+  }
+  #btn-print:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(26,58,143,0.25);
+  }
+  #btn-print svg {
+    flex-shrink: 0;
   }
 
   .page-wrapper {
@@ -111,81 +147,144 @@
   .sig-title { font-weight: 700; color: var(--blue); font-size: 11px; margin-bottom: 40px; }
   .sig-name { font-weight: 700; color: var(--red); font-size: 12px; border-top: 1px solid var(--border); padding-top: 4px; }
 
-  /* PRINT */
+  /* ══════════════════════════════════════════════
+     PRINT — đảm bảo bản in 1:1 với hiển thị web
+     Kỹ thuật: forced-color-adjust + -webkit-print-color-adjust
+     để ép trình duyệt giữ 100% màu nền & màu chữ
+  ══════════════════════════════════════════════ */
   @media print {
-    /* ── Bắt buộc giữ màu nền + màu chữ khi in ── */
+
+    /* 0. Ẩn nút in */
+    #btn-print { display: none !important; }
+
+    /* 1. Ép giữ toàn bộ màu sắc — quan trọng nhất */
+    html {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+      forced-color-adjust: none !important;
+    }
     *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
+      forced-color-adjust: none !important;
     }
 
-    @page { size: A4 portrait; margin: 8mm; }
+    /* 2. Kích thước trang */
+    @page {
+      size: A4 portrait;
+      margin: 8mm;
+    }
 
-    html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
-
-    .page-wrapper {
+    /* 3. Reset body/html */
+    html, body {
+      background: #ffffff !important;
       margin: 0 !important;
-      padding: 4mm !important;
-      box-shadow: none !important;
-      max-width: 100% !important;
-      min-height: auto !important;
+      padding: 0 !important;
       width: 100% !important;
     }
 
-    /* ── Giữ flex layout ── */
-    .header            { display: flex !important; }
-    .meta-row          { display: flex !important; }
-    .bottom-section    { display: flex !important; }
-    .sig-row           { display: flex !important; }
-    .meta-field        { display: flex !important; }
-    .sum-row           { display: flex !important; }
-    .logo-tag          { display: flex !important; }
+    /* 4. Page wrapper khớp với A4 trừ margin @page */
+    .page-wrapper {
+      margin: 0 !important;
+      padding: 6mm 8mm !important;
+      box-shadow: none !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      min-height: auto !important;
+    }
 
-    /* ── Màu nền header xanh navy ── */
-    .section-header    { background-color: #1a3a8f !important; color: #fff !important; }
-    .vehicle-header    { background-color: #1a3a8f !important; color: #fff !important; }
-    .vehicle-header .km-note { color: #fff !important; }
-    .sub-header td     { background-color: #1a3a8f !important; color: #fff !important; }
+    /* 5. Đảm bảo flex layouts giữ nguyên */
+    .header,
+    .meta-row,
+    .bottom-section,
+    .sig-row,
+    .meta-field,
+    .sum-row,
+    .vehicle-header { display: flex !important; }
 
-    /* ── Màu nền vàng ── */
-    .services-table th { background-color: #f5c500 !important; color: #1a3a8f !important; }
-    .sum-row.grand     { background-color: #f5c500 !important; }
-    .sum-row.grand .sum-label { background-color: #f5c500 !important; color: #1a3a8f !important; border-right-color: #e0b800 !important; }
-    .sum-row.grand .sum-value { color: #1a3a8f !important; }
+    /* 6. Màu nền xanh navy — dùng cả background-color lẫn box-shadow để chắc */
+    .section-header {
+      background-color: #1a3a8f !important;
+      color: #ffffff !important;
+    }
+    .vehicle-header {
+      background-color: #1a3a8f !important;
+      color: #ffffff !important;
+    }
+    .vehicle-header .km-note { color: #ffffff !important; opacity: 1 !important; }
+    .sub-header td {
+      background-color: #1a3a8f !important;
+      color: #ffffff !important;
+    }
 
-    /* ── Màu nền ô nhãn xám nhạt ── */
-    .info-table .lbl   { background-color: #f5f6fa !important; }
-    .vehicle-table .lbl{ background-color: #f5f6fa !important; }
-    .meta-label        { background-color: #f5f6fa !important; }
-    .sum-label         { background-color: #f5f6fa !important; }
-    .yc-label          { background-color: #f5f6fa !important; }
+    /* 7. Màu nền vàng */
+    .services-table th {
+      background-color: #f5c500 !important;
+      color: #1a3a8f !important;
+    }
+    .sum-row.grand {
+      background-color: #f5c500 !important;
+    }
+    .sum-row.grand .sum-label {
+      background-color: #f5c500 !important;
+      color: #1a3a8f !important;
+      border-right-color: #e0b800 !important;
+      font-weight: 700 !important;
+    }
+    .sum-row.grand .sum-value {
+      color: #1a3a8f !important;
+    }
 
-    /* ── Màu nền vàng nhạt ── */
-    .amount-words      { background-color: #fffbe6 !important; }
-    .doc-title         { background-color: #fffbe6 !important; }
+    /* 8. Màu nền xám nhạt các ô nhãn */
+    .info-table .lbl,
+    .vehicle-table .lbl,
+    .meta-label,
+    .sum-label,
+    .yc-label {
+      background-color: #f5f6fa !important;
+    }
 
-    /* ── Màu xen kẽ dòng ── */
-    .row-alt           { background-color: #fafbff !important; }
+    /* 9. Màu nền vàng nhạt */
+    .doc-title {
+      background-color: #fffbe6 !important;
+      color: #1a3a8f !important;
+    }
+    .amount-words {
+      background-color: #fffbe6 !important;
+    }
 
-    /* ── Giữ màu chữ xanh navy & đỏ ── */
+    /* 10. Màu nền dòng xen kẽ */
+    .row-alt { background-color: #fafbff !important; }
+
+    /* 11. Giữ màu chữ */
     .meta-value        { color: #1a3a8f !important; }
     .company-title     { color: #1a3a8f !important; }
-    .doc-title         { color: #1a3a8f !important; }
     .sig-title         { color: #1a3a8f !important; }
     .sig-name          { color: #d32f2f !important; }
     .amount-words span { color: #1a3a8f !important; }
+    .yc-label          { color: #1a3a8f !important; }
 
-    /* ── Viền ── */
+    /* 12. Giữ viền */
     .meta-row, .info-table, .vehicle-table,
     .services-wrapper, .sum-box,
-    .amount-words, .warranty-box { border-color: #bbb !important; }
+    .amount-words, .warranty-box {
+      border-color: #bbbbbb !important;
+    }
+    .info-table td, .vehicle-table td,
+    .services-table td, .services-table th {
+      border-color: #bbbbbb !important;
+    }
 
-    /* ── Không ngắt trang giữa các phần quan trọng ── */
+    /* 13. Không ngắt trang giữa các khối */
     .header, .meta-row, .info-table,
     .vehicle-section, .services-wrapper,
     .bottom-section, .amount-words,
-    .sig-section { page-break-inside: avoid; }
+    .sig-section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
   }
 
   /* MOBILE */
@@ -206,17 +305,27 @@
     .col-dvt, .col-tax { display: none; }
     .info-table td, .vehicle-table td { padding: 3px 6px; }
     .vehicle-table .lbl { white-space: normal; width: 80px; }
+    #btn-print { bottom: 16px; right: 16px; padding: 11px 20px; font-size: 13px; }
   }
 </style>
 </head>
 <body>
+
+<!-- ── NÚT IN ── -->
+<button id="btn-print" onclick="window.print()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 6 2 18 2 18 9"/>
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+    <rect x="6" y="14" width="12" height="8"/>
+  </svg>
+  In phiếu
+</button>
+
 <div class="page-wrapper">
 
-  <!-- ── HEADER (cố định) ── -->
+  <!-- ── HEADER ── -->
   <div class="header" style="display:flex;align-items:flex-start;gap:10px;border-bottom:3px solid #1a3a8f;padding-bottom:8px;margin-bottom:8px;">
-    <div class="logo-block" id="logo-block">
-      <!-- Sẽ được điền bằng JS: ảnh từ param logo= hoặc SVG mặc định -->
-    </div>
+    <div class="logo-block" id="logo-block"></div>
     <div class="company-info">
       <div class="company-title">CUNG CẤP GIẢI PHÁP Ô TÔ TOÀN DIỆN</div>
       <div class="company-contact">
@@ -226,7 +335,7 @@
     </div>
   </div>
 
-  <!-- ── META: nvkd | ngay | sdt ── -->
+  <!-- ── META ── -->
   <div class="meta-row" style="display:flex;justify-content:space-between;align-items:stretch;border:1.5px solid #bbb;margin-bottom:6px;border-radius:2px;overflow:hidden;">
     <div class="doc-title">PHIẾU DỊCH VỤ KIỂM BẢO HÀNH</div>
     <div class="meta-fields">
@@ -245,7 +354,7 @@
     </div>
   </div>
 
-  <!-- ── PHẦN A: kh | dt | cty | mst | dc ── -->
+  <!-- ── PHẦN A ── -->
   <div class="section-header">A &nbsp; THÔNG TIN KHÁCH HÀNG</div>
   <table class="info-table">
     <tr>
@@ -266,7 +375,7 @@
     </tr>
   </table>
 
-  <!-- ── PHẦN B: bs | hx | namsx | loai | mau | vin | km | tgkh | giao | hdk | batdau | ketthuc | yeucau ── -->
+  <!-- ── PHẦN B ── -->
   <div class="vehicle-section">
     <div class="vehicle-header">
       <span>B &nbsp; THÔNG TIN XE</span>
@@ -358,24 +467,14 @@
 </div><!-- end page-wrapper -->
 
 <script>
-/* ════════════════════════════════════════════════════════════════
-   ĐỔI SỐ THÀNH CHỮ TIẾNG VIỆT (tối đa 999 tỷ đồng)
-   Trả về chuỗi có chữ hoa đầu câu, kết thúc bằng " đồng chẵn"
-════════════════════════════════════════════════════════════════ */
 function docSoTienBangChu(n) {
   if (n === 0) return 'Không đồng';
-
   var donvi  = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
-  var hang   = ['', 'mười', 'trăm', 'nghìn', 'triệu', 'tỷ'];
-
-  /* Đọc một nhóm 3 chữ số (0–999) */
   function docNhom(num, hasTruoc) {
-    /* hasTruoc: có nhóm khác đứng trước không (dùng để chọn "linh" hay "lẻ") */
     var tram = Math.floor(num / 100);
     var chuc = Math.floor((num % 100) / 10);
     var dv   = num % 10;
     var res  = '';
-
     if (tram > 0) {
       res += donvi[tram] + ' trăm';
       if (chuc === 0 && dv > 0) res += ' lẻ';
@@ -383,7 +482,6 @@ function docSoTienBangChu(n) {
       if (chuc === 0 && dv > 0) res += 'lẻ ';
       else if (chuc > 0)        res += 'không trăm ';
     }
-
     if (chuc > 1) {
       res += (res ? ' ' : '') + donvi[chuc] + ' mươi';
       if (dv === 1) res += ' mốt';
@@ -394,119 +492,41 @@ function docSoTienBangChu(n) {
       if (dv === 5) res += ' lăm';
       else if (dv > 0) res += ' ' + donvi[dv];
     } else if (chuc === 0 && dv > 0 && tram > 0) {
-      /* đã xử lý "lẻ" ở trên */
       res += ' ' + donvi[dv];
     } else if (chuc === 0 && dv > 0 && !hasTruoc && tram === 0) {
       res += donvi[dv];
     }
-
     return res.trim();
   }
-
-  /* Chia thành các nhóm: tỷ | triệu | nghìn | đơn vị */
-  var ty     = Math.floor(n / 1000000000);
-  var trieu  = Math.floor((n % 1000000000) / 1000000);
-  var nghin  = Math.floor((n % 1000000) / 1000);
-  var dv     = n % 1000;
-
-  var parts  = [];
+  var ty    = Math.floor(n / 1000000000);
+  var trieu = Math.floor((n % 1000000000) / 1000000);
+  var nghin = Math.floor((n % 1000000) / 1000);
+  var dv    = n % 1000;
+  var parts = [];
   var hasPrev = false;
-
-  if (ty > 0) {
-    parts.push(docNhom(ty, hasPrev) + ' tỷ');
-    hasPrev = true;
-  }
-  if (trieu > 0) {
-    parts.push(docNhom(trieu, hasPrev) + ' triệu');
-    hasPrev = true;
-  }
-  if (nghin > 0) {
-    parts.push(docNhom(nghin, hasPrev) + ' nghìn');
-    hasPrev = true;
-  }
-  if (dv > 0) {
-    parts.push(docNhom(dv, hasPrev));
-  }
-
+  if (ty > 0)    { parts.push(docNhom(ty, hasPrev)    + ' tỷ');    hasPrev = true; }
+  if (trieu > 0) { parts.push(docNhom(trieu, hasPrev) + ' triệu'); hasPrev = true; }
+  if (nghin > 0) { parts.push(docNhom(nghin, hasPrev) + ' nghìn'); hasPrev = true; }
+  if (dv > 0)    { parts.push(docNhom(dv, hasPrev)); }
   var result = parts.join(' ').replace(/\s+/g, ' ').trim();
-  /* Viết hoa chữ cái đầu */
   result = result.charAt(0).toUpperCase() + result.slice(1);
   return result + ' đồng chẵn';
 }
 
-/* ════════════════════════════════════════════════════════════════
-   HƯỚNG DẪN TRUYỀN BIẾN QUA URL
-════════════════════════════════════════════════════════════════
-
-  1. META
-     nvkd      Tên nhân viên kinh doanh
-     ngay      Ngày báo giá  (vd: 04/05/2026)
-     sdt       Số điện thoại NVKD
-     logo      URL ảnh logo (jpg/png/svg/webp) — bỏ trống → dùng SVG mặc định
-
-  2. PHẦN A – Khách hàng
-     kh        Tên khách hàng
-     dt        Điện thoại khách hàng
-     cty       Công ty
-     mst       MST / CCCD
-     dc        Địa chỉ
-
-  3. PHẦN B – Thông tin xe
-     bs        Biển số
-     hx        Hãng xe
-     namsx     Năm sản xuất
-     loai      Loại xe
-     mau       Màu xe
-     vin       Số vin / khung
-     km        Kilomet vào xưởng
-     tgkh      Thời gian KH tới
-     giao      Dự kiến giao xe
-     hdk       Hạn đăng kiểm
-     batdau    Dự kiến bắt đầu
-     ketthuc   Dự kiến kết thúc
-     yeucau    Yêu cầu khách hàng
-
-  4. BẢNG DỊCH VỤ – param: data
-     _a_  =  phân cách CỘT  |  _b_  =  phân cách DÒNG
-     Mỗi dòng dữ liệu 5 cột: Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
-     Dòng tiêu đề nhóm: bắt đầu bằng # (nhóm A/B/C tự động)
-
-  5. TỔNG TIỀN
-     tongcong    Tổng cộng
-     ck          Tổng chiết khấu
-     nocu        Nợ cũ
-     datt        Đã thanh toán
-     vat         Thuế VAT
-     thanhtoan   Thanh toán cuối  ← "Số tiền bằng chữ" tự động tính từ đây
-     sotienchu   (tùy chọn) Ghi đè thủ công nếu cần
-
-  6. CHỮ KÝ
-     ngayky    Dòng ngày (vd: Ngày 04 tháng 05 năm 2026)
-     ktv       Tên kỹ thuật viên
-     cvdv      Tên cố vấn dịch vụ
-
-════════════════════════════════════════════════════════════════ */
-
 (function () {
   var p = new URLSearchParams(window.location.search);
 
-  /* ══ LOGO ══
-     - logo=<url>  → hiển thị ảnh từ URL đó (jpg/png/svg/webp đều được)
-     - Không truyền → dùng SVG mặc định Phi Long
-  */
   (function() {
     var block = document.getElementById('logo-block');
     if (!block) return;
     var logoUrl = (p.get('logo') || '').trim();
     if (logoUrl) {
-      /* Hiển thị ảnh từ URL */
       var img = document.createElement('img');
       img.src = logoUrl;
       img.alt = 'Logo';
       img.style.cssText = 'height:54px;width:auto;display:block;object-fit:contain;';
       block.appendChild(img);
     } else {
-      /* Fallback: SVG mặc định Phi Long */
       block.innerHTML = '<svg class="logo-svg" viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">'
         + '<text x="2" y="42" font-family="\'Be Vietnam Pro\',Arial Black,sans-serif" font-size="46" font-weight="900" font-style="italic" fill="#1a3a8f" letter-spacing="-1">PHI LONG</text>'
         + '<text x="4" y="56" font-family="\'Be Vietnam Pro\',Arial,sans-serif" font-size="11" font-weight="700" font-style="italic" fill="#1a3a8f" letter-spacing="0.3">LỐP XE + BẢO DƯỠNG NHANH</text>'
@@ -516,21 +536,14 @@ function docSoTienBangChu(n) {
     }
   })();
 
-  /* ── gán text vào element ── */
   function set(id, key) {
     var el = document.getElementById(id);
     if (!el) return;
     el.textContent = p.has(key) ? p.get(key) : '';
   }
-
-  /* ── escape HTML ── */
   function esc(s) {
-    return String(s || '')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-
-  /* ── format số nguyên thêm dấu phẩy ngàn nếu chưa có ── */
   function fmtNum(s) {
     s = (s || '').trim();
     if (!s || s === '-') return esc(s);
@@ -539,80 +552,37 @@ function docSoTienBangChu(n) {
     return isNaN(n) ? esc(s) : n.toLocaleString('vi-VN');
   }
 
-  /* ══ META ══ */
-  set('el-nvkd', 'nvkd');
-  set('el-ngay', 'ngay');
-  set('el-sdt',  'sdt');
+  set('el-nvkd', 'nvkd'); set('el-ngay', 'ngay'); set('el-sdt', 'sdt');
+  set('el-kh', 'kh'); set('el-dt', 'dt'); set('el-cty', 'cty'); set('el-mst', 'mst'); set('el-dc', 'dc');
+  set('el-bs', 'bs'); set('el-hx', 'hx'); set('el-namsx', 'namsx'); set('el-loai', 'loai');
+  set('el-mau', 'mau'); set('el-vin', 'vin'); set('el-km', 'km'); set('el-tgkh', 'tgkh');
+  set('el-giao', 'giao'); set('el-hdk', 'hdk'); set('el-batdau', 'batdau'); set('el-ketthuc', 'ketthuc');
+  set('el-yeucau', 'yeucau');
 
-  /* ══ PHẦN A ══ */
-  set('el-kh',  'kh');
-  set('el-dt',  'dt');
-  set('el-cty', 'cty');
-  set('el-mst', 'mst');
-  set('el-dc',  'dc');
-
-  /* ══ PHẦN B ══ */
-  set('el-bs',      'bs');
-  set('el-hx',      'hx');
-  set('el-namsx',   'namsx');
-  set('el-loai',    'loai');
-  set('el-mau',     'mau');
-  set('el-vin',     'vin');
-  set('el-km',      'km');
-  set('el-tgkh',    'tgkh');
-  set('el-giao',    'giao');
-  set('el-hdk',     'hdk');
-  set('el-batdau',  'batdau');
-  set('el-ketthuc', 'ketthuc');
-  set('el-yeucau',  'yeucau');
-
-  /* ══ BẢNG DỊCH VỤ ══
-     Hỗ trợ 2 kiểu truyền data:
-
-     Kiểu 1 — Tiêu đề nhóm riêng dòng:
-       |Tên nhóm_b_Nội dung_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
-
-     Kiểu 2 — Gắn nhóm vào đầu mỗi dòng, code tự gom:
-       |Tên nhóm_a_Nội dung_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
-       |Tên nhóm_a_Nội dung 2_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
-       |Nhóm khác_a_Nội dung 3_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
-     → Tiêu đề nhóm chỉ in 1 lần dù có nhiều dòng cùng nhóm.
-
-     Hai kiểu có thể dùng lẫn lộn trong cùng 1 param data.
-  */
   var raw   = p.get('data') || '';
   var tbody = document.getElementById('tbody-data');
-  var itemNo    = 0;
-  var groupNo   = 0;
-  var altCount  = 0;
-  var lastGroup = null;   // theo dõi nhóm cuối để tránh in trùng tiêu đề
+  var itemNo = 0, groupNo = 0, altCount = 0, lastGroup = null;
 
   function appendGroupHeader(label) {
-    var letter = String.fromCharCode(65 + groupNo);
-    groupNo++;
-    altCount  = 0;
-    var tr    = document.createElement('tr');
+    var letter = String.fromCharCode(65 + groupNo); groupNo++; altCount = 0;
+    var tr = document.createElement('tr');
     tr.className = 'sub-header';
-    tr.innerHTML =
-      '<td class="col-no">' + esc(letter) + '</td>' +
-      '<td colspan="6">'    + esc(label)  + '</td>';
+    tr.innerHTML = '<td class="col-no">' + esc(letter) + '</td><td colspan="6">' + esc(label) + '</td>';
     tbody.appendChild(tr);
   }
-
   function appendDataRow(cols) {
     itemNo++;
     var tr = document.createElement('tr');
     if (altCount % 2 === 1) tr.className = 'row-alt';
     altCount++;
-    /* Lọc ký tự | hoặc # thừa đầu cột nội dung (phòng trường hợp dữ liệu bị dính) */
     var content = (cols[0] || '').replace(/^[|#]+/, '').trim();
     tr.innerHTML =
-      '<td class="col-no">'      + itemNo                + '</td>' +
-      '<td class="col-content">' + esc(content)          + '</td>' +
-      '<td class="col-dvt">'     + esc(cols[1] || '-')   + '</td>' +
-      '<td class="col-sl">'      + esc(cols[2] || '')    + '</td>' +
-      '<td class="col-price">'   + fmtNum(cols[3] || '') + '</td>' +
-      '<td class="col-total">'   + fmtNum(cols[4] || '') + '</td>' +
+      '<td class="col-no">' + itemNo + '</td>' +
+      '<td class="col-content">' + esc(content) + '</td>' +
+      '<td class="col-dvt">' + esc(cols[1] || '-') + '</td>' +
+      '<td class="col-sl">' + esc(cols[2] || '') + '</td>' +
+      '<td class="col-price">' + fmtNum(cols[3] || '') + '</td>' +
+      '<td class="col-total">' + fmtNum(cols[4] || '') + '</td>' +
       '<td class="col-tax">-</td>';
     tbody.appendChild(tr);
   }
@@ -621,58 +591,31 @@ function docSoTienBangChu(n) {
     raw.split('_b_').forEach(function (rowStr) {
       rowStr = rowStr.trim();
       if (!rowStr) return;
-
       if (rowStr.charAt(0) === '|') {
-        var rest = rowStr.slice(1);           // bỏ dấu |
+        var rest = rowStr.slice(1);
         var cols = rest.split('_a_');
-
         if (cols.length === 1) {
-          /* ── Kiểu 1: dòng tiêu đề nhóm đứng riêng ── */
           var label = cols[0].trim();
-          if (label !== lastGroup) {
-            lastGroup = label;
-            appendGroupHeader(label);
-          }
+          if (label !== lastGroup) { lastGroup = label; appendGroupHeader(label); }
         } else {
-          /* ── Kiểu 2: |Nhóm_a_Nội dung_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền ── */
           var groupLabel = cols[0].trim();
-          var dataCols   = cols.slice(1);     // [NộiDung, ĐVT, SL, Đơn giá, Thành tiền]
-          if (groupLabel !== lastGroup) {
-            lastGroup = groupLabel;
-            appendGroupHeader(groupLabel);
-          }
+          var dataCols   = cols.slice(1);
+          if (groupLabel !== lastGroup) { lastGroup = groupLabel; appendGroupHeader(groupLabel); }
           appendDataRow(dataCols);
         }
       } else {
-        /* ── Dòng dữ liệu thuần (không có nhóm) ── */
         appendDataRow(rowStr.split('_a_'));
       }
     });
   }
 
-  /* ══ TỔNG TIỀN ══ */
-  set('el-tongcong',  'tongcong');
-  set('el-ck',        'ck');
-  set('el-nocu',      'nocu');
-  set('el-datt',      'datt');
-  set('el-vat',       'vat');
-  set('el-thanhtoan', 'thanhtoan');
+  set('el-tongcong', 'tongcong'); set('el-ck', 'ck'); set('el-nocu', 'nocu');
+  set('el-datt', 'datt'); set('el-vat', 'vat'); set('el-thanhtoan', 'thanhtoan');
 
-  /* ── Số tiền bằng chữ:
-       • Nếu có param sotienchu → dùng nguyên (override thủ công)
-       • Không có → tự tính từ param thanhtoan
-  ── */
   (function() {
     var el = document.getElementById('el-sotienchu');
     if (!el) return;
-
-    /* Override thủ công */
-    if (p.has('sotienchu') && p.get('sotienchu').trim()) {
-      el.textContent = p.get('sotienchu');
-      return;
-    }
-
-    /* Tự tính */
+    if (p.has('sotienchu') && p.get('sotienchu').trim()) { el.textContent = p.get('sotienchu'); return; }
     var raw = (p.get('thanhtoan') || '').trim();
     if (!raw || raw === '-') { el.textContent = ''; return; }
     var num = parseInt(raw.replace(/[^0-9]/g, ''), 10);
@@ -680,11 +623,7 @@ function docSoTienBangChu(n) {
     el.textContent = docSoTienBangChu(num);
   })();
 
-  /* ══ CHỮ KÝ ══ */
-  set('el-ngayky', 'ngayky');
-  set('el-ktv',    'ktv');
-  set('el-cvdv',   'cvdv');
-
+  set('el-ngayky', 'ngayky'); set('el-ktv', 'ktv'); set('el-cvdv', 'cvdv');
 })();
 </script>
 </body>
