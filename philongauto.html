@@ -113,9 +113,24 @@
 
   /* PRINT */
   @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
     body { background: #fff; }
     .page-wrapper { margin: 0; padding: 8mm; box-shadow: none; max-width: 100%; min-height: auto; }
     @page { size: A4; margin: 5mm; }
+    .section-header,
+    .vehicle-header,
+    .sub-header td { background-color: #1a3a8f !important; color: #fff !important; }
+    .services-table th { background-color: #f5c500 !important; color: #1a3a8f !important; }
+    .sum-row.grand { background-color: #f5c500 !important; }
+    .sum-row.grand .sum-label { background-color: #f5c500 !important; color: #1a3a8f !important; }
+    .info-table .lbl,
+    .vehicle-table .lbl,
+    .meta-label,
+    .sum-label,
+    .yc-label { background-color: #f5f6fa !important; }
+    .amount-words { background-color: #fffbe6 !important; }
+    .doc-title { background-color: #fffbe6 !important; }
+    .row-alt { background-color: #fafbff !important; }
   }
 
   /* MOBILE */
@@ -496,44 +511,85 @@ function docSoTienBangChu(n) {
   set('el-ketthuc', 'ketthuc');
   set('el-yeucau',  'yeucau');
 
-  /* ══ BẢNG DỊCH VỤ ══ */
-  var raw      = p.get('data') || '';
-  var tbody    = document.getElementById('tbody-data');
-  var itemNo   = 0;
-  var groupNo  = 0;
-  var altCount = 0;
+  /* ══ BẢNG DỊCH VỤ ══
+     Hỗ trợ 2 kiểu truyền data:
+
+     Kiểu 1 — Tiêu đề nhóm riêng dòng:
+       |Tên nhóm_b_Nội dung_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
+
+     Kiểu 2 — Gắn nhóm vào đầu mỗi dòng, code tự gom:
+       |Tên nhóm_a_Nội dung_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
+       |Tên nhóm_a_Nội dung 2_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
+       |Nhóm khác_a_Nội dung 3_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền
+     → Tiêu đề nhóm chỉ in 1 lần dù có nhiều dòng cùng nhóm.
+
+     Hai kiểu có thể dùng lẫn lộn trong cùng 1 param data.
+  */
+  var raw   = p.get('data') || '';
+  var tbody = document.getElementById('tbody-data');
+  var itemNo    = 0;
+  var groupNo   = 0;
+  var altCount  = 0;
+  var lastGroup = null;   // theo dõi nhóm cuối để tránh in trùng tiêu đề
+
+  function appendGroupHeader(label) {
+    var letter = String.fromCharCode(65 + groupNo);
+    groupNo++;
+    altCount  = 0;
+    var tr    = document.createElement('tr');
+    tr.className = 'sub-header';
+    tr.innerHTML =
+      '<td class="col-no">' + esc(letter) + '</td>' +
+      '<td colspan="6">'    + esc(label)  + '</td>';
+    tbody.appendChild(tr);
+  }
+
+  function appendDataRow(cols) {
+    itemNo++;
+    var tr = document.createElement('tr');
+    if (altCount % 2 === 1) tr.className = 'row-alt';
+    altCount++;
+    tr.innerHTML =
+      '<td class="col-no">'      + itemNo                + '</td>' +
+      '<td class="col-content">' + esc(cols[0] || '')    + '</td>' +
+      '<td class="col-dvt">'     + esc(cols[1] || '-')   + '</td>' +
+      '<td class="col-sl">'      + esc(cols[2] || '')    + '</td>' +
+      '<td class="col-price">'   + fmtNum(cols[3] || '') + '</td>' +
+      '<td class="col-total">'   + fmtNum(cols[4] || '') + '</td>' +
+      '<td class="col-tax">-</td>';
+    tbody.appendChild(tr);
+  }
 
   if (raw.trim()) {
     raw.split('_b_').forEach(function (rowStr) {
       rowStr = rowStr.trim();
       if (!rowStr) return;
 
-      var tr = document.createElement('tr');
+      if (rowStr.charAt(0) === '|') {
+        var rest = rowStr.slice(1);           // bỏ dấu |
+        var cols = rest.split('_a_');
 
-      if (rowStr.charAt(0) === '#') {
-        var label       = rowStr.slice(1).trim();
-        var groupLetter = String.fromCharCode(65 + groupNo);
-        groupNo++;
-        altCount = 0;
-        tr.className = 'sub-header';
-        tr.innerHTML =
-          '<td class="col-no">' + esc(groupLetter) + '</td>' +
-          '<td colspan="6">'    + esc(label) + '</td>';
+        if (cols.length === 1) {
+          /* ── Kiểu 1: dòng tiêu đề nhóm đứng riêng ── */
+          var label = cols[0].trim();
+          if (label !== lastGroup) {
+            lastGroup = label;
+            appendGroupHeader(label);
+          }
+        } else {
+          /* ── Kiểu 2: |Nhóm_a_Nội dung_a_ĐVT_a_SL_a_Đơn giá_a_Thành tiền ── */
+          var groupLabel = cols[0].trim();
+          var dataCols   = cols.slice(1);     // [NộiDung, ĐVT, SL, Đơn giá, Thành tiền]
+          if (groupLabel !== lastGroup) {
+            lastGroup = groupLabel;
+            appendGroupHeader(groupLabel);
+          }
+          appendDataRow(dataCols);
+        }
       } else {
-        var cols = rowStr.split('_a_');
-        itemNo++;
-        if (altCount % 2 === 1) tr.className = 'row-alt';
-        altCount++;
-        tr.innerHTML =
-          '<td class="col-no">'      + itemNo                 + '</td>' +
-          '<td class="col-content">' + esc(cols[0] || '')     + '</td>' +
-          '<td class="col-dvt">'     + esc(cols[1] || '-')    + '</td>' +
-          '<td class="col-sl">'      + esc(cols[2] || '')     + '</td>' +
-          '<td class="col-price">'   + fmtNum(cols[3] || '')  + '</td>' +
-          '<td class="col-total">'   + fmtNum(cols[4] || '')  + '</td>' +
-          '<td class="col-tax">-</td>';
+        /* ── Dòng dữ liệu thuần (không có nhóm) ── */
+        appendDataRow(rowStr.split('_a_'));
       }
-      tbody.appendChild(tr);
     });
   }
 
