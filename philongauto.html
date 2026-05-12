@@ -330,12 +330,15 @@
      │  _a_  =  phân cách CỘT (sang phải)                 │
      │  _b_  =  phân cách DÒNG (xuống hàng)               │
      └─────────────────────────────────────────────────────┘
-     Mỗi dòng dữ liệu gồm 6 cột theo thứ tự:
-       No _a_ Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
+     Cột No. được TỰ ĐỘNG đánh số — KHÔNG cần truyền.
+     Mỗi dòng dữ liệu chỉ cần 5 cột theo thứ tự:
+       Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
 
-     Nếu cột No là 1 chữ cái (A / B / C / ...) và cột kế
-     là tên nhóm → render dòng TIÊU ĐỀ NHÓM (nền xanh).
-     Khi đó chỉ cần 2 cột:  A _a_ Tên nhóm
+     Dòng TIÊU ĐỀ NHÓM: bắt đầu bằng ký tự # theo sau là tên nhóm
+       #Thay thế (Replace) : Vật Tư/ Phụ Tùng
+       #Vệ sinh hoặc căn chỉnh (Adjust)
+       #Kiểm tra và xử lí theo tình trạng (Inspection)
+     Nhóm A/B/C được tự động gán theo thứ tự xuất hiện.
 
   5. TỔNG TIỀN
      tongcong    Tổng cộng
@@ -376,13 +379,13 @@
     &batdau=08:30
     &ketthuc=16:00
     &yeucau=Thay nhớt + lọc gió
-    &data=A_a_Thay thế (Replace) : Vật Tư/ Phụ Tùng
-          _b_1_a_Nhớt Total Q7000 5W30 (1B4L)_a_-_a_4_a_150,000_a_525,000
-          _b_2_a_Lọc nhớt Toyota Camry Vios Altis_a_-_a_1_a_120,000_a_120,000
-          _b_3_a_Lọc gió động cơ Toyota Veloz 2022_a_-_a_1_a_280,000_a_280,000
-          _b_4_a_Lọc gió máy lạnh Toyota 0N010_a_Cái_a_1_a_190,000_a_190,000
-          _b_B_a_Vệ sinh hoặc căn chỉnh (Adjust)
-          _b_C_a_Kiểm tra và xử lí theo tình trạng (Inspection)
+    &data=#Thay thế (Replace) : Vật Tư/ Phụ Tùng
+          _b_Nhớt Total Q7000 5W30 (1B4L)_a_-_a_4_a_150,000_a_525,000
+          _b_Lọc nhớt Toyota Camry Vios Altis_a_-_a_1_a_120,000_a_120,000
+          _b_Lọc gió động cơ Toyota Veloz 2022_a_-_a_1_a_280,000_a_280,000
+          _b_Lọc gió máy lạnh Toyota 0N010_a_Cái_a_1_a_190,000_a_190,000
+          _b_#Vệ sinh hoặc căn chỉnh (Adjust)
+          _b_#Kiểm tra và xử lí theo tình trạng (Inspection)
     &tongcong=1,115,000
     &ck=-
     &vat=-
@@ -448,43 +451,48 @@
   set('el-yeucau',  'yeucau');
 
   /* ══ BẢNG DỊCH VỤ ══
-     Phân tách: _b_ = xuống dòng | _a_ = sang cột
-     Cột: [0]No  [1]Nội dung  [2]ĐVT  [3]SL  [4]Đơn giá  [5]Thành tiền
-     Nếu cột [0] là 1 chữ cái → dòng header nhóm (chỉ cần [0] + [1])
+     _b_ = xuống dòng  |  _a_ = sang cột
+     Dòng dữ liệu — 5 cột (No. tự động):
+       Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
+     Dòng tiêu đề nhóm — bắt đầu bằng #:
+       #Tên nhóm  (nhóm A/B/C tự động theo thứ tự)
   */
-  var raw   = p.get('data') || '';
-  var tbody = document.getElementById('tbody-data');
-  var altToggle = 0;
+  var raw      = p.get('data') || '';
+  var tbody    = document.getElementById('tbody-data');
+  var itemNo   = 0;          // bộ đếm số thứ tự dòng dữ liệu
+  var groupNo  = 0;          // bộ đếm nhóm A/B/C...
+  var altCount = 0;          // bộ đếm màu xen kẽ
 
   if (raw.trim()) {
-    var rows = raw.split('_b_');
-    rows.forEach(function (rowStr) {
+    raw.split('_b_').forEach(function (rowStr) {
       rowStr = rowStr.trim();
       if (!rowStr) return;
 
-      var cols        = rowStr.split('_a_');
-      var no          = (cols[0] || '').trim();
-      var isGroupHdr  = /^[A-Za-z]$/.test(no);
-      var tr          = document.createElement('tr');
+      var tr = document.createElement('tr');
 
-      if (isGroupHdr) {
+      if (rowStr.charAt(0) === '#') {
         /* ── Dòng tiêu đề nhóm ── */
-        tr.className = 'sub-header';
-        tr.innerHTML =
-          '<td class="col-no">' + esc(no) + '</td>' +
-          '<td colspan="6">'   + esc(cols[1] || '') + '</td>';
-        altToggle = 0;   // reset màu xen kẽ sau mỗi nhóm
+        var label     = rowStr.slice(1).trim();
+        var groupLetter = String.fromCharCode(65 + groupNo); // A, B, C, ...
+        groupNo++;
+        altCount = 0;  // reset màu xen kẽ sau mỗi nhóm
+        tr.className  = 'sub-header';
+        tr.innerHTML  =
+          '<td class="col-no">' + esc(groupLetter) + '</td>' +
+          '<td colspan="6">'    + esc(label) + '</td>';
       } else {
-        /* ── Dòng dữ liệu ── */
-        if (altToggle % 2 === 1) tr.className = 'row-alt';
-        altToggle++;
+        /* ── Dòng dữ liệu (No. tự tăng) ── */
+        var cols = rowStr.split('_a_');
+        itemNo++;
+        if (altCount % 2 === 1) tr.className = 'row-alt';
+        altCount++;
         tr.innerHTML =
-          '<td class="col-no">'      + esc(no)                + '</td>' +
-          '<td class="col-content">' + esc(cols[1] || '')     + '</td>' +
-          '<td class="col-dvt">'     + esc(cols[2] || '-')    + '</td>' +
-          '<td class="col-sl">'      + esc(cols[3] || '')     + '</td>' +
-          '<td class="col-price">'   + fmtNum(cols[4] || '')  + '</td>' +
-          '<td class="col-total">'   + fmtNum(cols[5] || '')  + '</td>' +
+          '<td class="col-no">'      + itemNo                 + '</td>' +
+          '<td class="col-content">' + esc(cols[0] || '')     + '</td>' +
+          '<td class="col-dvt">'     + esc(cols[1] || '-')    + '</td>' +
+          '<td class="col-sl">'      + esc(cols[2] || '')     + '</td>' +
+          '<td class="col-price">'   + fmtNum(cols[3] || '')  + '</td>' +
+          '<td class="col-total">'   + fmtNum(cols[4] || '')  + '</td>' +
           '<td class="col-tax">-</td>';
       }
       tbody.appendChild(tr);
