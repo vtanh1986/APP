@@ -232,7 +232,7 @@
     <div class="yc-label">Yêu cầu khách hàng: <span id="el-yeucau"></span></div>
   </div>
 
-  <!-- ── BẢNG DỊCH VỤ: param data, cột _a_, dòng _b_ ── -->
+  <!-- ── BẢNG DỊCH VỤ ── -->
   <div class="services-wrapper">
     <table class="services-table">
       <thead>
@@ -250,7 +250,7 @@
     </table>
   </div>
 
-  <!-- ── TỔNG TIỀN: tongcong | ck | nocu | datt | vat | thanhtoan | sotienchu ── -->
+  <!-- ── TỔNG TIỀN ── -->
   <div class="bottom-section">
     <div class="warranty-box">
       <p><strong>Bảo hành:</strong></p>
@@ -271,7 +271,7 @@
 
   <div class="amount-words">Số Tiền Bằng Chữ: <span id="el-sotienchu"></span></div>
 
-  <!-- ── CHỮ KÝ: ngayky | ktv | cvdv ── -->
+  <!-- ── CHỮ KÝ ── -->
   <div class="sig-section">
     <div class="sig-date" id="el-ngayky"></div>
     <div class="sig-row">
@@ -293,9 +293,84 @@
 </div><!-- end page-wrapper -->
 
 <script>
-/*
-════════════════════════════════════════════════════════════════
-  HƯỚNG DẪN TRUYỀN BIẾN QUA URL
+/* ════════════════════════════════════════════════════════════════
+   ĐỔI SỐ THÀNH CHỮ TIẾNG VIỆT (tối đa 999 tỷ đồng)
+   Trả về chuỗi có chữ hoa đầu câu, kết thúc bằng " đồng chẵn"
+════════════════════════════════════════════════════════════════ */
+function docSoTienBangChu(n) {
+  if (n === 0) return 'Không đồng';
+
+  var donvi  = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+  var hang   = ['', 'mười', 'trăm', 'nghìn', 'triệu', 'tỷ'];
+
+  /* Đọc một nhóm 3 chữ số (0–999) */
+  function docNhom(num, hasTruoc) {
+    /* hasTruoc: có nhóm khác đứng trước không (dùng để chọn "linh" hay "lẻ") */
+    var tram = Math.floor(num / 100);
+    var chuc = Math.floor((num % 100) / 10);
+    var dv   = num % 10;
+    var res  = '';
+
+    if (tram > 0) {
+      res += donvi[tram] + ' trăm';
+      if (chuc === 0 && dv > 0) res += ' lẻ';
+    } else if (hasTruoc) {
+      if (chuc === 0 && dv > 0) res += 'lẻ ';
+      else if (chuc > 0)        res += 'không trăm ';
+    }
+
+    if (chuc > 1) {
+      res += (res ? ' ' : '') + donvi[chuc] + ' mươi';
+      if (dv === 1) res += ' mốt';
+      else if (dv === 5) res += ' lăm';
+      else if (dv > 0)   res += ' ' + donvi[dv];
+    } else if (chuc === 1) {
+      res += (res ? ' ' : '') + 'mười';
+      if (dv === 5) res += ' lăm';
+      else if (dv > 0) res += ' ' + donvi[dv];
+    } else if (chuc === 0 && dv > 0 && tram > 0) {
+      /* đã xử lý "lẻ" ở trên */
+      res += ' ' + donvi[dv];
+    } else if (chuc === 0 && dv > 0 && !hasTruoc && tram === 0) {
+      res += donvi[dv];
+    }
+
+    return res.trim();
+  }
+
+  /* Chia thành các nhóm: tỷ | triệu | nghìn | đơn vị */
+  var ty     = Math.floor(n / 1000000000);
+  var trieu  = Math.floor((n % 1000000000) / 1000000);
+  var nghin  = Math.floor((n % 1000000) / 1000);
+  var dv     = n % 1000;
+
+  var parts  = [];
+  var hasPrev = false;
+
+  if (ty > 0) {
+    parts.push(docNhom(ty, hasPrev) + ' tỷ');
+    hasPrev = true;
+  }
+  if (trieu > 0) {
+    parts.push(docNhom(trieu, hasPrev) + ' triệu');
+    hasPrev = true;
+  }
+  if (nghin > 0) {
+    parts.push(docNhom(nghin, hasPrev) + ' nghìn');
+    hasPrev = true;
+  }
+  if (dv > 0) {
+    parts.push(docNhom(dv, hasPrev));
+  }
+
+  var result = parts.join(' ').replace(/\s+/g, ' ').trim();
+  /* Viết hoa chữ cái đầu */
+  result = result.charAt(0).toUpperCase() + result.slice(1);
+  return result + ' đồng chẵn';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HƯỚNG DẪN TRUYỀN BIẾN QUA URL
 ════════════════════════════════════════════════════════════════
 
   1. META
@@ -326,19 +401,9 @@
      yeucau    Yêu cầu khách hàng
 
   4. BẢNG DỊCH VỤ – param: data
-     ┌─────────────────────────────────────────────────────┐
-     │  _a_  =  phân cách CỘT (sang phải)                 │
-     │  _b_  =  phân cách DÒNG (xuống hàng)               │
-     └─────────────────────────────────────────────────────┘
-     Cột No. được TỰ ĐỘNG đánh số — KHÔNG cần truyền.
-     Mỗi dòng dữ liệu chỉ cần 5 cột theo thứ tự:
-       Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
-
-     Dòng TIÊU ĐỀ NHÓM: bắt đầu bằng ký tự # theo sau là tên nhóm
-       #Thay thế (Replace) : Vật Tư/ Phụ Tùng
-       #Vệ sinh hoặc căn chỉnh (Adjust)
-       #Kiểm tra và xử lí theo tình trạng (Inspection)
-     Nhóm A/B/C được tự động gán theo thứ tự xuất hiện.
+     _a_  =  phân cách CỘT  |  _b_  =  phân cách DÒNG
+     Mỗi dòng dữ liệu 5 cột: Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
+     Dòng tiêu đề nhóm: bắt đầu bằng # (nhóm A/B/C tự động)
 
   5. TỔNG TIỀN
      tongcong    Tổng cộng
@@ -346,59 +411,18 @@
      nocu        Nợ cũ
      datt        Đã thanh toán
      vat         Thuế VAT
-     thanhtoan   Thanh toán cuối
-     sotienchu   Số tiền bằng chữ
+     thanhtoan   Thanh toán cuối  ← "Số tiền bằng chữ" tự động tính từ đây
+     sotienchu   (tùy chọn) Ghi đè thủ công nếu cần
 
   6. CHỮ KÝ
      ngayky    Dòng ngày (vd: Ngày 04 tháng 05 năm 2026)
      ktv       Tên kỹ thuật viên
      cvdv      Tên cố vấn dịch vụ
 
-════════════════════════════════════════════════════════════════
-  VÍ DỤ URL ĐẦY ĐỦ (gõ 1 dòng, xuống dòng chỉ để dễ đọc):
-────────────────────────────────────────────────────────────────
-  phieu.html
-    ?nvkd=PHẠM THỊ NGỌC TRÂM
-    &ngay=04/05/2026
-    &sdt=0975767778
-    &kh=Nguyễn Văn A
-    &dt=0901234567
-    &cty=Công ty ABC
-    &mst=0123456789
-    &dc=123 Đường Lê Lợi, TP Vinh
-    &bs=93A44326
-    &hx=Toyota
-    &namsx=2022
-    &loai=Veloz Cross
-    &mau=Trắng
-    &vin=VIN12345678
-    &km=48201
-    &tgkh=08:00 04/05/2026
-    &giao=17:00 04/05/2026
-    &hdk=12/2026
-    &batdau=08:30
-    &ketthuc=16:00
-    &yeucau=Thay nhớt + lọc gió
-    &data=#Thay thế (Replace) : Vật Tư/ Phụ Tùng
-          _b_Nhớt Total Q7000 5W30 (1B4L)_a_-_a_4_a_150,000_a_525,000
-          _b_Lọc nhớt Toyota Camry Vios Altis_a_-_a_1_a_120,000_a_120,000
-          _b_Lọc gió động cơ Toyota Veloz 2022_a_-_a_1_a_280,000_a_280,000
-          _b_Lọc gió máy lạnh Toyota 0N010_a_Cái_a_1_a_190,000_a_190,000
-          _b_#Vệ sinh hoặc căn chỉnh (Adjust)
-          _b_#Kiểm tra và xử lí theo tình trạng (Inspection)
-    &tongcong=1,115,000
-    &ck=-
-    &vat=-
-    &thanhtoan=1,115,000
-    &sotienchu=Một triệu một trăm mười lăm nghìn đồng chẵn
-    &ngayky=Ngày 04 tháng 05 năm 2026
-    &ktv=PHẠM KIM PHƯƠNG
-    &cvdv=PHẠM THỊ NGỌC TRÂM
-════════════════════════════════════════════════════════════════
-*/
+════════════════════════════════════════════════════════════════ */
 
 (function () {
-  const p = new URLSearchParams(window.location.search);
+  var p = new URLSearchParams(window.location.search);
 
   /* ── gán text vào element ── */
   function set(id, key) {
@@ -418,7 +442,7 @@
   function fmtNum(s) {
     s = (s || '').trim();
     if (!s || s === '-') return esc(s);
-    if (/[,.]/.test(s)) return esc(s);      // đã format sẵn
+    if (/[,.]/.test(s)) return esc(s);
     var n = parseInt(s.replace(/\D/g,''), 10);
     return isNaN(n) ? esc(s) : n.toLocaleString('vi-VN');
   }
@@ -450,18 +474,12 @@
   set('el-ketthuc', 'ketthuc');
   set('el-yeucau',  'yeucau');
 
-  /* ══ BẢNG DỊCH VỤ ══
-     _b_ = xuống dòng  |  _a_ = sang cột
-     Dòng dữ liệu — 5 cột (No. tự động):
-       Nội Dung _a_ ĐVT _a_ SL _a_ Đơn giá _a_ Thành tiền
-     Dòng tiêu đề nhóm — bắt đầu bằng #:
-       #Tên nhóm  (nhóm A/B/C tự động theo thứ tự)
-  */
+  /* ══ BẢNG DỊCH VỤ ══ */
   var raw      = p.get('data') || '';
   var tbody    = document.getElementById('tbody-data');
-  var itemNo   = 0;          // bộ đếm số thứ tự dòng dữ liệu
-  var groupNo  = 0;          // bộ đếm nhóm A/B/C...
-  var altCount = 0;          // bộ đếm màu xen kẽ
+  var itemNo   = 0;
+  var groupNo  = 0;
+  var altCount = 0;
 
   if (raw.trim()) {
     raw.split('_b_').forEach(function (rowStr) {
@@ -471,17 +489,15 @@
       var tr = document.createElement('tr');
 
       if (rowStr.charAt(0) === '#') {
-        /* ── Dòng tiêu đề nhóm ── */
-        var label     = rowStr.slice(1).trim();
-        var groupLetter = String.fromCharCode(65 + groupNo); // A, B, C, ...
+        var label       = rowStr.slice(1).trim();
+        var groupLetter = String.fromCharCode(65 + groupNo);
         groupNo++;
-        altCount = 0;  // reset màu xen kẽ sau mỗi nhóm
-        tr.className  = 'sub-header';
-        tr.innerHTML  =
+        altCount = 0;
+        tr.className = 'sub-header';
+        tr.innerHTML =
           '<td class="col-no">' + esc(groupLetter) + '</td>' +
           '<td colspan="6">'    + esc(label) + '</td>';
       } else {
-        /* ── Dòng dữ liệu (No. tự tăng) ── */
         var cols = rowStr.split('_a_');
         itemNo++;
         if (altCount % 2 === 1) tr.className = 'row-alt';
@@ -506,7 +522,28 @@
   set('el-datt',      'datt');
   set('el-vat',       'vat');
   set('el-thanhtoan', 'thanhtoan');
-  set('el-sotienchu', 'sotienchu');
+
+  /* ── Số tiền bằng chữ:
+       • Nếu có param sotienchu → dùng nguyên (override thủ công)
+       • Không có → tự tính từ param thanhtoan
+  ── */
+  (function() {
+    var el = document.getElementById('el-sotienchu');
+    if (!el) return;
+
+    /* Override thủ công */
+    if (p.has('sotienchu') && p.get('sotienchu').trim()) {
+      el.textContent = p.get('sotienchu');
+      return;
+    }
+
+    /* Tự tính */
+    var raw = (p.get('thanhtoan') || '').trim();
+    if (!raw || raw === '-') { el.textContent = ''; return; }
+    var num = parseInt(raw.replace(/[^0-9]/g, ''), 10);
+    if (isNaN(num)) { el.textContent = raw; return; }
+    el.textContent = docSoTienBangChu(num);
+  })();
 
   /* ══ CHỮ KÝ ══ */
   set('el-ngayky', 'ngayky');
