@@ -38,11 +38,8 @@
 
   /* HEADER */
   .header { display: flex; align-items: flex-start; gap: 10px; border-bottom: 3px solid var(--blue); padding-bottom: 8px; margin-bottom: 8px; }
-  .logo-block { flex: 0 0 auto; min-width: 155px; }
-  .logo-main { font-size: 32px; font-weight: 800; color: var(--blue); letter-spacing: -1px; line-height: 1; font-style: italic; }
-  .logo-sub { background: var(--blue); color: #fff; font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 2px; margin-top: 2px; display: inline-block; letter-spacing: 0.5px; }
-  .logo-tag { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
-  .logo-tag span { background: var(--yellow); color: var(--blue); font-size: 8.5px; font-weight: 700; padding: 2px 6px; border-radius: 2px; font-style: italic; }
+  .logo-block { flex: 0 0 auto; }
+  .logo-svg { display: block; height: 54px; width: auto; }
   .company-info { flex: 1; text-align: center; padding-top: 2px; }
   .company-title { font-size: 20px; font-weight: 800; color: var(--blue); font-style: italic; letter-spacing: 0.5px; line-height: 1.2; }
   .company-contact { font-size: 10.5px; color: var(--gray); margin-top: 4px; }
@@ -127,7 +124,7 @@
     .page-wrapper { padding: 10px; box-shadow: none; }
     .header { flex-direction: column; gap: 6px; }
     .company-title { font-size: 14px; }
-    .logo-main { font-size: 24px; }
+    .logo-svg { height: 42px; }
     .meta-row { flex-direction: column; }
     .doc-title { font-size: 12px; padding: 8px; border-right: none; border-bottom: 1.5px solid var(--border); }
     .meta-fields { min-width: unset; }
@@ -147,10 +144,8 @@
 
   <!-- ── HEADER (cố định) ── -->
   <div class="header">
-    <div class="logo-block">
-      <div class="logo-main">PHI LONG</div>
-      <div class="logo-sub">LỐP XE + BẢO DƯỠNG NHANH</div>
-      <div class="logo-tag"><span>AUTO.COM</span></div>
+    <div class="logo-block" id="logo-block">
+      <!-- Sẽ được điền bằng JS: ảnh từ param logo= hoặc SVG mặc định -->
     </div>
     <div class="company-info">
       <div class="company-title">CUNG CẤP GIẢI PHÁP Ô TÔ TOÀN DIỆN</div>
@@ -377,6 +372,7 @@ function docSoTienBangChu(n) {
      nvkd      Tên nhân viên kinh doanh
      ngay      Ngày báo giá  (vd: 04/05/2026)
      sdt       Số điện thoại NVKD
+     logo      URL ảnh logo (jpg/png/svg/webp) — bỏ trống → dùng SVG mặc định
 
   2. PHẦN A – Khách hàng
      kh        Tên khách hàng
@@ -423,6 +419,32 @@ function docSoTienBangChu(n) {
 
 (function () {
   var p = new URLSearchParams(window.location.search);
+
+  /* ══ LOGO ══
+     - logo=<url>  → hiển thị ảnh từ URL đó (jpg/png/svg/webp đều được)
+     - Không truyền → dùng SVG mặc định Phi Long
+  */
+  (function() {
+    var block = document.getElementById('logo-block');
+    if (!block) return;
+    var logoUrl = (p.get('logo') || '').trim();
+    if (logoUrl) {
+      /* Hiển thị ảnh từ URL */
+      var img = document.createElement('img');
+      img.src = logoUrl;
+      img.alt = 'Logo';
+      img.style.cssText = 'height:54px;width:auto;display:block;object-fit:contain;';
+      block.appendChild(img);
+    } else {
+      /* Fallback: SVG mặc định Phi Long */
+      block.innerHTML = '<svg class="logo-svg" viewBox="0 0 260 60" xmlns="http://www.w3.org/2000/svg">'
+        + '<text x="2" y="42" font-family="\'Be Vietnam Pro\',Arial Black,sans-serif" font-size="46" font-weight="900" font-style="italic" fill="#1a3a8f" letter-spacing="-1">PHI LONG</text>'
+        + '<text x="4" y="56" font-family="\'Be Vietnam Pro\',Arial,sans-serif" font-size="11" font-weight="700" font-style="italic" fill="#1a3a8f" letter-spacing="0.3">LỐP XE + BẢO DƯỠNG NHANH</text>'
+        + '<rect x="192" y="45" width="64" height="14" rx="2" fill="#f5a623"/>'
+        + '<text x="224" y="55.5" font-family="\'Be Vietnam Pro\',Arial,sans-serif" font-size="10.5" font-weight="900" font-style="italic" fill="#1a3a8f" text-anchor="middle" letter-spacing="0.3">AUTO.COM</text>'
+        + '</svg>';
+    }
+  })();
 
   /* ── gán text vào element ── */
   function set(id, key) {
