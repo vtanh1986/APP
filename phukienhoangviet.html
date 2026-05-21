@@ -405,7 +405,7 @@
                 // Dòng 2: Nợ cũ (thay cho "Chiết khấu") — truyền qua &nocuu=
                 const trNoCuu = document.createElement('tr');
                 trNoCuu.className = 'summary-row';
-                trNoCuu.innerHTML = `<td colspan="2">Nợ cũ</td><td style="text-align:right;white-space:nowrap">+${chiTietNoCuu.toLocaleString('vi-VN')}đ</td>`;
+                trNoCuu.innerHTML = `<td colspan="2">Nợ cũ</td><td style="text-align:right;white-space:nowrap">${chiTietNoCuu.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trNoCuu);
 
                 // Dòng 3: Tổng cộng (thay cho "Tổng thanh toán") = Tổng tiền hàng + Nợ cũ
@@ -417,7 +417,7 @@
                 // Dòng 4: Đã thanh toán — truyền qua &dathanhtoan=
                 const trDaTT = document.createElement('tr');
                 trDaTT.className = 'summary-row';
-                trDaTT.innerHTML = `<td colspan="2">Đã thanh toán</td><td style="text-align:right;white-space:nowrap">-${chiTietDaThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                trDaTT.innerHTML = `<td colspan="2">Đã thanh toán</td><td style="text-align:right;white-space:nowrap">${chiTietDaThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trDaTT);
 
                 // Dòng 5: Nợ hiện tại = Tổng cộng - Đã thanh toán
