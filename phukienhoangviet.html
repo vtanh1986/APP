@@ -46,8 +46,7 @@
         .summary-row td { padding: 3px 4px; }
         .summary-row td:last-child { text-align: right; }
         .first-summary { border-top: 0.5px solid #ccc; }
-        .summary-row.tong-cong { background: #ffffff; }
-        .summary-row.no-hien-tai { background: #ffffff; }
+
         .discount-reason { font-size: 13px; color: #333; border-bottom: 1px solid #ddd; }
         .discount-reason td { padding: 5px 4px; text-align: left; }
         .qrcode-section { text-align: center; margin: 8px 0 6px 0; padding: 8px 0; border-top: 1px dashed #ccc; }
@@ -406,7 +405,7 @@
 
                 // Dòng 3: Tổng cộng (thay cho "Tổng thanh toán") = Tổng tiền hàng + Nợ cũ
                 const trTongCong = document.createElement('tr');
-                trTongCong.className = 'summary-row tong-cong';
+                trTongCong.className = 'summary-row';
                 trTongCong.innerHTML = `<td colspan="2">Tổng cộng</td><td style="text-align:right;white-space:nowrap">${tongCong.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongCong);
 
@@ -418,7 +417,7 @@
 
                 // Dòng 5: Nợ hiện tại = Tổng cộng - Đã thanh toán
                 const trNoHienTai = document.createElement('tr');
-                trNoHienTai.className = 'summary-row no-hien-tai';
+                trNoHienTai.className = 'summary-row';
                 trNoHienTai.innerHTML = `<td colspan="2">Nợ hiện tại</td><td style="text-align:right;white-space:nowrap">${noHienTai.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trNoHienTai);
 
