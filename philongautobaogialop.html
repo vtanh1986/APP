@@ -16,7 +16,6 @@
     --border: #bbb;
     --text: #1a1a1a;
     --gray: #555;
-    --font-scale: 1;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,8 +24,14 @@
     font-family: 'Be Vietnam Pro', Arial, sans-serif;
     background: #e8eaf0;
     color: var(--text);
-    font-size: calc(13px * var(--font-scale));
+    font-size: 13px;
     line-height: 1.4;
+  }
+
+  /* ── WRAPPER BAO NGOÀI ĐỂ SCALE ── */
+  #scale-root {
+    transform-origin: top center;
+    /* scale được set bằng JS: style.transform = 'scale(X)' */
   }
 
   /* ── THANH ĐIỀU CHỈNH CỠ CHỮ ── */
@@ -48,71 +53,36 @@
     color: #333;
   }
   #font-ctrl button {
-    width: 28px;
-    height: 28px;
-    border: 1.5px solid #bbb;
-    border-radius: 50%;
+    width: 28px; height: 28px;
+    border: 1.5px solid #bbb; border-radius: 50%;
     background: #f5f6fa;
-    font-size: 17px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--blue);
-    line-height: 1;
-    transition: background 0.15s;
-    padding: 0;
+    font-size: 17px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); line-height: 1;
+    transition: background 0.15s; padding: 0;
   }
   #font-ctrl button:hover { background: #e0e4f4; }
-  #font-size-label {
-    min-width: 36px;
-    text-align: center;
-    font-weight: 700;
-    color: var(--blue);
-    font-size: 13px;
-  }
+  #font-size-label { min-width: 36px; text-align: center; font-weight: 700; color: var(--blue); font-size: 13px; }
 
-  /* ── NÚT IN CỐ ĐỊNH ── */
+  /* ── NÚT IN ── */
   #btn-print {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    z-index: 9999;
-    background: var(--blue);
-    color: #fff;
-    border: none;
-    border-radius: 50px;
-    padding: 13px 28px;
+    position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+    background: var(--blue); color: #fff; border: none;
+    border-radius: 50px; padding: 13px 28px;
     font-family: 'Be Vietnam Pro', Arial, sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
     box-shadow: 0 4px 18px rgba(26,58,143,0.35);
     transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
-    letter-spacing: 0.2px;
   }
-  #btn-print:hover {
-    background: #2650c0;
-    box-shadow: 0 6px 24px rgba(26,58,143,0.45);
-    transform: translateY(-2px);
-  }
-  #btn-print:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(26,58,143,0.25);
-  }
+  #btn-print:hover { background: #2650c0; box-shadow: 0 6px 24px rgba(26,58,143,0.45); transform: translateY(-2px); }
+  #btn-print:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(26,58,143,0.25); }
   #btn-print svg { flex-shrink: 0; }
 
   .page-wrapper {
-    max-width: 210mm;
-    margin: 0 auto;
-    background: #fff;
-    padding: 10mm 10mm 8mm 10mm;
-    min-height: 297mm;
-    box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+    max-width: 210mm; margin: 0 auto;
+    background: #fff; padding: 10mm 10mm 8mm 10mm;
+    min-height: 297mm; box-shadow: 0 4px 32px rgba(0,0,0,0.13);
   }
 
   /* HEADER */
@@ -120,40 +90,40 @@
   .logo-block { flex: 0 0 auto; }
   .logo-svg { display: block; height: 54px; width: auto; }
   .company-info { flex: 1; text-align: center; padding-top: 2px; }
-  .company-title { font-size: calc(20px * var(--font-scale)); font-weight: 800; color: var(--blue); font-style: italic; letter-spacing: 0.5px; line-height: 1.2; }
-  .company-contact { font-size: calc(10.5px * var(--font-scale)); color: var(--gray); margin-top: 4px; }
+  .company-title { font-size: 20px; font-weight: 800; color: var(--blue); font-style: italic; letter-spacing: 0.5px; line-height: 1.2; }
+  .company-contact { font-size: 10.5px; color: var(--gray); margin-top: 4px; }
   .company-contact strong { color: var(--blue); font-weight: 700; }
 
   /* META */
   .meta-row { display: flex; justify-content: space-between; align-items: stretch; border: 1.5px solid var(--border); margin-bottom: 6px; border-radius: 2px; overflow: hidden; }
-  .doc-title { flex: 1; background: var(--yellow-light); font-size: calc(15px * var(--font-scale)); font-weight: 800; color: var(--blue); text-align: center; padding: 8px 12px; display: flex; align-items: center; justify-content: center; letter-spacing: 0.3px; border-right: 1.5px solid var(--border); }
+  .doc-title { flex: 1; background: var(--yellow-light); font-size: 15px; font-weight: 800; color: var(--blue); text-align: center; padding: 8px 12px; display: flex; align-items: center; justify-content: center; letter-spacing: 0.3px; border-right: 1.5px solid var(--border); }
   .meta-fields { flex: 0 0 auto; min-width: 210px; }
   .meta-field { display: flex; border-bottom: 1px solid var(--border); }
   .meta-field:last-child { border-bottom: none; }
-  .meta-label { font-size: calc(10px * var(--font-scale)); color: var(--gray); padding: 4px 8px; border-right: 1px solid var(--border); min-width: 85px; background: #f5f6fa; }
-  .meta-value { font-size: calc(10.5px * var(--font-scale)); font-weight: 700; color: var(--blue); padding: 4px 8px; flex: 1; }
+  .meta-label { font-size: 10px; color: var(--gray); padding: 4px 8px; border-right: 1px solid var(--border); min-width: 85px; background: #f5f6fa; }
+  .meta-value { font-size: 10.5px; font-weight: 700; color: var(--blue); padding: 4px 8px; flex: 1; }
 
   /* SECTION HEADER */
-  .section-header { background: var(--blue); color: #fff; font-size: calc(11px * var(--font-scale)); font-weight: 700; padding: 4px 8px; letter-spacing: 0.3px; }
+  .section-header { background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; letter-spacing: 0.3px; }
 
   /* INFO TABLE */
-  .info-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); margin-bottom: 6px; font-size: calc(11.5px * var(--font-scale)); }
+  .info-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); margin-bottom: 6px; font-size: 11.5px; }
   .info-table td { border: 1px solid var(--border); padding: 4px 8px; }
-  .info-table .lbl { background: #f5f6fa; color: var(--gray); font-size: calc(10.5px * var(--font-scale)); white-space: nowrap; width: 90px; }
+  .info-table .lbl { background: #f5f6fa; color: var(--gray); font-size: 10.5px; white-space: nowrap; width: 90px; }
 
   /* VEHICLE */
   .vehicle-section { margin-bottom: 6px; }
-  .vehicle-header { display: flex; align-items: center; justify-content: space-between; background: var(--blue); color: #fff; padding: 4px 8px; font-size: calc(11px * var(--font-scale)); font-weight: 700; }
-  .vehicle-header .km-note { font-size: calc(9.5px * var(--font-scale)); font-weight: 400; font-style: italic; opacity: 0.85; }
-  .vehicle-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); border-top: none; font-size: calc(11.5px * var(--font-scale)); }
+  .vehicle-header { display: flex; align-items: center; justify-content: space-between; background: var(--blue); color: #fff; padding: 4px 8px; font-size: 11px; font-weight: 700; }
+  .vehicle-header .km-note { font-size: 9.5px; font-weight: 400; font-style: italic; opacity: 0.85; }
+  .vehicle-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); border-top: none; font-size: 11.5px; }
   .vehicle-table td { border: 1px solid var(--border); padding: 4px 8px; }
-  .vehicle-table .lbl { background: #f5f6fa; color: var(--gray); font-size: calc(10.5px * var(--font-scale)); white-space: nowrap; width: 110px; }
-  .yc-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; color: var(--blue); padding: 4px 8px; background: #f5f6fa; border: 1.5px solid var(--border); border-top: none; }
+  .vehicle-table .lbl { background: #f5f6fa; color: var(--gray); font-size: 10.5px; white-space: nowrap; width: 110px; }
+  .yc-label { font-size: 11px; font-weight: 700; color: var(--blue); padding: 4px 8px; background: #f5f6fa; border: 1.5px solid var(--border); border-top: none; }
 
   /* SERVICES TABLE */
   .services-wrapper { border: 1.5px solid var(--border); margin-bottom: 6px; }
-  .services-table { width: 100%; border-collapse: collapse; font-size: calc(11px * var(--font-scale)); }
-  .services-table th { background: var(--yellow); color: var(--blue); font-weight: 700; padding: 5px 4px; border: 1px solid #e0b800; text-align: center; font-size: calc(10.5px * var(--font-scale)); line-height: 1.3; vertical-align: middle; }
+  .services-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .services-table th { background: var(--yellow); color: var(--blue); font-weight: 700; padding: 5px 4px; border: 1px solid #e0b800; text-align: center; font-size: 10.5px; line-height: 1.3; vertical-align: middle; }
   .services-table td { border: 1px solid var(--border); padding: 4px 5px; vertical-align: middle; }
   .col-no    { text-align: center; width: 28px; }
   .col-dvt   { text-align: center; width: 40px; }
@@ -162,37 +132,39 @@
   .col-total { text-align: right;  width: 88px; }
   .col-tax   { text-align: center; width: 32px; }
   .col-content { text-align: left; }
-  .sub-header td { background: var(--blue); color: #fff; font-weight: 700; font-size: calc(11px * var(--font-scale)); padding: 4px 6px; }
+  .sub-header td { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 6px; }
   .row-alt { background: #fafbff; }
 
   /* BOTTOM */
   .bottom-section { display: flex; gap: 8px; margin-bottom: 6px; }
-  .warranty-box { flex: 1; border: 1.5px solid var(--border); padding: 8px; font-size: calc(10px * var(--font-scale)); color: var(--gray); line-height: 1.6; border-radius: 2px; }
+  .warranty-box { flex: 1; border: 1.5px solid var(--border); padding: 8px; font-size: 10px; color: var(--gray); line-height: 1.6; border-radius: 2px; }
   .warranty-box p { margin-bottom: 4px; }
   .sum-box { min-width: 210px; border: 1.5px solid var(--border); border-radius: 2px; overflow: hidden; }
-  .sum-row { display: flex; border-bottom: 1px solid var(--border); font-size: calc(11px * var(--font-scale)); }
+  .sum-row { display: flex; border-bottom: 1px solid var(--border); font-size: 11px; }
   .sum-row:last-child { border-bottom: none; }
-  .sum-label { flex: 1; padding: 5px 8px; color: var(--gray); background: #f5f6fa; border-right: 1px solid var(--border); font-size: calc(10.5px * var(--font-scale)); }
+  .sum-label { flex: 1; padding: 5px 8px; color: var(--gray); background: #f5f6fa; border-right: 1px solid var(--border); font-size: 10.5px; }
   .sum-value { min-width: 98px; padding: 5px 8px; text-align: right; font-weight: 700; }
   .sum-row.grand { background: var(--yellow); }
   .sum-row.grand .sum-label { color: var(--blue); font-weight: 700; background: var(--yellow); border-right-color: #e0b800; }
-  .sum-row.grand .sum-value { color: var(--blue); font-size: calc(13px * var(--font-scale)); }
+  .sum-row.grand .sum-value { color: var(--blue); font-size: 13px; }
 
   /* AMOUNT IN WORDS */
-  .amount-words { border: 1.5px solid var(--border); padding: 6px 10px; margin-bottom: 8px; font-size: calc(11px * var(--font-scale)); background: var(--yellow-light); border-radius: 2px; }
+  .amount-words { border: 1.5px solid var(--border); padding: 6px 10px; margin-bottom: 8px; font-size: 11px; background: var(--yellow-light); border-radius: 2px; }
   .amount-words span { font-weight: 700; color: var(--blue); }
 
   /* SIGNATURES */
   .sig-section { border-top: 2px solid var(--border); padding-top: 8px; }
-  .sig-date { text-align: right; font-size: calc(11px * var(--font-scale)); font-style: italic; color: var(--gray); margin-bottom: 10px; }
+  .sig-date { text-align: right; font-size: 11px; font-style: italic; color: var(--gray); margin-bottom: 10px; }
   .sig-row { display: flex; justify-content: space-between; text-align: center; gap: 10px; }
-  .sig-block { flex: 1; font-size: calc(11px * var(--font-scale)); }
-  .sig-title { font-weight: 700; color: var(--blue); font-size: calc(11px * var(--font-scale)); margin-bottom: 40px; }
-  .sig-name { font-weight: 700; color: var(--red); font-size: calc(12px * var(--font-scale)); border-top: 1px solid var(--border); padding-top: 4px; }
+  .sig-block { flex: 1; font-size: 11px; }
+  .sig-title { font-weight: 700; color: var(--blue); font-size: 11px; margin-bottom: 40px; }
+  .sig-name { font-weight: 700; color: var(--red); font-size: 12px; border-top: 1px solid var(--border); padding-top: 4px; }
 
+  /* ══ PRINT ══ */
   @media print {
     #btn-print { display: none !important; }
-    #font-ctrl { display: none !important; }
+    #font-ctrl  { display: none !important; }
+
     html {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -202,31 +174,43 @@
     *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
-      color-adjust: exact !important;
-      forced-color-adjust: none !important;
     }
+
     @page { size: A4 portrait; margin: 8mm; }
+
     html, body { background: #ffffff !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-    .page-wrapper { margin: 0 !important; padding: 6mm 8mm !important; box-shadow: none !important; max-width: 100% !important; width: 100% !important; min-height: auto !important; }
+
+    /* scale-root: bỏ transform, dùng zoom để in đúng tỉ lệ */
+    #scale-root {
+      transform: none !important;
+      width: 100% !important;
+    }
+
+    .page-wrapper {
+      margin: 0 !important; padding: 6mm 8mm !important;
+      box-shadow: none !important; max-width: 100% !important; width: 100% !important; min-height: auto !important;
+    }
+
     .header, .meta-row, .bottom-section, .sig-row, .meta-field, .sum-row, .vehicle-header { display: flex !important; }
-    .section-header { background-color: #1a3a8f !important; color: #ffffff !important; }
-    .vehicle-header { background-color: #1a3a8f !important; color: #ffffff !important; }
+
+    .section-header  { background-color: #1a3a8f !important; color: #ffffff !important; }
+    .vehicle-header  { background-color: #1a3a8f !important; color: #ffffff !important; }
     .vehicle-header .km-note { color: #ffffff !important; opacity: 1 !important; }
-    .sub-header td { background-color: #1a3a8f !important; color: #ffffff !important; }
+    .sub-header td   { background-color: #1a3a8f !important; color: #ffffff !important; }
     .services-table th { background-color: #f5c500 !important; color: #1a3a8f !important; }
-    .sum-row.grand { background-color: #f5c500 !important; }
+    .sum-row.grand   { background-color: #f5c500 !important; }
     .sum-row.grand .sum-label { background-color: #f5c500 !important; color: #1a3a8f !important; border-right-color: #e0b800 !important; font-weight: 700 !important; }
     .sum-row.grand .sum-value { color: #1a3a8f !important; }
     .info-table .lbl, .vehicle-table .lbl, .meta-label, .sum-label, .yc-label { background-color: #f5f6fa !important; }
-    .doc-title { background-color: #fffbe6 !important; color: #1a3a8f !important; }
+    .doc-title   { background-color: #fffbe6 !important; color: #1a3a8f !important; }
     .amount-words { background-color: #fffbe6 !important; }
     .row-alt { background-color: #fafbff !important; }
-    .meta-value { color: #1a3a8f !important; }
-    .company-title { color: #1a3a8f !important; }
-    .sig-title { color: #1a3a8f !important; }
-    .sig-name { color: #d32f2f !important; }
+    .meta-value        { color: #1a3a8f !important; }
+    .company-title     { color: #1a3a8f !important; }
+    .sig-title         { color: #1a3a8f !important; }
+    .sig-name          { color: #d32f2f !important; }
     .amount-words span { color: #1a3a8f !important; }
-    .yc-label { color: #1a3a8f !important; }
+    .yc-label          { color: #1a3a8f !important; }
     .meta-row, .info-table, .vehicle-table, .services-wrapper, .sum-box, .amount-words, .warranty-box { border-color: #bbbbbb !important; }
     .info-table td, .vehicle-table td, .services-table td, .services-table th { border-color: #bbbbbb !important; }
     .header, .meta-row, .info-table, .vehicle-section, .services-wrapper, .bottom-section, .amount-words, .sig-section { page-break-inside: avoid; break-inside: avoid; }
@@ -269,9 +253,12 @@
   In phiếu
 </button>
 
+<!-- ── WRAPPER SCALE ── -->
+<div id="scale-root">
+
 <div class="page-wrapper">
 
-  <!-- ── HEADER ── -->
+  <!-- HEADER -->
   <div class="header">
     <div class="logo-block" id="logo-block"></div>
     <div class="company-info">
@@ -283,47 +270,33 @@
     </div>
   </div>
 
-  <!-- ── META ── -->
+  <!-- META -->
   <div class="meta-row">
     <div class="doc-title">PHIẾU ĐẶT LỊCH</div>
     <div class="meta-fields">
-      <div class="meta-field">
-        <div class="meta-label">NVKD</div>
-        <div class="meta-value" id="el-nvkd"></div>
-      </div>
-      <div class="meta-field">
-        <div class="meta-label">Ngày báo giá</div>
-        <div class="meta-value" id="el-ngay"></div>
-      </div>
-      <div class="meta-field">
-        <div class="meta-label">Số điện thoại</div>
-        <div class="meta-value" id="el-sdt"></div>
-      </div>
+      <div class="meta-field"><div class="meta-label">NVKD</div><div class="meta-value" id="el-nvkd"></div></div>
+      <div class="meta-field"><div class="meta-label">Ngày báo giá</div><div class="meta-value" id="el-ngay"></div></div>
+      <div class="meta-field"><div class="meta-label">Số điện thoại</div><div class="meta-value" id="el-sdt"></div></div>
     </div>
   </div>
 
-  <!-- ── PHẦN A ── -->
+  <!-- PHẦN A -->
   <div class="section-header">A &nbsp; THÔNG TIN KHÁCH HÀNG</div>
   <table class="info-table">
     <tr>
-      <td class="lbl">Khách hàng (*)</td>
-      <td id="el-kh"></td>
-      <td class="lbl">Điện Thoại</td>
-      <td id="el-dt"></td>
+      <td class="lbl">Khách hàng (*)</td><td id="el-kh"></td>
+      <td class="lbl">Điện Thoại</td><td id="el-dt"></td>
     </tr>
     <tr>
-      <td class="lbl">Công ty</td>
-      <td id="el-cty"></td>
-      <td class="lbl">MST/CCCD</td>
-      <td id="el-mst"></td>
+      <td class="lbl">Công ty</td><td id="el-cty"></td>
+      <td class="lbl">MST/CCCD</td><td id="el-mst"></td>
     </tr>
     <tr>
-      <td class="lbl">Địa chỉ</td>
-      <td colspan="3" id="el-dc"></td>
+      <td class="lbl">Địa chỉ</td><td colspan="3" id="el-dc"></td>
     </tr>
   </table>
 
-  <!-- ── PHẦN B ── -->
+  <!-- PHẦN B -->
   <div class="vehicle-section">
     <div class="vehicle-header">
       <span>B &nbsp; THÔNG TIN XE</span>
@@ -331,30 +304,30 @@
     </div>
     <table class="vehicle-table">
       <tr>
-        <td class="lbl">Biển số</td>       <td id="el-bs"></td>
-        <td class="lbl">Hãng xe</td>       <td id="el-hx"></td>
-        <td class="lbl">Năm SX</td>        <td id="el-namsx"></td>
+        <td class="lbl">Biển số</td><td id="el-bs"></td>
+        <td class="lbl">Hãng xe</td><td id="el-hx"></td>
+        <td class="lbl">Năm SX</td><td id="el-namsx"></td>
       </tr>
       <tr>
-        <td class="lbl">Loại xe</td>       <td id="el-loai"></td>
-        <td class="lbl">Màu Xe</td>        <td id="el-mau"></td>
-        <td class="lbl">Số vin/khung</td>  <td id="el-vin"></td>
+        <td class="lbl">Loại xe</td><td id="el-loai"></td>
+        <td class="lbl">Màu Xe</td><td id="el-mau"></td>
+        <td class="lbl">Số vin/khung</td><td id="el-vin"></td>
       </tr>
       <tr>
-        <td class="lbl">Kilomet vào xưởng</td> <td id="el-km"></td>
-        <td class="lbl">Thời gian KH tới</td>  <td id="el-tgkh"></td>
-        <td class="lbl">Dự kiến giao xe</td>   <td id="el-giao"></td>
+        <td class="lbl">Kilomet vào xưởng</td><td id="el-km"></td>
+        <td class="lbl">Thời gian KH tới</td><td id="el-tgkh"></td>
+        <td class="lbl">Dự kiến giao xe</td><td id="el-giao"></td>
       </tr>
       <tr>
-        <td class="lbl">Hạn đăng kiểm</td>    <td id="el-hdk"></td>
-        <td class="lbl">Dự kiến bắt đầu</td>  <td id="el-batdau"></td>
-        <td class="lbl">Dự kiến kết thúc</td> <td id="el-ketthuc"></td>
+        <td class="lbl">Hạn đăng kiểm</td><td id="el-hdk"></td>
+        <td class="lbl">Dự kiến bắt đầu</td><td id="el-batdau"></td>
+        <td class="lbl">Dự kiến kết thúc</td><td id="el-ketthuc"></td>
       </tr>
     </table>
     <div class="yc-label">Yêu cầu khách hàng: <span id="el-yeucau"></span></div>
   </div>
 
-  <!-- ── BẢNG DỊCH VỤ ── -->
+  <!-- BẢNG DỊCH VỤ -->
   <div class="services-wrapper">
     <table class="services-table">
       <thead>
@@ -372,7 +345,7 @@
     </table>
   </div>
 
-  <!-- ── TỔNG TIỀN ── -->
+  <!-- TỔNG TIỀN -->
   <div class="bottom-section">
     <div class="warranty-box">
       <p><strong>Bảo hành:</strong></p>
@@ -392,43 +365,41 @@
 
   <div class="amount-words">Số Tiền Bằng Chữ: <span id="el-sotienchu"></span></div>
 
-  <!-- ── CHỮ KÝ ── -->
+  <!-- CHỮ KÝ -->
   <div class="sig-section">
     <div class="sig-date" id="el-ngayky"></div>
     <div class="sig-row">
-      <div class="sig-block">
-        <div class="sig-title">Khách Hàng</div>
-        <div class="sig-name">&nbsp;</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-title">Kỹ Thuật Viên</div>
-        <div class="sig-name" id="el-ktv"></div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-title">Cố Vấn Dịch Vụ / PKD</div>
-        <div class="sig-name" id="el-cvdv"></div>
-      </div>
+      <div class="sig-block"><div class="sig-title">Khách Hàng</div><div class="sig-name">&nbsp;</div></div>
+      <div class="sig-block"><div class="sig-title">Kỹ Thuật Viên</div><div class="sig-name" id="el-ktv"></div></div>
+      <div class="sig-block"><div class="sig-title">Cố Vấn Dịch Vụ / PKD</div><div class="sig-name" id="el-cvdv"></div></div>
     </div>
   </div>
 
 </div><!-- end page-wrapper -->
+</div><!-- end scale-root -->
 
 <script>
-/* ── ĐIỀU CHỈNH CỠ CHỮ ── */
+/* ── SCALE TOÀN BỘ TRANG (áp dụng cả khi in qua CSS zoom) ── */
 (function () {
   var STEP = 0.05, MIN = 0.6, MAX = 2.0;
   var scale = parseFloat(localStorage.getItem('phi-long-font-scale') || '1');
+  var root  = document.getElementById('scale-root');
   var label = document.getElementById('font-size-label');
-  var root  = document.documentElement;
 
   function apply(s) {
     scale = Math.min(MAX, Math.max(MIN, Math.round(s * 100) / 100));
-    root.style.setProperty('--font-scale', scale);
+    /* transform cho màn hình — origin top center, điều chỉnh chiều cao wrapper */
+    root.style.transformOrigin = 'top center';
+    root.style.transform = scale === 1 ? '' : 'scale(' + scale + ')';
+    /* zoom cho bản in (Chrome/Edge dùng zoom khi print) */
+    root.style.zoom = scale;
     label.textContent = Math.round(scale * 100) + '%';
+    /* khi scale < 1, trang co lại nhưng body vẫn cao → điều chỉnh min-height */
+    root.style.marginBottom = scale !== 1 ? (-(1 - scale) * root.offsetHeight) + 'px' : '';
     try { localStorage.setItem('phi-long-font-scale', scale); } catch(e) {}
   }
-  apply(scale);
 
+  apply(scale);
   document.getElementById('btn-increase').addEventListener('click', function () { apply(scale + STEP); });
   document.getElementById('btn-decrease').addEventListener('click', function () { apply(scale - STEP); });
 })();
@@ -447,15 +418,15 @@ function docSoTienBangChu(n) {
     else if (chuc === 0 && dv > 0 && !hasTruoc && tram === 0) { res += donvi[dv]; }
     return res.trim();
   }
-  var ty = Math.floor(n / 1000000000), trieu = Math.floor((n % 1000000000) / 1000000), nghin = Math.floor((n % 1000000) / 1000), dv = n % 1000;
+  var ty = Math.floor(n / 1000000000), trieu = Math.floor((n % 1000000000) / 1000000),
+      nghin = Math.floor((n % 1000000) / 1000), dv = n % 1000;
   var parts = [], hasPrev = false;
   if (ty > 0)    { parts.push(docNhom(ty, hasPrev)    + ' tỷ');    hasPrev = true; }
   if (trieu > 0) { parts.push(docNhom(trieu, hasPrev) + ' triệu'); hasPrev = true; }
   if (nghin > 0) { parts.push(docNhom(nghin, hasPrev) + ' nghìn'); hasPrev = true; }
   if (dv > 0)    { parts.push(docNhom(dv, hasPrev)); }
   var result = parts.join(' ').replace(/\s+/g, ' ').trim();
-  result = result.charAt(0).toUpperCase() + result.slice(1);
-  return result + ' đồng chẵn';
+  return result.charAt(0).toUpperCase() + result.slice(1) + ' đồng chẵn';
 }
 
 /* ── ĐIỀN DỮ LIỆU TỪ URL ── */
@@ -463,8 +434,7 @@ function docSoTienBangChu(n) {
   var p = new URLSearchParams(window.location.search);
 
   (function() {
-    var block = document.getElementById('logo-block');
-    if (!block) return;
+    var block = document.getElementById('logo-block'); if (!block) return;
     var logoUrl = (p.get('logo') || '').trim();
     if (logoUrl) {
       var img = document.createElement('img');
@@ -484,8 +454,7 @@ function docSoTienBangChu(n) {
   function set(id, key) { var el = document.getElementById(id); if (el) el.textContent = p.has(key) ? p.get(key) : ''; }
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtNum(s) {
-    s = (s||'').trim();
-    if (!s || s === '-') return esc(s);
+    s = (s||'').trim(); if (!s || s === '-') return esc(s);
     if (/[,.]/.test(s)) return esc(s);
     var n = parseInt(s.replace(/\D/g,''), 10);
     return isNaN(n) ? esc(s) : n.toLocaleString('vi-VN');
@@ -501,16 +470,15 @@ function docSoTienBangChu(n) {
   var raw = p.get('data') || '', tbody = document.getElementById('tbody-data');
   var itemNo = 0, groupNo = 0, altCount = 0, lastGroup = null;
 
-  function appendGroupHeader(label) {
+  function appendGroupHeader(lbl) {
     var letter = String.fromCharCode(65 + groupNo); groupNo++; altCount = 0;
     var tr = document.createElement('tr'); tr.className = 'sub-header';
-    tr.innerHTML = '<td class="col-no">' + esc(letter) + '</td><td colspan="6">' + esc(label) + '</td>';
+    tr.innerHTML = '<td class="col-no">' + esc(letter) + '</td><td colspan="6">' + esc(lbl) + '</td>';
     tbody.appendChild(tr);
   }
   function appendDataRow(cols) {
     itemNo++; var tr = document.createElement('tr');
-    if (altCount % 2 === 1) tr.className = 'row-alt';
-    altCount++;
+    if (altCount % 2 === 1) tr.className = 'row-alt'; altCount++;
     var content = (cols[0]||'').replace(/^[|#]+/,'').trim();
     tr.innerHTML = '<td class="col-no">' + itemNo + '</td><td class="col-content">' + esc(content) + '</td>'
       + '<td class="col-dvt">' + esc(cols[1]||'-') + '</td><td class="col-sl">' + esc(cols[2]||'') + '</td>'
@@ -524,8 +492,8 @@ function docSoTienBangChu(n) {
       rowStr = rowStr.trim(); if (!rowStr) return;
       if (rowStr.charAt(0) === '|') {
         var rest = rowStr.slice(1), cols = rest.split('_a_');
-        if (cols.length === 1) { var label = cols[0].trim(); if (label !== lastGroup) { lastGroup = label; appendGroupHeader(label); } }
-        else { var groupLabel = cols[0].trim(), dataCols = cols.slice(1); if (groupLabel !== lastGroup) { lastGroup = groupLabel; appendGroupHeader(groupLabel); } appendDataRow(dataCols); }
+        if (cols.length === 1) { var lbl = cols[0].trim(); if (lbl !== lastGroup) { lastGroup = lbl; appendGroupHeader(lbl); } }
+        else { var gl = cols[0].trim(), dc = cols.slice(1); if (gl !== lastGroup) { lastGroup = gl; appendGroupHeader(gl); } appendDataRow(dc); }
       } else { appendDataRow(rowStr.split('_a_')); }
     });
   }
