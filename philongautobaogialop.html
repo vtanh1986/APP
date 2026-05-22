@@ -16,6 +16,7 @@
     --border: #bbb;
     --text: #1a1a1a;
     --gray: #555;
+    --font-scale: 1;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,8 +25,52 @@
     font-family: 'Be Vietnam Pro', Arial, sans-serif;
     background: #e8eaf0;
     color: var(--text);
-    font-size: 13px;
+    font-size: calc(13px * var(--font-scale));
     line-height: 1.4;
+  }
+
+  /* ── THANH ĐIỀU CHỈNH CỠ CHỮ ── */
+  #font-ctrl {
+    position: fixed;
+    bottom: 84px;
+    right: 28px;
+    z-index: 9999;
+    background: #fff;
+    border: 1.5px solid #bbb;
+    border-radius: 50px;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    font-size: 13px;
+    color: #333;
+  }
+  #font-ctrl button {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid #bbb;
+    border-radius: 50%;
+    background: #f5f6fa;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue);
+    line-height: 1;
+    transition: background 0.15s;
+    padding: 0;
+  }
+  #font-ctrl button:hover { background: #e0e4f4; }
+  #font-size-label {
+    min-width: 36px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--blue);
+    font-size: 13px;
   }
 
   /* ── NÚT IN CỐ ĐỊNH ── */
@@ -59,9 +104,7 @@
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(26,58,143,0.25);
   }
-  #btn-print svg {
-    flex-shrink: 0;
-  }
+  #btn-print svg { flex-shrink: 0; }
 
   .page-wrapper {
     max-width: 210mm;
@@ -77,40 +120,40 @@
   .logo-block { flex: 0 0 auto; }
   .logo-svg { display: block; height: 54px; width: auto; }
   .company-info { flex: 1; text-align: center; padding-top: 2px; }
-  .company-title { font-size: 20px; font-weight: 800; color: var(--blue); font-style: italic; letter-spacing: 0.5px; line-height: 1.2; }
-  .company-contact { font-size: 10.5px; color: var(--gray); margin-top: 4px; }
+  .company-title { font-size: calc(20px * var(--font-scale)); font-weight: 800; color: var(--blue); font-style: italic; letter-spacing: 0.5px; line-height: 1.2; }
+  .company-contact { font-size: calc(10.5px * var(--font-scale)); color: var(--gray); margin-top: 4px; }
   .company-contact strong { color: var(--blue); font-weight: 700; }
 
   /* META */
   .meta-row { display: flex; justify-content: space-between; align-items: stretch; border: 1.5px solid var(--border); margin-bottom: 6px; border-radius: 2px; overflow: hidden; }
-  .doc-title { flex: 1; background: var(--yellow-light); font-size: 15px; font-weight: 800; color: var(--blue); text-align: center; padding: 8px 12px; display: flex; align-items: center; justify-content: center; letter-spacing: 0.3px; border-right: 1.5px solid var(--border); }
+  .doc-title { flex: 1; background: var(--yellow-light); font-size: calc(15px * var(--font-scale)); font-weight: 800; color: var(--blue); text-align: center; padding: 8px 12px; display: flex; align-items: center; justify-content: center; letter-spacing: 0.3px; border-right: 1.5px solid var(--border); }
   .meta-fields { flex: 0 0 auto; min-width: 210px; }
   .meta-field { display: flex; border-bottom: 1px solid var(--border); }
   .meta-field:last-child { border-bottom: none; }
-  .meta-label { font-size: 10px; color: var(--gray); padding: 4px 8px; border-right: 1px solid var(--border); min-width: 85px; background: #f5f6fa; }
-  .meta-value { font-size: 10.5px; font-weight: 700; color: var(--blue); padding: 4px 8px; flex: 1; }
+  .meta-label { font-size: calc(10px * var(--font-scale)); color: var(--gray); padding: 4px 8px; border-right: 1px solid var(--border); min-width: 85px; background: #f5f6fa; }
+  .meta-value { font-size: calc(10.5px * var(--font-scale)); font-weight: 700; color: var(--blue); padding: 4px 8px; flex: 1; }
 
   /* SECTION HEADER */
-  .section-header { background: var(--blue); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; letter-spacing: 0.3px; }
+  .section-header { background: var(--blue); color: #fff; font-size: calc(11px * var(--font-scale)); font-weight: 700; padding: 4px 8px; letter-spacing: 0.3px; }
 
   /* INFO TABLE */
-  .info-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); margin-bottom: 6px; font-size: 11.5px; }
+  .info-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); margin-bottom: 6px; font-size: calc(11.5px * var(--font-scale)); }
   .info-table td { border: 1px solid var(--border); padding: 4px 8px; }
-  .info-table .lbl { background: #f5f6fa; color: var(--gray); font-size: 10.5px; white-space: nowrap; width: 90px; }
+  .info-table .lbl { background: #f5f6fa; color: var(--gray); font-size: calc(10.5px * var(--font-scale)); white-space: nowrap; width: 90px; }
 
   /* VEHICLE */
   .vehicle-section { margin-bottom: 6px; }
-  .vehicle-header { display: flex; align-items: center; justify-content: space-between; background: var(--blue); color: #fff; padding: 4px 8px; font-size: 11px; font-weight: 700; }
-  .vehicle-header .km-note { font-size: 9.5px; font-weight: 400; font-style: italic; opacity: 0.85; }
-  .vehicle-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); border-top: none; font-size: 11.5px; }
+  .vehicle-header { display: flex; align-items: center; justify-content: space-between; background: var(--blue); color: #fff; padding: 4px 8px; font-size: calc(11px * var(--font-scale)); font-weight: 700; }
+  .vehicle-header .km-note { font-size: calc(9.5px * var(--font-scale)); font-weight: 400; font-style: italic; opacity: 0.85; }
+  .vehicle-table { width: 100%; border-collapse: collapse; border: 1.5px solid var(--border); border-top: none; font-size: calc(11.5px * var(--font-scale)); }
   .vehicle-table td { border: 1px solid var(--border); padding: 4px 8px; }
-  .vehicle-table .lbl { background: #f5f6fa; color: var(--gray); font-size: 10.5px; white-space: nowrap; width: 110px; }
-  .yc-label { font-size: 11px; font-weight: 700; color: var(--blue); padding: 4px 8px; background: #f5f6fa; border: 1.5px solid var(--border); border-top: none; }
+  .vehicle-table .lbl { background: #f5f6fa; color: var(--gray); font-size: calc(10.5px * var(--font-scale)); white-space: nowrap; width: 110px; }
+  .yc-label { font-size: calc(11px * var(--font-scale)); font-weight: 700; color: var(--blue); padding: 4px 8px; background: #f5f6fa; border: 1.5px solid var(--border); border-top: none; }
 
   /* SERVICES TABLE */
   .services-wrapper { border: 1.5px solid var(--border); margin-bottom: 6px; }
-  .services-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .services-table th { background: var(--yellow); color: var(--blue); font-weight: 700; padding: 5px 4px; border: 1px solid #e0b800; text-align: center; font-size: 10.5px; line-height: 1.3; vertical-align: middle; }
+  .services-table { width: 100%; border-collapse: collapse; font-size: calc(11px * var(--font-scale)); }
+  .services-table th { background: var(--yellow); color: var(--blue); font-weight: 700; padding: 5px 4px; border: 1px solid #e0b800; text-align: center; font-size: calc(10.5px * var(--font-scale)); line-height: 1.3; vertical-align: middle; }
   .services-table td { border: 1px solid var(--border); padding: 4px 5px; vertical-align: middle; }
   .col-no    { text-align: center; width: 28px; }
   .col-dvt   { text-align: center; width: 40px; }
@@ -119,45 +162,37 @@
   .col-total { text-align: right;  width: 88px; }
   .col-tax   { text-align: center; width: 32px; }
   .col-content { text-align: left; }
-  .sub-header td { background: var(--blue); color: #fff; font-weight: 700; font-size: 11px; padding: 4px 6px; }
+  .sub-header td { background: var(--blue); color: #fff; font-weight: 700; font-size: calc(11px * var(--font-scale)); padding: 4px 6px; }
   .row-alt { background: #fafbff; }
 
   /* BOTTOM */
   .bottom-section { display: flex; gap: 8px; margin-bottom: 6px; }
-  .warranty-box { flex: 1; border: 1.5px solid var(--border); padding: 8px; font-size: 10px; color: var(--gray); line-height: 1.6; border-radius: 2px; }
+  .warranty-box { flex: 1; border: 1.5px solid var(--border); padding: 8px; font-size: calc(10px * var(--font-scale)); color: var(--gray); line-height: 1.6; border-radius: 2px; }
   .warranty-box p { margin-bottom: 4px; }
   .sum-box { min-width: 210px; border: 1.5px solid var(--border); border-radius: 2px; overflow: hidden; }
-  .sum-row { display: flex; border-bottom: 1px solid var(--border); font-size: 11px; }
+  .sum-row { display: flex; border-bottom: 1px solid var(--border); font-size: calc(11px * var(--font-scale)); }
   .sum-row:last-child { border-bottom: none; }
-  .sum-label { flex: 1; padding: 5px 8px; color: var(--gray); background: #f5f6fa; border-right: 1px solid var(--border); font-size: 10.5px; }
+  .sum-label { flex: 1; padding: 5px 8px; color: var(--gray); background: #f5f6fa; border-right: 1px solid var(--border); font-size: calc(10.5px * var(--font-scale)); }
   .sum-value { min-width: 98px; padding: 5px 8px; text-align: right; font-weight: 700; }
   .sum-row.grand { background: var(--yellow); }
   .sum-row.grand .sum-label { color: var(--blue); font-weight: 700; background: var(--yellow); border-right-color: #e0b800; }
-  .sum-row.grand .sum-value { color: var(--blue); font-size: 13px; }
+  .sum-row.grand .sum-value { color: var(--blue); font-size: calc(13px * var(--font-scale)); }
 
   /* AMOUNT IN WORDS */
-  .amount-words { border: 1.5px solid var(--border); padding: 6px 10px; margin-bottom: 8px; font-size: 11px; background: var(--yellow-light); border-radius: 2px; }
+  .amount-words { border: 1.5px solid var(--border); padding: 6px 10px; margin-bottom: 8px; font-size: calc(11px * var(--font-scale)); background: var(--yellow-light); border-radius: 2px; }
   .amount-words span { font-weight: 700; color: var(--blue); }
 
   /* SIGNATURES */
   .sig-section { border-top: 2px solid var(--border); padding-top: 8px; }
-  .sig-date { text-align: right; font-size: 11px; font-style: italic; color: var(--gray); margin-bottom: 10px; }
+  .sig-date { text-align: right; font-size: calc(11px * var(--font-scale)); font-style: italic; color: var(--gray); margin-bottom: 10px; }
   .sig-row { display: flex; justify-content: space-between; text-align: center; gap: 10px; }
-  .sig-block { flex: 1; font-size: 11px; }
-  .sig-title { font-weight: 700; color: var(--blue); font-size: 11px; margin-bottom: 40px; }
-  .sig-name { font-weight: 700; color: var(--red); font-size: 12px; border-top: 1px solid var(--border); padding-top: 4px; }
+  .sig-block { flex: 1; font-size: calc(11px * var(--font-scale)); }
+  .sig-title { font-weight: 700; color: var(--blue); font-size: calc(11px * var(--font-scale)); margin-bottom: 40px; }
+  .sig-name { font-weight: 700; color: var(--red); font-size: calc(12px * var(--font-scale)); border-top: 1px solid var(--border); padding-top: 4px; }
 
-  /* ══════════════════════════════════════════════
-     PRINT — đảm bảo bản in 1:1 với hiển thị web
-     Kỹ thuật: forced-color-adjust + -webkit-print-color-adjust
-     để ép trình duyệt giữ 100% màu nền & màu chữ
-  ══════════════════════════════════════════════ */
   @media print {
-
-    /* 0. Ẩn nút in */
     #btn-print { display: none !important; }
-
-    /* 1. Ép giữ toàn bộ màu sắc — quan trọng nhất */
+    #font-ctrl { display: none !important; }
     html {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -170,146 +205,59 @@
       color-adjust: exact !important;
       forced-color-adjust: none !important;
     }
-
-    /* 2. Kích thước trang */
-    @page {
-      size: A4 portrait;
-      margin: 8mm;
-    }
-
-    /* 3. Reset body/html */
-    html, body {
-      background: #ffffff !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100% !important;
-    }
-
-    /* 4. Page wrapper khớp với A4 trừ margin @page */
-    .page-wrapper {
-      margin: 0 !important;
-      padding: 6mm 8mm !important;
-      box-shadow: none !important;
-      max-width: 100% !important;
-      width: 100% !important;
-      min-height: auto !important;
-    }
-
-    /* 5. Đảm bảo flex layouts giữ nguyên */
-    .header,
-    .meta-row,
-    .bottom-section,
-    .sig-row,
-    .meta-field,
-    .sum-row,
-    .vehicle-header { display: flex !important; }
-
-    /* 6. Màu nền xanh navy — dùng cả background-color lẫn box-shadow để chắc */
-    .section-header {
-      background-color: #1a3a8f !important;
-      color: #ffffff !important;
-    }
-    .vehicle-header {
-      background-color: #1a3a8f !important;
-      color: #ffffff !important;
-    }
+    @page { size: A4 portrait; margin: 8mm; }
+    html, body { background: #ffffff !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    .page-wrapper { margin: 0 !important; padding: 6mm 8mm !important; box-shadow: none !important; max-width: 100% !important; width: 100% !important; min-height: auto !important; }
+    .header, .meta-row, .bottom-section, .sig-row, .meta-field, .sum-row, .vehicle-header { display: flex !important; }
+    .section-header { background-color: #1a3a8f !important; color: #ffffff !important; }
+    .vehicle-header { background-color: #1a3a8f !important; color: #ffffff !important; }
     .vehicle-header .km-note { color: #ffffff !important; opacity: 1 !important; }
-    .sub-header td {
-      background-color: #1a3a8f !important;
-      color: #ffffff !important;
-    }
-
-    /* 7. Màu nền vàng */
-    .services-table th {
-      background-color: #f5c500 !important;
-      color: #1a3a8f !important;
-    }
-    .sum-row.grand {
-      background-color: #f5c500 !important;
-    }
-    .sum-row.grand .sum-label {
-      background-color: #f5c500 !important;
-      color: #1a3a8f !important;
-      border-right-color: #e0b800 !important;
-      font-weight: 700 !important;
-    }
-    .sum-row.grand .sum-value {
-      color: #1a3a8f !important;
-    }
-
-    /* 8. Màu nền xám nhạt các ô nhãn */
-    .info-table .lbl,
-    .vehicle-table .lbl,
-    .meta-label,
-    .sum-label,
-    .yc-label {
-      background-color: #f5f6fa !important;
-    }
-
-    /* 9. Màu nền vàng nhạt */
-    .doc-title {
-      background-color: #fffbe6 !important;
-      color: #1a3a8f !important;
-    }
-    .amount-words {
-      background-color: #fffbe6 !important;
-    }
-
-    /* 10. Màu nền dòng xen kẽ */
+    .sub-header td { background-color: #1a3a8f !important; color: #ffffff !important; }
+    .services-table th { background-color: #f5c500 !important; color: #1a3a8f !important; }
+    .sum-row.grand { background-color: #f5c500 !important; }
+    .sum-row.grand .sum-label { background-color: #f5c500 !important; color: #1a3a8f !important; border-right-color: #e0b800 !important; font-weight: 700 !important; }
+    .sum-row.grand .sum-value { color: #1a3a8f !important; }
+    .info-table .lbl, .vehicle-table .lbl, .meta-label, .sum-label, .yc-label { background-color: #f5f6fa !important; }
+    .doc-title { background-color: #fffbe6 !important; color: #1a3a8f !important; }
+    .amount-words { background-color: #fffbe6 !important; }
     .row-alt { background-color: #fafbff !important; }
-
-    /* 11. Giữ màu chữ */
-    .meta-value        { color: #1a3a8f !important; }
-    .company-title     { color: #1a3a8f !important; }
-    .sig-title         { color: #1a3a8f !important; }
-    .sig-name          { color: #d32f2f !important; }
+    .meta-value { color: #1a3a8f !important; }
+    .company-title { color: #1a3a8f !important; }
+    .sig-title { color: #1a3a8f !important; }
+    .sig-name { color: #d32f2f !important; }
     .amount-words span { color: #1a3a8f !important; }
-    .yc-label          { color: #1a3a8f !important; }
-
-    /* 12. Giữ viền */
-    .meta-row, .info-table, .vehicle-table,
-    .services-wrapper, .sum-box,
-    .amount-words, .warranty-box {
-      border-color: #bbbbbb !important;
-    }
-    .info-table td, .vehicle-table td,
-    .services-table td, .services-table th {
-      border-color: #bbbbbb !important;
-    }
-
-    /* 13. Không ngắt trang giữa các khối */
-    .header, .meta-row, .info-table,
-    .vehicle-section, .services-wrapper,
-    .bottom-section, .amount-words,
-    .sig-section {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
+    .yc-label { color: #1a3a8f !important; }
+    .meta-row, .info-table, .vehicle-table, .services-wrapper, .sum-box, .amount-words, .warranty-box { border-color: #bbbbbb !important; }
+    .info-table td, .vehicle-table td, .services-table td, .services-table th { border-color: #bbbbbb !important; }
+    .header, .meta-row, .info-table, .vehicle-section, .services-wrapper, .bottom-section, .amount-words, .sig-section { page-break-inside: avoid; break-inside: avoid; }
   }
 
-  /* MOBILE */
   @media (max-width: 600px) {
-    body { background: #fff; font-size: 11px; }
+    body { background: #fff; }
     .page-wrapper { padding: 10px; box-shadow: none; }
     .header { flex-direction: column; gap: 6px; }
-    .company-title { font-size: 14px; }
     .logo-svg { height: 42px; }
     .meta-row { flex-direction: column; }
-    .doc-title { font-size: 12px; padding: 8px; border-right: none; border-bottom: 1.5px solid var(--border); }
+    .doc-title { border-right: none; border-bottom: 1.5px solid var(--border); }
     .meta-fields { min-width: unset; }
     .bottom-section { flex-direction: column; }
     .sum-box { min-width: unset; }
     .sig-row { flex-direction: column; gap: 16px; }
-    .services-table { font-size: 9.5px; }
-    .services-table th, .services-table td { padding: 3px 3px; }
     .col-dvt, .col-tax { display: none; }
-    .info-table td, .vehicle-table td { padding: 3px 6px; }
     .vehicle-table .lbl { white-space: normal; width: 80px; }
-    #btn-print { bottom: 16px; right: 16px; padding: 11px 20px; font-size: 13px; }
+    #btn-print { bottom: 16px; right: 16px; padding: 11px 20px; }
+    #font-ctrl { bottom: 72px; right: 16px; }
   }
 </style>
 </head>
 <body>
+
+<!-- ── ĐIỀU CHỈNH CỠ CHỮ ── -->
+<div id="font-ctrl">
+  <button id="btn-decrease" title="Giảm cỡ chữ">−</button>
+  <span id="font-size-label">100%</span>
+  <button id="btn-increase" title="Tăng cỡ chữ">+</button>
+</div>
 
 <!-- ── NÚT IN ── -->
 <button id="btn-print" onclick="window.print()">
@@ -324,7 +272,7 @@
 <div class="page-wrapper">
 
   <!-- ── HEADER ── -->
-  <div class="header" style="display:flex;align-items:flex-start;gap:10px;border-bottom:3px solid #1a3a8f;padding-bottom:8px;margin-bottom:8px;">
+  <div class="header">
     <div class="logo-block" id="logo-block"></div>
     <div class="company-info">
       <div class="company-title">CUNG CẤP GIẢI PHÁP Ô TÔ TOÀN DIỆN</div>
@@ -336,8 +284,8 @@
   </div>
 
   <!-- ── META ── -->
-  <div class="meta-row" style="display:flex;justify-content:space-between;align-items:stretch;border:1.5px solid #bbb;margin-bottom:6px;border-radius:2px;overflow:hidden;">
-    <div class="doc-title">PHIẾU ĐẶT LỊCH </div>
+  <div class="meta-row">
+    <div class="doc-title">PHIẾU ĐẶT LỊCH</div>
     <div class="meta-fields">
       <div class="meta-field">
         <div class="meta-label">NVKD</div>
@@ -425,20 +373,20 @@
   </div>
 
   <!-- ── TỔNG TIỀN ── -->
-  <div class="bottom-section" style="display:flex;gap:8px;margin-bottom:6px;">
-    <div class="warranty-box" style="flex:1;">
+  <div class="bottom-section">
+    <div class="warranty-box">
       <p><strong>Bảo hành:</strong></p>
-      <p>1. Lốp xe: bảo hành 30% gai, phù, dộp, ovan do lỗi sản xuất.</p> 
+      <p>1. Lốp xe: bảo hành 30% gai, phù, dộp, ovan do lỗi sản xuất.</p>
       <p>+ không được bảo hành đối với các trường hợp: có lỗ vá - thủng - rách - phù - nổ hư hỏng do tác động của ngoại lực.</p>
       <p>2. Những phát sinh (nếu có) sẽ thông báo sau khi kiểm tra cụ thể. Sản phẩm sẽ được Công ty tiếp nhận và trả kết quả bảo hành trong vòng 14-30 ngày (trừ ngày lễ và thứ 7 - CN) theo chính sách của hãng.</p>
     </div>
-    <div class="sum-box" style="min-width:210px;">
-      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Tổng Cộng</div><div class="sum-value" id="el-tongcong" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
-      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Tổng chiết khấu</div><div class="sum-value" id="el-ck" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
-      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Nợ cũ</div><div class="sum-value" id="el-nocu" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
-      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Đã thanh toán</div><div class="sum-value" id="el-datt" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
-      <div class="sum-row" style="display:flex;border-bottom:1px solid #bbb;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5f6fa;border-right:1px solid #bbb;font-size:10.5px;">Thuế VAT</div><div class="sum-value" id="el-vat" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;"></div></div>
-      <div class="sum-row grand" style="display:flex;background:#f5c500;"><div class="sum-label" style="flex:1;padding:5px 8px;background:#f5c500;border-right:1px solid #e0b800;font-size:10.5px;font-weight:700;color:#1a3a8f;">Thanh toán</div><div class="sum-value" id="el-thanhtoan" style="min-width:98px;padding:5px 8px;text-align:right;font-weight:700;color:#1a3a8f;font-size:13px;"></div></div>
+    <div class="sum-box">
+      <div class="sum-row"><div class="sum-label">Tổng Cộng</div><div class="sum-value" id="el-tongcong"></div></div>
+      <div class="sum-row"><div class="sum-label">Tổng chiết khấu</div><div class="sum-value" id="el-ck"></div></div>
+      <div class="sum-row"><div class="sum-label">Nợ cũ</div><div class="sum-value" id="el-nocu"></div></div>
+      <div class="sum-row"><div class="sum-label">Đã thanh toán</div><div class="sum-value" id="el-datt"></div></div>
+      <div class="sum-row"><div class="sum-label">Thuế VAT</div><div class="sum-value" id="el-vat"></div></div>
+      <div class="sum-row grand"><div class="sum-label">Thanh toán</div><div class="sum-value" id="el-thanhtoan"></div></div>
     </div>
   </div>
 
@@ -447,7 +395,7 @@
   <!-- ── CHỮ KÝ ── -->
   <div class="sig-section">
     <div class="sig-date" id="el-ngayky"></div>
-    <div class="sig-row" style="display:flex;justify-content:space-between;text-align:center;gap:10px;">
+    <div class="sig-row">
       <div class="sig-block">
         <div class="sig-title">Khách Hàng</div>
         <div class="sig-name">&nbsp;</div>
@@ -466,43 +414,41 @@
 </div><!-- end page-wrapper -->
 
 <script>
+/* ── ĐIỀU CHỈNH CỠ CHỮ ── */
+(function () {
+  var STEP = 0.05, MIN = 0.6, MAX = 2.0;
+  var scale = parseFloat(localStorage.getItem('phi-long-font-scale') || '1');
+  var label = document.getElementById('font-size-label');
+  var root  = document.documentElement;
+
+  function apply(s) {
+    scale = Math.min(MAX, Math.max(MIN, Math.round(s * 100) / 100));
+    root.style.setProperty('--font-scale', scale);
+    label.textContent = Math.round(scale * 100) + '%';
+    try { localStorage.setItem('phi-long-font-scale', scale); } catch(e) {}
+  }
+  apply(scale);
+
+  document.getElementById('btn-increase').addEventListener('click', function () { apply(scale + STEP); });
+  document.getElementById('btn-decrease').addEventListener('click', function () { apply(scale - STEP); });
+})();
+
+/* ── ĐỌC SỐ TIỀN BẰNG CHỮ ── */
 function docSoTienBangChu(n) {
   if (n === 0) return 'Không đồng';
-  var donvi  = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+  var donvi = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
   function docNhom(num, hasTruoc) {
-    var tram = Math.floor(num / 100);
-    var chuc = Math.floor((num % 100) / 10);
-    var dv   = num % 10;
-    var res  = '';
-    if (tram > 0) {
-      res += donvi[tram] + ' trăm';
-      if (chuc === 0 && dv > 0) res += ' lẻ';
-    } else if (hasTruoc) {
-      if (chuc === 0 && dv > 0) res += 'lẻ ';
-      else if (chuc > 0)        res += 'không trăm ';
-    }
-    if (chuc > 1) {
-      res += (res ? ' ' : '') + donvi[chuc] + ' mươi';
-      if (dv === 1) res += ' mốt';
-      else if (dv === 5) res += ' lăm';
-      else if (dv > 0)   res += ' ' + donvi[dv];
-    } else if (chuc === 1) {
-      res += (res ? ' ' : '') + 'mười';
-      if (dv === 5) res += ' lăm';
-      else if (dv > 0) res += ' ' + donvi[dv];
-    } else if (chuc === 0 && dv > 0 && tram > 0) {
-      res += ' ' + donvi[dv];
-    } else if (chuc === 0 && dv > 0 && !hasTruoc && tram === 0) {
-      res += donvi[dv];
-    }
+    var tram = Math.floor(num / 100), chuc = Math.floor((num % 100) / 10), dv = num % 10, res = '';
+    if (tram > 0) { res += donvi[tram] + ' trăm'; if (chuc === 0 && dv > 0) res += ' lẻ'; }
+    else if (hasTruoc) { if (chuc === 0 && dv > 0) res += 'lẻ '; else if (chuc > 0) res += 'không trăm '; }
+    if (chuc > 1) { res += (res ? ' ' : '') + donvi[chuc] + ' mươi'; if (dv === 1) res += ' mốt'; else if (dv === 5) res += ' lăm'; else if (dv > 0) res += ' ' + donvi[dv]; }
+    else if (chuc === 1) { res += (res ? ' ' : '') + 'mười'; if (dv === 5) res += ' lăm'; else if (dv > 0) res += ' ' + donvi[dv]; }
+    else if (chuc === 0 && dv > 0 && tram > 0) { res += ' ' + donvi[dv]; }
+    else if (chuc === 0 && dv > 0 && !hasTruoc && tram === 0) { res += donvi[dv]; }
     return res.trim();
   }
-  var ty    = Math.floor(n / 1000000000);
-  var trieu = Math.floor((n % 1000000000) / 1000000);
-  var nghin = Math.floor((n % 1000000) / 1000);
-  var dv    = n % 1000;
-  var parts = [];
-  var hasPrev = false;
+  var ty = Math.floor(n / 1000000000), trieu = Math.floor((n % 1000000000) / 1000000), nghin = Math.floor((n % 1000000) / 1000), dv = n % 1000;
+  var parts = [], hasPrev = false;
   if (ty > 0)    { parts.push(docNhom(ty, hasPrev)    + ' tỷ');    hasPrev = true; }
   if (trieu > 0) { parts.push(docNhom(trieu, hasPrev) + ' triệu'); hasPrev = true; }
   if (nghin > 0) { parts.push(docNhom(nghin, hasPrev) + ' nghìn'); hasPrev = true; }
@@ -512,6 +458,7 @@ function docSoTienBangChu(n) {
   return result + ' đồng chẵn';
 }
 
+/* ── ĐIỀN DỮ LIỆU TỪ URL ── */
 (function () {
   var p = new URLSearchParams(window.location.search);
 
@@ -521,8 +468,7 @@ function docSoTienBangChu(n) {
     var logoUrl = (p.get('logo') || '').trim();
     if (logoUrl) {
       var img = document.createElement('img');
-      img.src = logoUrl;
-      img.alt = 'Logo';
+      img.src = logoUrl; img.alt = 'Logo';
       img.style.cssText = 'height:54px;width:auto;display:block;object-fit:contain;';
       block.appendChild(img);
     } else {
@@ -535,94 +481,68 @@ function docSoTienBangChu(n) {
     }
   })();
 
-  function set(id, key) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = p.has(key) ? p.get(key) : '';
-  }
-  function esc(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function set(id, key) { var el = document.getElementById(id); if (el) el.textContent = p.has(key) ? p.get(key) : ''; }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtNum(s) {
-    s = (s || '').trim();
+    s = (s||'').trim();
     if (!s || s === '-') return esc(s);
     if (/[,.]/.test(s)) return esc(s);
     var n = parseInt(s.replace(/\D/g,''), 10);
     return isNaN(n) ? esc(s) : n.toLocaleString('vi-VN');
   }
 
-  set('el-nvkd', 'nvkd'); set('el-ngay', 'ngay'); set('el-sdt', 'sdt');
-  set('el-kh', 'kh'); set('el-dt', 'dt'); set('el-cty', 'cty'); set('el-mst', 'mst'); set('el-dc', 'dc');
-  set('el-bs', 'bs'); set('el-hx', 'hx'); set('el-namsx', 'namsx'); set('el-loai', 'loai');
-  set('el-mau', 'mau'); set('el-vin', 'vin'); set('el-km', 'km'); set('el-tgkh', 'tgkh');
-  set('el-giao', 'giao'); set('el-hdk', 'hdk'); set('el-batdau', 'batdau'); set('el-ketthuc', 'ketthuc');
-  set('el-yeucau', 'yeucau');
+  set('el-nvkd','nvkd'); set('el-ngay','ngay'); set('el-sdt','sdt');
+  set('el-kh','kh'); set('el-dt','dt'); set('el-cty','cty'); set('el-mst','mst'); set('el-dc','dc');
+  set('el-bs','bs'); set('el-hx','hx'); set('el-namsx','namsx'); set('el-loai','loai');
+  set('el-mau','mau'); set('el-vin','vin'); set('el-km','km'); set('el-tgkh','tgkh');
+  set('el-giao','giao'); set('el-hdk','hdk'); set('el-batdau','batdau'); set('el-ketthuc','ketthuc');
+  set('el-yeucau','yeucau');
 
-  var raw   = p.get('data') || '';
-  var tbody = document.getElementById('tbody-data');
+  var raw = p.get('data') || '', tbody = document.getElementById('tbody-data');
   var itemNo = 0, groupNo = 0, altCount = 0, lastGroup = null;
 
   function appendGroupHeader(label) {
     var letter = String.fromCharCode(65 + groupNo); groupNo++; altCount = 0;
-    var tr = document.createElement('tr');
-    tr.className = 'sub-header';
+    var tr = document.createElement('tr'); tr.className = 'sub-header';
     tr.innerHTML = '<td class="col-no">' + esc(letter) + '</td><td colspan="6">' + esc(label) + '</td>';
     tbody.appendChild(tr);
   }
   function appendDataRow(cols) {
-    itemNo++;
-    var tr = document.createElement('tr');
+    itemNo++; var tr = document.createElement('tr');
     if (altCount % 2 === 1) tr.className = 'row-alt';
     altCount++;
-    var content = (cols[0] || '').replace(/^[|#]+/, '').trim();
-    tr.innerHTML =
-      '<td class="col-no">' + itemNo + '</td>' +
-      '<td class="col-content">' + esc(content) + '</td>' +
-      '<td class="col-dvt">' + esc(cols[1] || '-') + '</td>' +
-      '<td class="col-sl">' + esc(cols[2] || '') + '</td>' +
-      '<td class="col-price">' + fmtNum(cols[3] || '') + '</td>' +
-      '<td class="col-total">' + fmtNum(cols[4] || '') + '</td>' +
-      '<td class="col-tax">-</td>';
+    var content = (cols[0]||'').replace(/^[|#]+/,'').trim();
+    tr.innerHTML = '<td class="col-no">' + itemNo + '</td><td class="col-content">' + esc(content) + '</td>'
+      + '<td class="col-dvt">' + esc(cols[1]||'-') + '</td><td class="col-sl">' + esc(cols[2]||'') + '</td>'
+      + '<td class="col-price">' + fmtNum(cols[3]||'') + '</td><td class="col-total">' + fmtNum(cols[4]||'') + '</td>'
+      + '<td class="col-tax">-</td>';
     tbody.appendChild(tr);
   }
 
   if (raw.trim()) {
-    raw.split('_b_').forEach(function (rowStr) {
-      rowStr = rowStr.trim();
-      if (!rowStr) return;
+    raw.split('_b_').forEach(function(rowStr) {
+      rowStr = rowStr.trim(); if (!rowStr) return;
       if (rowStr.charAt(0) === '|') {
-        var rest = rowStr.slice(1);
-        var cols = rest.split('_a_');
-        if (cols.length === 1) {
-          var label = cols[0].trim();
-          if (label !== lastGroup) { lastGroup = label; appendGroupHeader(label); }
-        } else {
-          var groupLabel = cols[0].trim();
-          var dataCols   = cols.slice(1);
-          if (groupLabel !== lastGroup) { lastGroup = groupLabel; appendGroupHeader(groupLabel); }
-          appendDataRow(dataCols);
-        }
-      } else {
-        appendDataRow(rowStr.split('_a_'));
-      }
+        var rest = rowStr.slice(1), cols = rest.split('_a_');
+        if (cols.length === 1) { var label = cols[0].trim(); if (label !== lastGroup) { lastGroup = label; appendGroupHeader(label); } }
+        else { var groupLabel = cols[0].trim(), dataCols = cols.slice(1); if (groupLabel !== lastGroup) { lastGroup = groupLabel; appendGroupHeader(groupLabel); } appendDataRow(dataCols); }
+      } else { appendDataRow(rowStr.split('_a_')); }
     });
   }
 
-  set('el-tongcong', 'tongcong'); set('el-ck', 'ck'); set('el-nocu', 'nocu');
-  set('el-datt', 'datt'); set('el-vat', 'vat'); set('el-thanhtoan', 'thanhtoan');
+  set('el-tongcong','tongcong'); set('el-ck','ck'); set('el-nocu','nocu');
+  set('el-datt','datt'); set('el-vat','vat'); set('el-thanhtoan','thanhtoan');
 
   (function() {
-    var el = document.getElementById('el-sotienchu');
-    if (!el) return;
+    var el = document.getElementById('el-sotienchu'); if (!el) return;
     if (p.has('sotienchu') && p.get('sotienchu').trim()) { el.textContent = p.get('sotienchu'); return; }
-    var raw = (p.get('thanhtoan') || '').trim();
+    var raw = (p.get('thanhtoan')||'').trim();
     if (!raw || raw === '-') { el.textContent = ''; return; }
-    var num = parseInt(raw.replace(/[^0-9]/g, ''), 10);
-    if (isNaN(num)) { el.textContent = raw; return; }
-    el.textContent = docSoTienBangChu(num);
+    var num = parseInt(raw.replace(/[^0-9]/g,''), 10);
+    el.textContent = isNaN(num) ? raw : docSoTienBangChu(num);
   })();
 
-  set('el-ngayky', 'ngayky'); set('el-ktv', 'ktv'); set('el-cvdv', 'cvdv');
+  set('el-ngayky','ngayky'); set('el-ktv','ktv'); set('el-cvdv','cvdv');
 })();
 </script>
 </body>
