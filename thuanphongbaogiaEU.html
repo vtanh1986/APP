@@ -141,69 +141,118 @@
   </div>
   <div class="doc-info">Company&#x2019;s Email:&nbsp; sales@thuan-phong.vn</div>
 
-  <table class="price-table">
+  <!-- Tiêu đề cột FOB có thể chỉnh sửa trực tiếp -->
+  <div style="margin-top:14px; display:flex; align-items:center; gap:8px; font-size:11pt;">
+    <label style="white-space:nowrap; font-weight:bold;">Tên nhóm giá:</label>
+    <input id="fobLabel" type="text" value="FOB HCM price"
+      style="font-size:11pt;font-family:Arial,sans-serif;border:none;border-bottom:1px solid #6D9EEB;
+             outline:none;width:200px;padding:2px 4px;font-weight:bold;color:#fff;
+             background:#6D9EEB;text-align:center;">
+  </div>
+
+  <table class="price-table" id="priceTable">
     <thead>
       <tr>
         <th rowspan="2" style="width:36px;">STT</th>
         <th rowspan="2">Commodities<br>BAMBOO TREE BRAND</th>
         <th rowspan="2">Packaging</th>
-        <th colspan="2">FOB HCM price</th>
+        <th colspan="2" id="fobHeader">FOB HCM price</th>
       </tr>
       <tr>
         <th>USD / Unit</th>
         <th>USD / Carton</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <td class="center">1</td>
-        <td>Coconut Water UHT - 330ml</td>
-        <td class="center">330ml x 12</td>
-        <td class="center">0.4208</td>
-        <td class="center">5.05</td>
-      </tr>
-      <tr>
-        <td class="center">2</td>
-        <td>Coconut Water UHT - 500ml</td>
-        <td class="center">500ml x 12</td>
-        <td class="center">0.5125</td>
-        <td class="center">6.15</td>
-      </tr>
-      <tr>
-        <td class="center">3</td>
-        <td>Coconut Water UHT - 1L</td>
-        <td class="center">1000ml x 12</td>
-        <td class="center">0.9167</td>
-        <td class="center">11.00</td>
-      </tr>
-      <tr>
-        <td class="center">4</td>
-        <td>Coconut Water UHT - 330ml<br>( no added sugar)</td>
-        <td class="center">330ml x 12</td>
-        <td class="center">0.4167</td>
-        <td class="center">5.00</td>
-      </tr>
-      <tr>
-        <td class="center">5</td>
-        <td>Coconut Water UHT - 500ml<br>( no added sugar)</td>
-        <td class="center">500ml x 12</td>
-        <td class="center">0.5083</td>
-        <td class="center">6.10</td>
-      </tr>
-      <tr>
-        <td class="center">6</td>
-        <td>Coconut Water UHT - 1L<br>( no added sugar)</td>
-        <td class="center">1000ml x 12</td>
-        <td class="center">0.9125</td>
-        <td class="center">10.95</td>
-      </tr>
+    <tbody id="tableBody">
+      <!-- Dữ liệu sẽ được render từ URL params hoặc mặc định -->
     </tbody>
   </table>
+
+  <!-- Thông báo lỗi / hướng dẫn -->
+  <div id="urlGuide" style="margin-top:8px;font-size:10pt;color:#888;display:none;">
+    ℹ️ Truyền dữ liệu qua URL: <code>?data=Tên_a_Gói_a_USDUnit_a_USDCarton_b_Tên2_a_Gói2_a_0.5_a_6.0</code>
+    &nbsp;|&nbsp; <code>_a_</code> = ngăn cách cột &nbsp;|&nbsp; <code>_b_</code> = ngăn cách dòng
+  </div>
 
   <textarea class="note-textarea" rows="3">Note: This quote is valid until April 30, 2026.</textarea>
 
   <div class="signature">
     THUAN PHONG AGRICULTURAL PRODUCTS PROCESSING COMPANY
   </div>
+<script>
+  // === Render tiêu đề cột FOB ===
+  const fobInput = document.getElementById('fobLabel');
+  const fobHeader = document.getElementById('fobHeader');
+  fobInput.addEventListener('input', function() {
+    fobHeader.textContent = this.value;
+  });
+
+  // === Dữ liệu mặc định ===
+  const defaultRows = [
+    ['Coconut Water UHT - 330ml',          '330ml x 12',  '0.4208', '5.05'],
+    ['Coconut Water UHT - 500ml',          '500ml x 12',  '0.5125', '6.15'],
+    ['Coconut Water UHT - 1L',             '1000ml x 12', '0.9167', '11.00'],
+    ['Coconut Water UHT - 330ml (no added sugar)', '330ml x 12',  '0.4167', '5.00'],
+    ['Coconut Water UHT - 500ml (no added sugar)', '500ml x 12',  '0.5083', '6.10'],
+    ['Coconut Water UHT - 1L (no added sugar)',    '1000ml x 12', '0.9125', '10.95'],
+  ];
+
+  function renderTable(rows) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    rows.forEach(function(cols, i) {
+      const tr = document.createElement('tr');
+      // STT
+      const tdStt = document.createElement('td');
+      tdStt.className = 'center';
+      tdStt.textContent = i + 1;
+      tr.appendChild(tdStt);
+      // Cột còn lại: tên, đóng gói, usd/unit, usd/carton
+      cols.forEach(function(val, ci) {
+        const td = document.createElement('td');
+        td.className = ci === 0 ? '' : 'center';
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  // === Đọc URL params ===
+  function parseUrlData() {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('data');
+    if (!raw) return null;
+    try {
+      const rows = raw.split('_b_').map(function(row) {
+        return row.split('_a_');
+      });
+      // Phải có ít nhất 4 cột: tên, gói, usd/unit, usd/carton
+      const valid = rows.filter(function(r) { return r.length >= 4; });
+      return valid.length > 0 ? valid : null;
+    } catch(e) { return null; }
+  }
+
+  // === Đọc fob label từ URL ===
+  (function init() {
+    const params = new URLSearchParams(window.location.search);
+
+    // FOB label
+    const fob = params.get('fob');
+    if (fob) {
+      fobInput.value = fob;
+      fobHeader.textContent = fob;
+    }
+
+    // Table data
+    const rows = parseUrlData();
+    if (rows) {
+      renderTable(rows);
+    } else {
+      renderTable(defaultRows);
+      document.getElementById('urlGuide').style.display = 'block';
+    }
+  })();
+</script>
 </body>
 </html>
