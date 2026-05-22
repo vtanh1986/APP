@@ -31,6 +31,36 @@
     line-height: 1.3;
   }
 
+  /* ── THANH ĐIỀU CHỈNH CỠ CHỮ ── */
+  #font-ctrl {
+    position: fixed;
+    bottom: 84px;
+    right: 28px;
+    z-index: 9999;
+    background: #fff;
+    border: 1.5px solid #bbb;
+    border-radius: 50px;
+    padding: 7px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    font-family: 'Be Vietnam Pro', Arial, sans-serif;
+    font-size: 13px;
+    color: #333;
+  }
+  #font-ctrl button {
+    width: 28px; height: 28px;
+    border: 1.5px solid #bbb; border-radius: 50%;
+    background: #f5f6fa;
+    font-size: 17px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); line-height: 1;
+    transition: background 0.15s; padding: 0;
+  }
+  #font-ctrl button:hover { background: #e0e4f4; }
+  #font-size-label { min-width: 36px; text-align: center; font-weight: 700; color: var(--blue); font-size: 13px; }
+
   #btn-print {
     position: fixed;
     bottom: 28px;
@@ -52,6 +82,9 @@
     transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
   }
   #btn-print:hover { background: #2650c0; transform: translateY(-2px); }
+
+  /* ── WRAPPER SCALE ── */
+  #scale-root { transform-origin: top center; }
 
   .page-wrapper {
     max-width: 210mm;
@@ -119,33 +152,26 @@
   .meta-top .lbl { color: var(--gray); white-space: nowrap; }
   .meta-top .val { font-weight: 700; }
 
-  /* ── INFO TABLE dùng CSS Grid để căn thẳng cột ── */
+  /* ── INFO TABLE ── */
   .info-section {
     border: 1px solid var(--border);
     border-top: none;
     margin-bottom: 0;
   }
-
-  /* Mỗi hàng dùng grid với cột cố định để label + value thẳng hàng */
   .info-row {
     display: grid;
     border-bottom: 1px solid var(--border);
     min-height: 22px;
   }
   .info-row:last-child { border-bottom: none; }
-
-  /* Layout mặc định: 2 cột bằng nhau */
   .info-row.cols-2 { grid-template-columns: 1fr 1fr; }
-  /* 3 cột */
   .info-row.cols-3 { grid-template-columns: 1.5fr 0.75fr 0.75fr; }
-  /* 4 cột */
   .info-row.cols-4 { grid-template-columns: 1fr 0.8fr 0.6fr 0.8fr; }
 
   .info-cell {
     padding: 3px 6px;
     font-size: 11px;
     display: grid;
-    /* label cố định 100px, value chiếm phần còn lại */
     grid-template-columns: 100px 1fr;
     align-items: center;
     gap: 2px;
@@ -155,7 +181,6 @@
   .info-cell .lbl { color: var(--gray); white-space: nowrap; font-size: 10.5px; }
   .info-cell .val { font-weight: 600; }
 
-  /* Biển số lớn */
   .bien-so-large {
     font-size: 20px;
     font-weight: 900;
@@ -180,8 +205,6 @@
     gap: 3px;
   }
   .yeucau-label { font-weight: 700; white-space: nowrap; }
-
-  /* Input cho yêu cầu khách hàng — có thể gõ trực tiếp */
   .yeucau-input {
     width: 100%;
     border: 1px solid #ccc;
@@ -197,12 +220,8 @@
     outline: none;
     transition: border-color 0.15s, background 0.15s;
   }
-  .yeucau-input:focus {
-    border-color: var(--blue);
-    background: #fff;
-  }
+  .yeucau-input:focus { border-color: var(--blue); background: #fff; }
 
-  /* Legend căn thẳng dưới dạng grid */
   .legend-box {
     font-size: 9.5px;
     display: grid;
@@ -273,14 +292,12 @@
   .tbl .col-kt    { width: 52px; text-align: center; }
   .tbl .col-ban   { width: 32px; text-align: center; }
   .tbl .col-ghichu{ width: 60px; text-align: center; }
-
   .tbl .col-dv    { width: 32px; text-align: center; }
   .tbl .col-sl-can{ width: 40px; text-align: center; }
   .tbl .col-sl-nhan{ width: 40px; text-align: center; }
-
   .tbl .row-alt   { background: #f8f8f8; }
 
-  /* ── PHAT SINH / TONG CHI PHI ── */
+  /* ── PHÁT SINH ── */
   .phatsinh-section {
     border: 1px solid var(--border);
     border-top: none;
@@ -362,8 +379,10 @@
 
   .tbl-time-header { text-align: center; }
 
+  /* ══ PRINT ══ */
   @media print {
-    #btn-print { display: none !important; }
+    #btn-print  { display: none !important; }
+    #font-ctrl  { display: none !important; }
     html, *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -371,14 +390,27 @@
     }
     @page { size: A4 portrait; margin: 6mm; }
     html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+    #scale-root { transform: none !important; width: 100% !important; }
     .page-wrapper { margin: 0 !important; padding: 4mm 6mm !important; box-shadow: none !important; max-width: 100% !important; min-height: auto !important; }
     .tbl th, .phatsinh-table th { background-color: #f5c500 !important; }
     .section-header, .phatsinh-header { background-color: #f5f6fa !important; }
     .yeucau-input { border: none; background: transparent; resize: none; }
   }
+
+  @media (max-width: 600px) {
+    #btn-print { bottom: 16px; right: 16px; padding: 11px 20px; }
+    #font-ctrl { bottom: 72px; right: 16px; }
+  }
 </style>
 </head>
 <body>
+
+<!-- ── ĐIỀU CHỈNH CỠ CHỮ ── -->
+<div id="font-ctrl">
+  <button id="btn-decrease" title="Giảm cỡ chữ">−</button>
+  <span id="font-size-label">100%</span>
+  <button id="btn-increase" title="Tăng cỡ chữ">+</button>
+</div>
 
 <button id="btn-print" onclick="window.print()">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -388,6 +420,9 @@
   </svg>
   In phiếu
 </button>
+
+<!-- ── WRAPPER SCALE ── -->
+<div id="scale-root">
 
 <div class="page-wrapper">
 
@@ -411,140 +446,62 @@
 
   <!-- META TOP ROW -->
   <div class="meta-top">
-    <div class="item">
-      <span class="lbl">Số phiếu:</span>
-      <span class="val" id="el-sophieu"></span>
-    </div>
-    <div class="item">
-      <span class="lbl">Ngày:</span>
-      <span class="val" id="el-ngay"></span>
-    </div>
-    <div class="item">
-      <span class="lbl">Bản:</span>
-      <span class="val" id="el-ban"></span>
-    </div>
+    <div class="item"><span class="lbl">Số phiếu:</span><span class="val" id="el-sophieu"></span></div>
+    <div class="item"><span class="lbl">Ngày:</span><span class="val" id="el-ngay"></span></div>
+    <div class="item"><span class="lbl">Bản:</span><span class="val" id="el-ban"></span></div>
   </div>
 
-  <!-- INFO SECTION — dùng grid để căn thẳng cột -->
+  <!-- INFO SECTION -->
   <div class="info-section">
 
-    <!-- Hàng 1: Tên KH | Biển số -->
     <div class="info-row cols-2">
-      <div class="info-cell">
-        <span class="lbl">Tên KH:</span>
-        <span class="val" id="el-kh"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Biển số:</span>
-        <span class="val bien-so-large" id="el-bs"></span>
-      </div>
+      <div class="info-cell"><span class="lbl">Tên KH:</span><span class="val" id="el-kh"></span></div>
+      <div class="info-cell"><span class="lbl">Biển số:</span><span class="val bien-so-large" id="el-bs"></span></div>
     </div>
 
-    <!-- Hàng 2: Công ty | Loại xe | (trống) -->
     <div class="info-row cols-2">
-      <div class="info-cell">
-        <span class="lbl">Công ty:</span>
-        <span class="val" id="el-cty"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Loại xe:</span>
-        <span class="val" id="el-loai"></span>
-      </div>
-
+      <div class="info-cell"><span class="lbl">Công ty:</span><span class="val" id="el-cty"></span></div>
+      <div class="info-cell"><span class="lbl">Loại xe:</span><span class="val" id="el-loai"></span></div>
     </div>
 
-    <!-- Hàng 3: Địa chỉ | Số vin/khung -->
     <div class="info-row cols-2">
-      <div class="info-cell">
-        <span class="lbl">Địa chỉ:</span>
-        <span class="val" id="el-dc"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Số vin/khung:</span>
-        <span class="val" id="el-vin"></span>
-      </div>
+      <div class="info-cell"><span class="lbl">Địa chỉ:</span><span class="val" id="el-dc"></span></div>
+      <div class="info-cell"><span class="lbl">Số vin/khung:</span><span class="val" id="el-vin"></span></div>
     </div>
 
-    <!-- Hàng 4: Điện thoại | Fax | Mã màu | (trống) -->
     <div class="info-row cols-3">
-      <div class="info-cell">
-        <span class="lbl">Điện thoại:</span>
-        <span class="val" id="el-dt"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Fax:</span>
-        <span class="val" id="el-fax"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Mã màu:</span>
-        <span class="val" id="el-mau"></span>
-      </div>
-
+      <div class="info-cell"><span class="lbl">Điện thoại:</span><span class="val" id="el-dt"></span></div>
+      <div class="info-cell"><span class="lbl">Fax:</span><span class="val" id="el-fax"></span></div>
+      <div class="info-cell"><span class="lbl">Mã màu:</span><span class="val" id="el-mau"></span></div>
     </div>
 
-    <!-- Hàng 5: Người m/xe | Điện tho | Ngày g/xe mới -->
     <div class="info-row cols-2">
-      <div class="info-cell">
-        <span class="lbl">Người mang xe:</span>
-        <span class="val" id="el-nguoimx"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Điện thoại:</span>
-        <span class="val" id="el-dientho"></span>
-      </div>
-
+      <div class="info-cell"><span class="lbl">Người mang xe:</span><span class="val" id="el-nguoimx"></span></div>
+      <div class="info-cell"><span class="lbl">Điện thoại:</span><span class="val" id="el-dientho"></span></div>
     </div>
 
-    <!-- Hàng 6: Thời gian KH tới | Dự kiến g/x -->
     <div class="info-row cols-2">
-      <div class="info-cell">
-        <span class="lbl">TG KH tới:</span>
-        <span class="val" id="el-tgkh"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Dự kiến giao xe:</span>
-        <span class="val" id="el-giao"></span>
-      </div>
+      <div class="info-cell"><span class="lbl">TG KH tới:</span><span class="val" id="el-tgkh"></span></div>
+      <div class="info-cell"><span class="lbl">Dự kiến giao xe:</span><span class="val" id="el-giao"></span></div>
     </div>
 
-    <!-- Hàng 7: Dự kiến bắt đầu | Dự kiến kết thúc -->
     <div class="info-row cols-2">
-      <div class="info-cell">
-        <span class="lbl">Dự kiến BĐ:</span>
-        <span class="val" id="el-batdau"></span>
-      </div>
-      <div class="info-cell">
-        <span class="lbl">Dự kiến KT:</span>
-        <span class="val" id="el-ketthuc"></span>
-      </div>
+      <div class="info-cell"><span class="lbl">Dự kiến BĐ:</span><span class="val" id="el-batdau"></span></div>
+      <div class="info-cell"><span class="lbl">Dự kiến KT:</span><span class="val" id="el-ketthuc"></span></div>
     </div>
 
-  </div><!-- end info-section -->
+  </div>
 
-  <!-- YÊU CẦU — có ô nhập liệu + legend thẳng cột -->
+  <!-- YÊU CẦU -->
   <div class="yeucau-row">
     <div class="yeucau-left">
       <span class="yeucau-label">Yêu cầu khách hàng:</span>
-      <textarea
-        class="yeucau-input"
-        id="el-yeucau"
-        rows="2"
-        placeholder="Nhập yêu cầu của khách hàng..."
-      ></textarea>
+      <textarea class="yeucau-input" id="el-yeucau" rows="2" placeholder="Nhập yêu cầu của khách hàng..."></textarea>
     </div>
     <div class="legend-box">
-      <div class="legend-item">
-        <div class="legend-dot yellow"></div>
-        <span>KH chờ</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot green"></div>
-        <span>Yêu cầu rửa xe</span>
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot peach"></div>
-        <span>KH lấy PT cũ</span>
-      </div>
+      <div class="legend-item"><div class="legend-dot yellow"></div><span>KH chờ</span></div>
+      <div class="legend-item"><div class="legend-dot green"></div><span>Yêu cầu rửa xe</span></div>
+      <div class="legend-item"><div class="legend-dot peach"></div><span>KH lấy PT cũ</span></div>
     </div>
   </div>
 
@@ -632,20 +589,42 @@
   </div>
 
 </div><!-- end page-wrapper -->
+</div><!-- end scale-root -->
 
 <script>
+/* ── SCALE TOÀN BỘ TRANG ── */
+(function () {
+  var STEP = 0.05, MIN = 0.6, MAX = 2.0;
+  var scale = parseFloat(localStorage.getItem('phi-long-font-scale') || '1');
+  var root  = document.getElementById('scale-root');
+  var label = document.getElementById('font-size-label');
+
+  function apply(s) {
+    scale = Math.min(MAX, Math.max(MIN, Math.round(s * 100) / 100));
+    root.style.transformOrigin = 'top center';
+    root.style.transform = scale === 1 ? '' : 'scale(' + scale + ')';
+    root.style.zoom = scale;
+    label.textContent = Math.round(scale * 100) + '%';
+    root.style.marginBottom = scale !== 1 ? (-(1 - scale) * root.offsetHeight) + 'px' : '';
+    try { localStorage.setItem('phi-long-font-scale', scale); } catch(e) {}
+  }
+
+  apply(scale);
+  document.getElementById('btn-increase').addEventListener('click', function () { apply(scale + STEP); });
+  document.getElementById('btn-decrease').addEventListener('click', function () { apply(scale - STEP); });
+})();
+
+/* ── ĐIỀN DỮ LIỆU TỪ URL ── */
 (function () {
   var p = new URLSearchParams(window.location.search);
 
-  // Logo
   (function() {
     var block = document.getElementById('logo-block');
     if (!block) return;
     var logoUrl = (p.get('logo') || '').trim();
     if (logoUrl) {
       var img = document.createElement('img');
-      img.src = logoUrl;
-      img.alt = 'Logo';
+      img.src = logoUrl; img.alt = 'Logo';
       img.style.cssText = 'height:60px;width:auto;display:block;object-fit:contain;';
       block.appendChild(img);
     } else {
@@ -659,154 +638,82 @@
   })();
 
   function get(key) { return p.has(key) ? p.get(key) : ''; }
-  function set(id, key) {
-    var el = document.getElementById(id);
-    if (el) el.textContent = get(key);
-  }
-  function esc(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function set(id, key) { var el = document.getElementById(id); if (el) el.textContent = get(key); }
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  // Meta
-  set('el-sophieu', 'sophieu');
-  set('el-ngay', 'ngay');
-  set('el-ban', 'ban');
+  set('el-sophieu','sophieu'); set('el-ngay','ngay'); set('el-ban','ban');
+  set('el-kh','kh'); set('el-cty','cty'); set('el-dc','dc'); set('el-dt','dt');
+  set('el-fax','fax'); set('el-nguoimx','nguoimx'); set('el-dientho','dientho');
+  set('el-bs','bs'); set('el-loai','loai'); set('el-vin','vin'); set('el-mau','mau');
+  set('el-ngaygx','ngaygx'); set('el-tgkh','tgkh'); set('el-giao','giao');
+  set('el-batdau','batdau'); set('el-ketthuc','ketthuc');
+  set('el-tongchiphi','tongchiphi'); set('el-cvdv','cvdv');
 
-  // Khách hàng
-  set('el-kh', 'kh');
-  set('el-cty', 'cty');
-  set('el-dc', 'dc');
-  set('el-dt', 'dt');
-  set('el-fax', 'fax');
-  set('el-nguoimx', 'nguoimx');
-  set('el-dientho', 'dientho');
-
-  // Xe
-  set('el-bs', 'bs');
-  set('el-loai', 'loai');
-  set('el-vin', 'vin');
-  set('el-mau', 'mau');
-  set('el-ngaygx', 'ngaygx');
-  set('el-tgkh', 'tgkh');
-  set('el-giao', 'giao');
-  set('el-batdau', 'batdau');
-  set('el-ketthuc', 'ketthuc');
-
-  // Yêu cầu KH — điền vào textarea từ URL param nếu có
   var yeucauEl = document.getElementById('el-yeucau');
-  if (yeucauEl && p.has('yeucau')) {
-    yeucauEl.value = p.get('yeucau');
-  }
-
-  // Tổng chi phí
-  set('el-tongchiphi', 'tongchiphi');
-
-  // Chữ ký
-  set('el-cvdv', 'cvdv');
+  if (yeucauEl && p.has('yeucau')) yeucauEl.value = p.get('yeucau');
 
   // ── CÔNG VIỆC TABLE ──
-  var rawCv = get('data_cv');
-  var tbodyCv = document.getElementById('tbody-congviec');
+  var rawCv = get('data_cv'), tbodyCv = document.getElementById('tbody-congviec');
   var cvRows = rawCv ? rawCv.split('|') : [];
-
   cvRows.forEach(function(row, i) {
     if (!row.trim()) return;
-    var cols = row.split('__');
-    var tr = document.createElement('tr');
+    var cols = row.split('__'), tr = document.createElement('tr');
     if (i % 2 === 1) tr.className = 'row-alt';
-    tr.innerHTML =
-      '<td class="col-stt">' + (i+1) + '</td>' +
-      '<td class="col-ma">' + esc(cols[0]||'') + '</td>' +
-      '<td class="col-ten">' + esc(cols[1]||'') + '</td>' +
-      '<td class="col-ktv">' + esc(cols[2]||'') + '</td>' +
-      '<td class="col-bd">' + esc(cols[3]||'') + '</td>' +
-      '<td class="col-kt">' + esc(cols[4]||'') + '</td>' +
-      '<td class="col-ban"></td>' +
-      '<td class="col-ghichu"></td>';
+    tr.innerHTML = '<td class="col-stt">'+(i+1)+'</td><td class="col-ma">'+esc(cols[0]||'')+'</td>'
+      +'<td class="col-ten">'+esc(cols[1]||'')+'</td><td class="col-ktv">'+esc(cols[2]||'')+'</td>'
+      +'<td class="col-bd">'+esc(cols[3]||'')+'</td><td class="col-kt">'+esc(cols[4]||'')+'</td>'
+      +'<td class="col-ban"></td><td class="col-ghichu"></td>';
     tbodyCv.appendChild(tr);
   });
-
   var cvCount = cvRows.filter(function(r){return r.trim();}).length;
-  var emptyNeeded = Math.max(5 - cvCount, 0);
-  for (var i = 0; i < emptyNeeded; i++) {
+  for (var i = 0; i < Math.max(5 - cvCount, 0); i++) {
     var tr = document.createElement('tr');
-    if ((cvCount + i) % 2 === 1) tr.className = 'row-alt';
-    tr.innerHTML =
-      '<td class="col-stt"></td>' +
-      '<td class="col-ma"></td>' +
-      '<td class="col-ten">&nbsp;</td>' +
-      '<td class="col-ktv"></td>' +
-      '<td class="col-bd"></td>' +
-      '<td class="col-kt"></td>' +
-      '<td class="col-ban"></td>' +
-      '<td class="col-ghichu"></td>';
+    if ((cvCount+i)%2===1) tr.className='row-alt';
+    tr.innerHTML='<td class="col-stt"></td><td class="col-ma"></td><td class="col-ten">&nbsp;</td>'
+      +'<td class="col-ktv"></td><td class="col-bd"></td><td class="col-kt"></td>'
+      +'<td class="col-ban"></td><td class="col-ghichu"></td>';
     tbodyCv.appendChild(tr);
   }
 
   // ── PHỤ TÙNG TABLE ──
-  var rawPt = get('data_pt');
-  var tbodyPt = document.getElementById('tbody-phutung');
+  var rawPt = get('data_pt'), tbodyPt = document.getElementById('tbody-phutung');
   var ptRows = rawPt ? rawPt.split('|') : [];
-
   ptRows.forEach(function(row, i) {
     if (!row.trim()) return;
-    var cols = row.split('__');
-    var tr = document.createElement('tr');
-    if (i % 2 === 1) tr.className = 'row-alt';
-    tr.innerHTML =
-      '<td class="col-stt">' + (i+1) + '</td>' +
-      '<td class="col-ma">' + esc(cols[0]||'') + '</td>' +
-      '<td class="col-ten">' + esc(cols[1]||'') + '</td>' +
-      '<td class="col-dv">' + esc(cols[2]||'') + '</td>' +
-      '<td class="col-sl-can">' + esc(cols[3]||'') + '</td>' +
-      '<td class="col-sl-nhan">' + esc(cols[4]||'') + '</td>' +
-      '<td class="col-ban"></td>' +
-      '<td class="col-ghichu"></td>';
+    var cols = row.split('__'), tr = document.createElement('tr');
+    if (i%2===1) tr.className='row-alt';
+    tr.innerHTML='<td class="col-stt">'+(i+1)+'</td><td class="col-ma">'+esc(cols[0]||'')+'</td>'
+      +'<td class="col-ten">'+esc(cols[1]||'')+'</td><td class="col-dv">'+esc(cols[2]||'')+'</td>'
+      +'<td class="col-sl-can">'+esc(cols[3]||'')+'</td><td class="col-sl-nhan">'+esc(cols[4]||'')+'</td>'
+      +'<td class="col-ban"></td><td class="col-ghichu"></td>';
     tbodyPt.appendChild(tr);
   });
-
   var ptCount = ptRows.filter(function(r){return r.trim();}).length;
-  var ptEmpty = Math.max(5 - ptCount, 0);
-  for (var j = 0; j < ptEmpty; j++) {
+  for (var j = 0; j < Math.max(5 - ptCount, 0); j++) {
     var tr = document.createElement('tr');
-    if ((ptCount + j) % 2 === 1) tr.className = 'row-alt';
-    tr.innerHTML =
-      '<td class="col-stt"></td>' +
-      '<td class="col-ma"></td>' +
-      '<td class="col-ten">&nbsp;</td>' +
-      '<td class="col-dv"></td>' +
-      '<td class="col-sl-can"></td>' +
-      '<td class="col-sl-nhan"></td>' +
-      '<td class="col-ban"></td>' +
-      '<td class="col-ghichu"></td>';
+    if ((ptCount+j)%2===1) tr.className='row-alt';
+    tr.innerHTML='<td class="col-stt"></td><td class="col-ma"></td><td class="col-ten">&nbsp;</td>'
+      +'<td class="col-dv"></td><td class="col-sl-can"></td><td class="col-sl-nhan"></td>'
+      +'<td class="col-ban"></td><td class="col-ghichu"></td>';
     tbodyPt.appendChild(tr);
   }
 
   // ── PHÁT SINH TABLE ──
-  var rawPs = get('data_ps');
-  var tbodyPs = document.getElementById('tbody-phatsinh');
+  var rawPs = get('data_ps'), tbodyPs = document.getElementById('tbody-phatsinh');
   var psRows = rawPs ? rawPs.split('|') : [];
-
   psRows.forEach(function(row, i) {
     if (!row.trim()) return;
-    var cols = row.split('__');
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td style="text-align:center;">' + (i+1) + '</td>' +
-      '<td>' + esc(cols[0]||'') + '</td>' +
-      '<td>' + esc(cols[1]||'') + '</td>' +
-      '<td>' + esc(cols[2]||'') + '</td>' +
-      '<td>' + esc(cols[3]||'') + '</td>';
+    var cols = row.split('__'), tr = document.createElement('tr');
+    tr.innerHTML='<td style="text-align:center;">'+(i+1)+'</td>'
+      +'<td>'+esc(cols[0]||'')+'</td><td>'+esc(cols[1]||'')+'</td>'
+      +'<td>'+esc(cols[2]||'')+'</td><td>'+esc(cols[3]||'')+'</td>';
     tbodyPs.appendChild(tr);
   });
-
   var psCount = psRows.filter(function(r){return r.trim();}).length;
-  var psEmpty = Math.max(2 - psCount, 0);
-  for (var k = 0; k < psEmpty; k++) {
+  for (var k = 0; k < Math.max(2 - psCount, 0); k++) {
     var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td style="text-align:center;height:20px;">' + (psCount+k+1) + '</td>' +
-      '<td>&nbsp;</td><td></td><td></td><td></td>';
+    tr.innerHTML='<td style="text-align:center;height:20px;">'+(psCount+k+1)+'</td>'
+      +'<td>&nbsp;</td><td></td><td></td><td></td>';
     tbodyPs.appendChild(tr);
   }
 
