@@ -81,10 +81,11 @@
     vertical-align: middle;
   }
 
-  .col-stt { width: 8%;  text-align: center; }
-  .col-ten { width: 60%; }
-  .col-dvt { width: 16%; text-align: center; }
-  .col-sl  { width: 16%; text-align: center; }
+  .col-stt { width: 6%;  text-align: center; }
+  .col-ten { width: 46%; }
+  .col-dvt { width: 12%; text-align: center; }
+  .col-sl  { width: 12%; text-align: center; }
+  .col-ton { width: 14%; text-align: center; }
 
   /* Signatures */
   .signatures {
@@ -140,7 +141,7 @@
       tieude: p.get('tieude') || 'Phiếu Nhập Kho',
       ngay:   p.get('ngay')   || '',
       donvi:  p.get('donvi')  || '',
-      data:   p.get('data')   || '',  // "TenHang_a_DVT_a_SoLuong_b_..."
+      data:   p.get('data')   || '',  // "TenHang_a_DVT_a_SoLuong_a_TonThoiDiem_b_..."
     };
   }
 
@@ -175,13 +176,15 @@
         const tenHang = cols[0] || '';
         const dvt     = cols[1] || '';
         const soLuong = cols[2] || '';
+        const ton     = cols[3] || '';  // Tồn thời điểm
 
         const tr = document.createElement('tr');
         tr.innerHTML =
           '<td class="col-stt">' + (idx + 1) + '</td>' +
           '<td class="col-ten">' + tenHang + '</td>' +
           '<td class="col-dvt">' + dvt + '</td>' +
-          '<td class="col-sl">'  + soLuong + '</td>';
+          '<td class="col-sl">'  + soLuong + '</td>' +
+          '<td class="col-ton">' + ton + '</td>';
         tbody.appendChild(tr);
       });
     }
@@ -208,6 +211,7 @@
         <th class="col-ten">Tên hàng</th>
         <th class="col-dvt">ĐVT</th>
         <th class="col-sl">Số lượng</th>
+        <th class="col-ton">Tồn thời điểm</th>
       </tr>
     </thead>
     <tbody id="main-tbody">
