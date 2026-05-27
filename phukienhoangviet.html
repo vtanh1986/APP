@@ -32,16 +32,22 @@
         table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
         thead { border-bottom: 0.5px solid #ccc; }
         thead tr th { padding: 6px 4px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+        /* ── CỘT HEADER ── */
         th.col-tt   { width: 22px; text-align: center; }
         th.col-name { text-align: center; }
+        th.col-sl   { width: 36px; text-align: center; }   /* CỘT SL MỚI */
+        th.col-dg   { width: 72px; text-align: center; }   /* CỘT ĐƠN GIÁ MỚI */
         th.col-tt2  { width: 80px; text-align: center; }
-        tr.item-row-1 td { padding: 5px 4px 0px 4px; font-size: 13px; border-bottom: none; }
-        tr.item-row-1 td.cell-tt { text-align: center; font-weight: bold; vertical-align: top; width: 22px; }
-        tr.item-row-1 td.cell-name { text-align: left; word-break: break-word; font-weight: 500; }
-        tr.item-row-1 td.cell-sub-total { text-align: right; font-weight: 600; color: #222; white-space: nowrap; vertical-align: top; }
-        tr.item-row-2 td { padding: 0px 4px 5px 4px; font-size: 13px; border-bottom: 1px solid #e8e8e8; color: #555; }
-        tr.item-row-2 td.cell-sub-sl { text-align: left; }
-        tr.item-row-2 td.cell-sub-total { text-align: right; font-weight: 600; color: #222; white-space: nowrap; }
+
+        /* ── HÀNG SẢN PHẨM (dòng 1) ── */
+        tr.item-row td { padding: 5px 4px; font-size: 13px; border-bottom: 1px solid #e8e8e8; vertical-align: middle; }
+        tr.item-row td.cell-tt       { text-align: center; font-weight: bold; width: 22px; }
+        tr.item-row td.cell-name     { text-align: left; word-break: break-word; font-weight: 500; }
+        tr.item-row td.cell-sl       { text-align: center; color: #555; width: 36px; }   /* CỘT SL */
+        tr.item-row td.cell-dg       { text-align: right; color: #555; width: 72px; white-space: nowrap; }  /* CỘT ĐƠN GIÁ */
+        tr.item-row td.cell-sub-total { text-align: right; font-weight: 600; color: #222; white-space: nowrap; }
+
         .summary-row { background: #f7f7f7; font-weight: bold; font-size: 13px; border-bottom: 1px solid #e8e8e8; }
         .summary-row td { padding: 3px 4px; }
         .summary-row td:last-child { text-align: right; }
@@ -117,27 +123,26 @@
                 <tr>
                     <th class="col-tt">TT</th>
                     <th class="col-name">Tên hàng</th>
+                    <th class="col-sl">SL</th>
+                    <th class="col-dg">Đơn giá</th>
                     <th class="col-tt2">Thành tiền</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr class="item-row-1">
+                <!-- demo rows khi không có URL params -->
+                <tr class="item-row">
                     <td class="cell-tt">1</td>
                     <td class="cell-name">Cà phê đen</td>
+                    <td class="cell-sl">2</td>
+                    <td class="cell-dg">25,000đ</td>
                     <td class="cell-sub-total">50,000đ</td>
                 </tr>
-                <tr class="item-row-2">
-                    <td></td>
-                    <td class="cell-sub-sl" colspan="2">2 x 25,000</td>
-                </tr>
-                <tr class="item-row-1">
+                <tr class="item-row">
                     <td class="cell-tt">2</td>
                     <td class="cell-name">Cà phê sữa</td>
+                    <td class="cell-sl">1</td>
+                    <td class="cell-dg">30,000đ</td>
                     <td class="cell-sub-total">30,000đ</td>
-                </tr>
-                <tr class="item-row-2">
-                    <td></td>
-                    <td class="cell-sub-sl" colspan="2">1 x 30,000</td>
                 </tr>
             </tbody>
         </table>
@@ -268,11 +273,8 @@
         const dienThoai        = urlParams.get('dienthoai');
         const footerText       = urlParams.get('footer');
 
-        // ── BIẾN MỚI: nợ cũ và đã thanh toán ──────────────────────────────
-        // Thay "chietkhau" → "nocuu"  |  thay "thanhtoan" → "dathanhtoan"
-        const noCuu            = urlParams.get('nocuu');        // Nợ cũ (truyền qua URL: &nocuu=500000)
-        const daThanhToan      = urlParams.get('dathanhtoan');  // Đã thanh toán (truyền qua URL: &dathanhtoan=1000000)
-        // ───────────────────────────────────────────────────────────────────
+        const noCuu            = urlParams.get('nocuu');
+        const daThanhToan      = urlParams.get('dathanhtoan');
 
         const noiDungChietKhau = urlParams.get('noidungchietkhau');
         const ghiChu           = urlParams.get('ghichu');
@@ -361,71 +363,60 @@
             let stt = 0;
             productMap.forEach((product) => {
                 stt++;
-                const tr1 = document.createElement('tr');
-                tr1.className = 'item-row-1';
-                tr1.innerHTML = `
+                // ── MỘT DÒNG DUY NHẤT với đủ 5 cột ──
+                const tr = document.createElement('tr');
+                tr.className = 'item-row';
+                tr.innerHTML = `
                     <td class="cell-tt">${stt}</td>
                     <td class="cell-name">${product.tenHang}</td>
+                    <td class="cell-sl">${product.soLuong}</td>
+                    <td class="cell-dg">${product.donGia.toLocaleString('vi-VN')}đ</td>
                     <td class="cell-sub-total">${product.thanhTien.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(tr1);
-
-                const tr2 = document.createElement('tr');
-                tr2.className = 'item-row-2';
-                tr2.innerHTML = `
-                    <td></td>
-                    <td class="cell-sub-sl" colspan="2">${product.donGia.toLocaleString('vi-VN')} x ${product.soLuong}</td>`;
-                tableBody.appendChild(tr2);
+                tableBody.appendChild(tr);
 
                 tongTien += product.thanhTien;
             });
 
             if (stt > 0) {
-                // ── Đọc & tính toán các giá trị mới ──────────────────────────────
-                const chiTietNoCuu      = noCuu ? (parseInt(noCuu) || 0) : 0;           // Nợ cũ
-                const chiTietDaThanhToan = daThanhToan ? (parseInt(daThanhToan) || 0) : 0; // Đã thanh toán
-                const tongCong          = tongTien + chiTietNoCuu;                      // Tổng cộng = Tổng tiền hàng + Nợ cũ
-                const noHienTai         = tongCong - chiTietDaThanhToan;               // Nợ hiện tại = Tổng cộng - Đã thanh toán
+                const chiTietNoCuu       = noCuu ? (parseInt(noCuu) || 0) : 0;
+                const chiTietDaThanhToan = daThanhToan ? (parseInt(daThanhToan) || 0) : 0;
+                const tongCong           = tongTien + chiTietNoCuu;
+                const noHienTai          = tongCong - chiTietDaThanhToan;
 
-                const rawGhiChu     = ghiChu || noiDungChietKhau;
-                let noiDungChiTiet  = (rawGhiChu && rawGhiChu !== 'null') ? decodeURIComponent(rawGhiChu).trim() : "";
-                let noiDungThuc     = noiDungChiTiet.replace(/^Ghi\s*chú\s*:\s*/i, '').trim();
-                // ─────────────────────────────────────────────────────────────────
+                const rawGhiChu    = ghiChu || noiDungChietKhau;
+                let noiDungChiTiet = (rawGhiChu && rawGhiChu !== 'null') ? decodeURIComponent(rawGhiChu).trim() : "";
+                let noiDungThuc    = noiDungChiTiet.replace(/^Ghi\s*chú\s*:\s*/i, '').trim();
 
-                // Dòng 1: Tổng tiền hàng
+                // Summary rows dùng colspan="4" để trải qua cột TT + Tên hàng + SL + Đơn giá
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="2">Tổng tiền hàng</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
+                trTongTien.innerHTML = `<td colspan="4">Tổng tiền hàng</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongTien);
 
-                // Dòng 2: Nợ cũ (thay cho "Chiết khấu") — truyền qua &nocuu=
                 const trNoCuu = document.createElement('tr');
                 trNoCuu.className = 'summary-row';
-                trNoCuu.innerHTML = `<td colspan="2">Nợ cũ</td><td style="text-align:right;white-space:nowrap">${chiTietNoCuu.toLocaleString('vi-VN')}đ</td>`;
+                trNoCuu.innerHTML = `<td colspan="4">Nợ cũ</td><td style="text-align:right;white-space:nowrap">${chiTietNoCuu.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trNoCuu);
 
-                // Dòng 3: Tổng cộng (thay cho "Tổng thanh toán") = Tổng tiền hàng + Nợ cũ
                 const trTongCong = document.createElement('tr');
                 trTongCong.className = 'summary-row';
-                trTongCong.innerHTML = `<td colspan="2">Tổng cộng</td><td style="text-align:right;white-space:nowrap">${tongCong.toLocaleString('vi-VN')}đ</td>`;
+                trTongCong.innerHTML = `<td colspan="4">Tổng cộng</td><td style="text-align:right;white-space:nowrap">${tongCong.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trTongCong);
 
-                // Dòng 4: Đã thanh toán — truyền qua &dathanhtoan=
                 const trDaTT = document.createElement('tr');
                 trDaTT.className = 'summary-row';
-                trDaTT.innerHTML = `<td colspan="2">Đã thanh toán</td><td style="text-align:right;white-space:nowrap">${chiTietDaThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                trDaTT.innerHTML = `<td colspan="4">Đã thanh toán</td><td style="text-align:right;white-space:nowrap">${chiTietDaThanhToan.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trDaTT);
 
-                // Dòng 5: Nợ hiện tại = Tổng cộng - Đã thanh toán
                 const trNoHienTai = document.createElement('tr');
                 trNoHienTai.className = 'summary-row';
-                trNoHienTai.innerHTML = `<td colspan="2">Nợ hiện tại</td><td style="text-align:right;white-space:nowrap">${noHienTai.toLocaleString('vi-VN')}đ</td>`;
+                trNoHienTai.innerHTML = `<td colspan="4">Nợ hiện tại</td><td style="text-align:right;white-space:nowrap">${noHienTai.toLocaleString('vi-VN')}đ</td>`;
                 tableBody.appendChild(trNoHienTai);
 
-                // Ghi chú (nếu có)
                 if (noiDungThuc !== "") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
-                    trND.innerHTML = `<td colspan="3">${noiDungChiTiet}</td>`;
+                    trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
                     tableBody.appendChild(trND);
                 }
             }
