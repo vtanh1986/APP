@@ -7,102 +7,294 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; padding: 20px; position: relative; min-height: 100vh; }
-        .print-button-container { position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(255,255,255,0.95); padding: 5px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .print-button { background: #4CAF50; color: white; border: none; padding: 12px 24px; border-radius: 4px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s ease; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
-        .print-button:hover { background: #45a049; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.25); }
-        .print-button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-        .invoice { max-width: 600px; margin: 0 auto; background: white; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { display: grid; grid-template-columns: 90px 1fr; align-items: center; border-bottom: 0.5px solid #ccc; padding-bottom: 8px; margin-bottom: 8px; gap: 10px; }
-        .header-logo { display: flex; align-items: center; justify-content: center; padding-left: 110px; }
-        .header-logo img { max-width: 80px; max-height: 80px; object-fit: contain; display: block; }
-        .header-info { text-align: center; min-width: 0; }
-        .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .header p  { color: #666; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #stk { font-size: 14px !important; }
-        @media (max-width: 480px) {
-            .header h1 { font-size: 15px; }
-            .header p  { font-size: 11px; }
-            .header-logo img { max-width: 52px; max-height: 52px; }
-        }
-        .loai-phieu { text-align: center; font-size: 15px; font-weight: 700; color: #333; letter-spacing: 1px; text-transform: uppercase; padding: 5px 0 3px 0; margin-bottom: 4px; border-bottom: 1px dashed #bbb; }
-        .info-section { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; padding: 5px 10px; background: #f9f9f9; border-radius: 5px; }
-        .info-item { font-size: 14px; line-height: 1.3; }
-        .info-label { font-weight: bold; color: #333; }
-        .info-value { color: #666; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        thead { border-bottom: 0.5px solid #ccc; }
-        thead tr th { padding: 6px 4px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 
-        /* ── CỘT HEADER ── */
-        th.col-tt   { width: 22px; text-align: center; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* ── TOOLBAR ── */
+        .toolbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.97);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .toolbar button {
+            flex: 1;
+            border: none;
+            padding: 10px 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .toolbar button:active { transform: scale(0.97); }
+        .toolbar button:disabled { opacity: 0.55; cursor: not-allowed; }
+        .btn-print { background: #4CAF50; color: #fff; }
+        .btn-jpg   { background: #FF9800; color: #fff; }
+
+        /* ── INVOICE WRAPPER ── */
+        .invoice-wrap {
+            margin-top: 64px; /* toolbar height */
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ── INVOICE ── */
+        .invoice {
+            background: #fff;
+            width: 100%;
+            max-width: 480px;
+            padding: 16px 14px 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 8px;
+        }
+        .logo-col {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* logo cách lề trái 110px trên desktop */
+            margin-left: 110px;
+        }
+        .logo-col img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            display: block;
+        }
+        .info-col {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+        }
+        .info-col h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #222;
+            line-height: 1.2;
+        }
+        .info-col p {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.4;
+        }
+        #stk {
+            font-size: 12px;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── LOẠI PHIẾU ── */
+        .loai-phieu {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 6px 0 4px;
+            margin-bottom: 6px;
+            border-bottom: 1px dashed #bbb;
+        }
+
+        /* ── INFO BOX ── */
+        .info-section {
+            background: #f8f8f8;
+            border-radius: 5px;
+            padding: 6px 10px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .info-item { font-size: 13px; line-height: 1.4; }
+        .info-label { font-weight: 700; color: #333; }
+        .info-value { color: #555; }
+
+        /* ── TABLE ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+        thead { border-bottom: 1px solid #ccc; }
+        thead th {
+            padding: 6px 4px;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            color: #222;
+        }
+        th.col-tt   { width: 24px; text-align: center; }
         th.col-name { text-align: left; }
-        th.col-sl   { width: 36px; text-align: center; }   /* CỘT SL MỚI */
-        th.col-dg   { width: 72px; text-align: center; }   /* CỘT ĐƠN GIÁ MỚI */
-        th.col-tt2  { width: 80px; text-align: center; }
+        th.col-sl   { width: 32px; text-align: center; }
+        th.col-dg   { width: 76px; text-align: right; }
+        th.col-tt2  { width: 80px; text-align: right; }
 
-        /* ── HÀNG SẢN PHẨM (dòng 1) ── */
-        tr.item-row td { padding: 5px 4px; font-size: 13px; border-bottom: 1px solid #e8e8e8; vertical-align: middle; }
-        tr.item-row td.cell-tt       { text-align: center; font-weight: bold; width: 22px; }
-        tr.item-row td.cell-name     { text-align: left; word-break: break-word; font-weight: 500; }
-        tr.item-row td.cell-sl       { text-align: center; color: #555; width: 36px; }   /* CỘT SL */
-        tr.item-row td.cell-dg       { text-align: right; color: #555; width: 72px; white-space: nowrap; }  /* CỘT ĐƠN GIÁ */
-        tr.item-row td.cell-sub-total { text-align: right; font-weight: 600; color: #222; white-space: nowrap; }
-
-        .summary-row { background: #f7f7f7; font-weight: bold; font-size: 13px; border-bottom: 1px solid #e8e8e8; }
-        .summary-row td { padding: 3px 4px; }
-        .summary-row td:last-child { text-align: right; }
-        .first-summary { border-top: 0.5px solid #ccc; }
-
-        .discount-reason { font-size: 13px; color: #333; border-bottom: 1px solid #ddd; }
-        .discount-reason td { padding: 5px 4px; text-align: left; }
-        .qrcode-section { text-align: center; margin: 8px 0 6px 0; padding: 8px 0; border-top: 1px dashed #ccc; }
-        .qrcode-container { display: inline-block; padding: 10px; background: white; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; }
-        .qrcode-container img { display: block; max-width: 150px; height: auto; }
-        .qrcode-text { font-size: 12px; color: #666; margin-top: 8px; }
-        .footer { text-align: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #999; color: #666; font-size: 14px; }
-        .print-status { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color: white; padding: 20px 30px; border-radius: 10px; z-index: 10000; display: none; text-align: center; font-size: 18px; }
-        @media print {
-            @page { margin: 0mm; padding: 0; size: auto; }
-            html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
-            .print-button-container, .print-status { display: none !important; }
-            .invoice { box-shadow: none !important; margin: 0 !important; padding: 10px 15px 15px 15px !important; max-width: 100% !important; width: 100% !important; position: absolute !important; top: 0 !important; left: 0 !important; }
+        tr.item-row td {
+            padding: 5px 4px;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
         }
-        @media (max-width: 768px) {
-            body { padding: 10px; padding-top: 80px; }
-            .print-button-container { position: fixed; top: 10px; right: 10px; left: 10px; }
-            .print-button { width: 100%; justify-content: center; }
-            .invoice { padding: 20px; margin-top: 10px; max-width: 100%; }
+        td.cell-tt         { text-align: center; font-weight: 700; }
+        td.cell-name       { text-align: left; word-break: break-word; font-weight: 500; }
+        td.cell-sl         { text-align: center; color: #555; }
+        td.cell-dg         { text-align: right; color: #555; white-space: nowrap; }
+        td.cell-sub-total  { text-align: right; font-weight: 700; color: #111; white-space: nowrap; }
+
+        tr.summary-row td {
+            padding: 4px 4px;
+            font-size: 13px;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+        }
+        tr.summary-row td:last-child { text-align: right; white-space: nowrap; }
+        tr.summary-row.first-summary td { border-top: 1px solid #ccc; }
+        tr.summary-row.highlight td { font-size: 14px; font-weight: 700; color: #c0392b; }
+
+        tr.discount-reason td {
+            padding: 5px 4px;
+            font-size: 13px;
+            color: #444;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        /* ── QR ── */
+        .qrcode-section {
+            text-align: center;
+            margin: 8px 0 6px;
+            padding: 8px 0;
+            border-top: 1px dashed #ccc;
+        }
+        .qrcode-container {
+            display: inline-block;
+            padding: 8px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 6px;
+        }
+        .qrcode-container img { display: block; width: 130px; height: 130px; }
+        .qrcode-text { font-size: 12px; color: #666; }
+
+        /* ── FOOTER ── */
+        .footer {
+            text-align: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #999;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        /* ── OVERLAY ── */
+        .print-status {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 20px 28px;
+            border-radius: 10px;
+            z-index: 9999;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* ── RESPONSIVE: mobile ── */
+        @media (max-width: 520px) {
+            body { padding: 0; }
+            .invoice-wrap { margin-top: 58px; }
+            .invoice { max-width: 100%; box-shadow: none; padding: 12px 10px 12px; }
+
+            /* Logo: cách lề trái giảm xuống, tự động thu nhỏ */
+            .logo-col {
+                margin-left: 0;          /* bỏ 110px cứng, canh tự nhiên */
+                flex: 0 0 52px;
+            }
+            .logo-col img { width: 52px; height: 52px; }
+
+            .info-col h1 { font-size: 15px; }
+            .info-col p  { font-size: 11px; }
+            #stk         { font-size: 11px; }
+
+            thead th, tr.item-row td, tr.summary-row td { font-size: 12px; }
+            th.col-dg  { width: 64px; }
+            th.col-tt2 { width: 68px; }
+
+            .toolbar button { font-size: 13px; padding: 9px 6px; }
+        }
+
+        /* ── PRINT ── */
+        @media print {
+            @page { margin: 0; size: auto; }
+            html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+            .toolbar, .print-status { display: none !important; }
+            .invoice-wrap { margin-top: 0 !important; }
+            .invoice {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 8px 12px 14px !important;
+            }
+            /* Giữ margin-left 110px khi in */
+            .logo-col { margin-left: 110px; }
         }
     </style>
 </head>
 <body>
-    <div class="print-status" id="printStatus">
-        <p>Đang mở hộp thoại in...</p>
-        <p>Vui lòng chọn máy in và nhấn "In"</p>
-    </div>
 
-    <div class="print-button-container">
-        <button class="print-button" onclick="printInvoice()">
-            <span>🖨️</span>
-            <span>In hóa đơn</span>
-        </button>
-        <button class="print-button" id="saveJpgBtn" style="background:#FF9800;margin-top:5px;" onclick="saveAsJpg()">
-            <span>🖼️</span>
-            <span>Lưu ảnh JPG</span>
-        </button>
-    </div>
+<div class="print-status" id="printStatus">
+    <p>Đang mở hộp thoại in...</p>
+    <p>Vui lòng chọn máy in và nhấn "In"</p>
+</div>
 
+<div class="toolbar">
+    <button class="btn-print" onclick="printInvoice()">🖨️ In hóa đơn</button>
+    <button class="btn-jpg"   id="saveJpgBtn" onclick="saveAsJpg()">🖼️ Lưu ảnh JPG</button>
+</div>
+
+<div class="invoice-wrap">
     <div class="invoice" id="invoiceContent">
-        <div class="header">
-            <div class="header-logo" id="headerLogo" style="display:none">
+
+        <!-- HEADER -->
+        <div class="header" id="headerEl">
+            <div class="logo-col" id="logoCol" style="display:none">
                 <img id="logoImage" src="" alt="Logo">
             </div>
-            <div class="header-info">
+            <div class="info-col">
                 <h1 id="tenShop">QUÁN CAFE ABC</h1>
-                <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
-                <p id="dienThoai">ĐT: 0123 456 789</p>
-                <p id="stk" style="display:none;color:#666;white-space:nowrap;overflow:hidden;"></p>
+                <p  id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
+                <p  id="dienThoai">ĐT: 0123 456 789</p>
+                <p  id="stk" style="display:none"></p>
             </div>
         </div>
 
@@ -110,11 +302,11 @@
 
         <div class="info-section">
             <div class="info-item">
-                <span class="info-label">Thời gian:</span>
+                <span class="info-label">Thời gian: </span>
                 <span class="info-value" id="thoiGian">08/12/2025 14:30</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Tên KH:</span>
+                <span class="info-label">Tên KH: </span>
                 <span class="info-value" id="ban">B05</span>
             </div>
         </div>
@@ -130,7 +322,7 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- demo rows khi không có URL params -->
+                <!-- demo -->
                 <tr class="item-row">
                     <td class="cell-tt">1</td>
                     <td class="cell-name">Cà phê đen</td>
@@ -148,7 +340,7 @@
             </tbody>
         </table>
 
-        <div class="qrcode-section" id="qrcodeSection">
+        <div class="qrcode-section" id="qrcodeSection" style="display:none">
             <div class="qrcode-container">
                 <img id="qrcodeImage" src="" alt="QR Code">
             </div>
@@ -160,268 +352,202 @@
             <p>---===---</p>
         </div>
     </div>
+</div>
 
-    <script>
+<script>
+    /* ── FORMAT SỐ: dùng dấu chấm làm phân cách hàng nghìn ── */
+    function fmt(n) {
+        return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
 
-        function showLogo(src) {
-            var img = document.getElementById('logoImage');
-            var wrap = document.getElementById('headerLogo');
-            img.onerror = function() {
-                console.warn('Logo load failed:', src);
-                wrap.style.display = 'none';
-            };
-            img.onload = function() {
-                wrap.style.display = 'flex';
-            };
-            img.src = src;
+    /* ── LOGO ── */
+    function showLogo(src) {
+        const img  = document.getElementById('logoImage');
+        const col  = document.getElementById('logoCol');
+        img.onerror = () => { col.style.display = 'none'; };
+        img.onload  = () => { col.style.display = 'flex'; };
+        img.src = src;
+    }
+
+    /* ── STK auto font-size ── */
+    function autoSizeStk() {
+        const el = document.getElementById('stk');
+        if (!el || el.style.display === 'none') return;
+        const maxW = el.parentElement ? el.parentElement.clientWidth : el.offsetWidth;
+        let fs = 14;
+        el.style.fontSize = fs + 'px';
+        while (el.scrollWidth > maxW && fs > 7) {
+            fs -= 0.5;
+            el.style.fontSize = fs + 'px';
         }
+    }
 
-        function printInvoice() {
-            document.getElementById('printStatus').style.display = 'block';
-            setTimeout(() => {
-                window.print();
-                setTimeout(() => { document.getElementById('printStatus').style.display = 'none'; }, 2000);
-            }, 500);
-        }
+    /* ── PRINT ── */
+    function printInvoice() {
+        document.getElementById('printStatus').style.display = 'block';
+        setTimeout(() => {
+            window.print();
+            setTimeout(() => { document.getElementById('printStatus').style.display = 'none'; }, 2000);
+        }, 500);
+    }
 
-        function autoSizeStk() {
-            var stkEl = document.getElementById('stk');
-            if (!stkEl || stkEl.style.display === 'none') return;
-            var parent = stkEl.parentElement;
-            var availW = parent ? parent.clientWidth : stkEl.offsetWidth;
-            var maxSize = 14, minSize = 6;
-            stkEl.style.fontSize = maxSize + 'px';
-            stkEl.style.whiteSpace = 'nowrap';
-            for (var i = 0; i < 160; i++) {
-                if (stkEl.scrollWidth <= availW) break;
-                maxSize -= 0.25;
-                if (maxSize < minSize) { maxSize = minSize; break; }
-                stkEl.style.fontSize = maxSize + 'px';
-            }
-        }
+    /* ── SAVE JPG ── */
+    async function saveAsJpg() {
+        const btn = document.getElementById('saveJpgBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Đang tạo ảnh...';
 
-        async function saveAsJpg() {
-            const btn = document.getElementById('saveJpgBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span>⏳</span><span>Đang tạo ảnh...</span>';
+        const qrSection = document.getElementById('qrcodeSection');
+        const prevQr    = qrSection.style.display;
 
-            const qrcodeImg = document.getElementById('qrcodeImage');
-            const logoImg   = document.getElementById('logoImage');
-            const qrSrcOrig   = qrcodeImg.src;
-            const logoSrcOrig = logoImg.src;
-
-            try {
-                const qrSection = document.getElementById('qrcodeSection');
-                const qrPrevDisplay = qrSection.style.display;
-                qrSection.style.display = 'none';
-                autoSizeStk();
-                await new Promise(r => setTimeout(r, 100));
-
-                const invoice = document.getElementById('invoiceContent');
-
-                const canvas = await html2canvas(invoice, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    width: invoice.offsetWidth,
-                    height: invoice.offsetHeight,
-                    windowWidth: invoice.offsetWidth,
-                    scrollX: 0,
-                    scrollY: 0
-                });
-
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-
-                const now = new Date();
-                const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-                const filename = `hoadon_${timestamp}.jpg`;
-
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = dataUrl;
-                link.click();
-
-            } catch (err) {
-                alert('Không thể tạo ảnh: ' + err.message);
-                console.error(err);
-            } finally {
-                document.getElementById('qrcodeSection').style.display = qrPrevDisplay;
-                if (qrSrcOrig)   qrcodeImg.src = qrSrcOrig;
-                if (logoSrcOrig) logoImg.src   = logoSrcOrig;
-                btn.disabled = false;
-                btn.innerHTML = '<span>&#x1F5BC;</span><span>Lưu ảnh JPG</span>';
-            }
-        }
-
-        function autoPrint() {
-            setTimeout(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('noautoprint') !== 'true') printInvoice();
-            }, 1000);
-        }
-
-        // window.addEventListener('load', autoPrint);
-
-        const urlParams = new URLSearchParams(window.location.search);
-
-        const tenShop          = urlParams.get('tenshop');
-        const diaChi           = urlParams.get('diachi');
-        const thoiGian         = urlParams.get('thoigian');
-        const ban              = urlParams.get('ban');
-        const data             = urlParams.get('data');
-        const dienThoai        = urlParams.get('dienthoai');
-        const footerText       = urlParams.get('footer');
-
-        const noCuu            = urlParams.get('nocuu');
-        const daThanhToan      = urlParams.get('dathanhtoan');
-
-        const noiDungChietKhau = urlParams.get('noidungchietkhau');
-        const ghiChu           = urlParams.get('ghichu');
-        const qrcodeUrl        = urlParams.get('qrcode');
-        const qrcodeContent    = urlParams.get('qrcodecontent');
-        const qrcodeText       = urlParams.get('qrcodetext');
-        const showQrcode       = urlParams.get('showqrcode');
-        const loaiPhieu        = urlParams.get('loaiphieu');
-        const logoUrl          = urlParams.get('logo');
-        const logoId           = urlParams.get('logoid');
-        const stk              = urlParams.get('stk');
-
-        if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
-        if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
-        if (thoiGian)   document.getElementById('thoiGian').textContent   = decodeURIComponent(thoiGian);
-        if (ban)        document.getElementById('ban').textContent        = decodeURIComponent(ban);
-        if (dienThoai)  document.getElementById('dienThoai').textContent  = `ĐT: ${decodeURIComponent(dienThoai)}`;
-        if (stk) {
-            var stkEl = document.getElementById('stk');
-            stkEl.textContent = decodeURIComponent(stk);
-            stkEl.style.display = 'block';
+        try {
+            qrSection.style.display = 'none';
             autoSizeStk();
+            await new Promise(r => setTimeout(r, 100));
+
+            const el = document.getElementById('invoiceContent');
+            const canvas = await html2canvas(el, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+                width: el.offsetWidth,
+                height: el.offsetHeight,
+                scrollX: 0,
+                scrollY: 0
+            });
+
+            const now = new Date();
+            const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+            const a   = document.createElement('a');
+            a.download = `hoadon_${ts}.jpg`;
+            a.href = canvas.toDataURL('image/jpeg', 0.95);
+            a.click();
+        } catch (err) {
+            alert('Không thể tạo ảnh: ' + err.message);
+        } finally {
+            qrSection.style.display = prevQr;
+            btn.disabled = false;
+            btn.innerHTML = '🖼️ Lưu ảnh JPG';
         }
-        if (footerText) document.getElementById('footerText').textContent = decodeURIComponent(footerText);
+    }
 
-        if (logoUrl) {
-            showLogo(decodeURIComponent(logoUrl));
-        } else if (logoId) {
-            var id = decodeURIComponent(logoId);
-            showLogo('https://lh3.googleusercontent.com/d/' + id + '=s0');
+    /* ── URL PARAMS ── */
+    const P = new URLSearchParams(window.location.search);
+    const g = k => P.get(k);
+
+    const set = (id, val) => { if (val) document.getElementById(id).textContent = decodeURIComponent(val); };
+    set('tenShop',    g('tenshop'));
+    set('diaChi',     g('diachi'));
+    set('thoiGian',   g('thoigian'));
+    set('ban',        g('ban'));
+    set('footerText', g('footer'));
+
+    if (g('dienthoai')) document.getElementById('dienThoai').textContent = 'ĐT: ' + decodeURIComponent(g('dienthoai'));
+
+    if (g('stk')) {
+        const el = document.getElementById('stk');
+        el.textContent = decodeURIComponent(g('stk'));
+        el.style.display = 'block';
+        setTimeout(autoSizeStk, 100);
+    }
+
+    if (g('logo'))   showLogo(decodeURIComponent(g('logo')));
+    else if (g('logoid')) showLogo('https://lh3.googleusercontent.com/d/' + decodeURIComponent(g('logoid')) + '=s0');
+
+    if (g('loaiphieu') && g('loaiphieu').trim()) {
+        const el = document.getElementById('loaiPhieu');
+        el.textContent = decodeURIComponent(g('loaiphieu')).trim();
+        el.style.display = 'block';
+    }
+
+    /* QR */
+    const showQr = g('showqrcode') !== 'false';
+    const qrSec  = document.getElementById('qrcodeSection');
+    if (showQr) {
+        const qrImg = document.getElementById('qrcodeImage');
+        if (g('qrcode')) {
+            qrImg.src = decodeURIComponent(g('qrcode'));
+            qrSec.style.display = 'block';
+        } else if (g('qrcodecontent')) {
+            const c = decodeURIComponent(g('qrcodecontent'));
+            qrImg.src = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(c)}&choe=UTF-8`;
+            qrSec.style.display = 'block';
         }
+        document.getElementById('qrcodeText').textContent = g('qrcodetext') ? decodeURIComponent(g('qrcodetext')) : 'Quét mã QR để thanh toán';
+    }
 
-        if (loaiPhieu && loaiPhieu.trim() !== '') {
-            const el = document.getElementById('loaiPhieu');
-            el.textContent = decodeURIComponent(loaiPhieu).trim();
-            el.style.display = 'block';
-        }
+    /* TABLE DATA */
+    const data = g('data');
+    if (data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
 
-        const qrcodeSection    = document.getElementById('qrcodeSection');
-        const qrcodeImage      = document.getElementById('qrcodeImage');
-        const qrcodeTextEl     = document.getElementById('qrcodeText');
-        const shouldShowQrcode = showQrcode !== 'false';
+        const noCuu      = parseInt(g('nocuu'))       || 0;
+        const daTT       = parseInt(g('dathanhtoan')) || 0;
+        const rawGhiChu  = g('ghichu') || g('noidungchietkhau');
+        const ghiChuText = (rawGhiChu && rawGhiChu !== 'null') ? decodeURIComponent(rawGhiChu).trim() : '';
 
-        if (shouldShowQrcode) {
-            if (qrcodeUrl) {
-                qrcodeImage.src = decodeURIComponent(qrcodeUrl);
-            } else if (qrcodeContent) {
-                const content = decodeURIComponent(qrcodeContent);
-                qrcodeImage.src = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(content)}&choe=UTF-8`;
+        const map = new Map();
+        data.split('_b_').forEach(row => {
+            const cols = row.trim().split('_a_').map(c => c.trim());
+            if (cols.length < 3) return;
+            const tenHang = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
+            const sl      = parseInt(cols[1]) || 0;
+            const dg      = parseInt(cols[2]) || 0;
+            const key     = `${cols[0]}_${dg}`;
+            if (map.has(key)) {
+                const p = map.get(key);
+                p.sl += sl;
+                p.tt  = p.sl * p.dg;
             } else {
-                qrcodeSection.style.display = 'none';
+                map.set(key, { tenHang, sl, dg, tt: sl * dg });
             }
-            qrcodeTextEl.textContent = qrcodeText ? decodeURIComponent(qrcodeText) : "Quét mã QR để thanh toán";
-        } else {
-            qrcodeSection.style.display = 'none';
-        }
+        });
 
-        if (data) {
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = '';
+        let stt = 0, tongTien = 0;
+        map.forEach(p => {
+            stt++;
+            tongTien += p.tt;
+            const tr = document.createElement('tr');
+            tr.className = 'item-row';
+            tr.innerHTML = `
+                <td class="cell-tt">${stt}</td>
+                <td class="cell-name">${p.tenHang}</td>
+                <td class="cell-sl">${p.sl}</td>
+                <td class="cell-dg">${fmt(p.dg)}đ</td>
+                <td class="cell-sub-total">${fmt(p.tt)}đ</td>`;
+            tbody.appendChild(tr);
+        });
 
-            const rows = data.split('_b_');
-            const productMap = new Map();
-            let tongTien = 0;
+        if (stt > 0) {
+            const tongCong   = tongTien + noCuu;
+            const noHienTai  = tongCong - daTT;
 
-            rows.forEach((row) => {
-                const trimmedRow = row.trim();
-                if (trimmedRow) {
-                    const cols = trimmedRow.split('_a_').map(c => c.trim());
-                    if (cols.length >= 3) {
-                        const tenHang  = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        const soLuong  = parseInt(cols[1]) || 0;
-                        const donGia   = parseInt(cols[2]) || 0;
-                        const productKey = `${cols[0]}_${donGia}`;
-                        if (productMap.has(productKey)) {
-                            const p = productMap.get(productKey);
-                            p.soLuong  += soLuong;
-                            p.thanhTien = p.soLuong * p.donGia;
-                        } else {
-                            productMap.set(productKey, { tenHang, soLuong, donGia, thanhTien: soLuong * donGia });
-                        }
-                    }
-                }
-            });
-
-            let stt = 0;
-            productMap.forEach((product) => {
-                stt++;
-                // ── MỘT DÒNG DUY NHẤT với đủ 5 cột ──
+            const addRow = (label, value, cls = '') => {
                 const tr = document.createElement('tr');
-                tr.className = 'item-row';
-                tr.innerHTML = `
-                    <td class="cell-tt">${stt}</td>
-                    <td class="cell-name">${product.tenHang}</td>
-                    <td class="cell-sl">${product.soLuong}</td>
-                    <td class="cell-dg">${product.donGia.toLocaleString('vi-VN')}đ</td>
-                    <td class="cell-sub-total">${product.thanhTien.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(tr);
+                tr.className = 'summary-row' + (cls ? ' ' + cls : '');
+                tr.innerHTML = `<td colspan="4">${label}</td><td>${fmt(value)}đ</td>`;
+                tbody.appendChild(tr);
+            };
 
-                tongTien += product.thanhTien;
-            });
+            addRow('Tổng tiền hàng', tongTien, 'first-summary');
+            addRow('Nợ cũ',          noCuu);
+            addRow('Tổng cộng',      tongCong);
+            addRow('Đã thanh toán',  daTT);
+            addRow('Nợ hiện tại',    noHienTai, 'highlight');
 
-            if (stt > 0) {
-                const chiTietNoCuu       = noCuu ? (parseInt(noCuu) || 0) : 0;
-                const chiTietDaThanhToan = daThanhToan ? (parseInt(daThanhToan) || 0) : 0;
-                const tongCong           = tongTien + chiTietNoCuu;
-                const noHienTai          = tongCong - chiTietDaThanhToan;
-
-                const rawGhiChu    = ghiChu || noiDungChietKhau;
-                let noiDungChiTiet = (rawGhiChu && rawGhiChu !== 'null') ? decodeURIComponent(rawGhiChu).trim() : "";
-                let noiDungThuc    = noiDungChiTiet.replace(/^Ghi\s*chú\s*:\s*/i, '').trim();
-
-                // Summary rows dùng colspan="4" để trải qua cột TT + Tên hàng + SL + Đơn giá
-                const trTongTien = document.createElement('tr');
-                trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="4">Tổng tiền hàng</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trTongTien);
-
-                const trNoCuu = document.createElement('tr');
-                trNoCuu.className = 'summary-row';
-                trNoCuu.innerHTML = `<td colspan="4">Nợ cũ</td><td style="text-align:right;white-space:nowrap">${chiTietNoCuu.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trNoCuu);
-
-                const trTongCong = document.createElement('tr');
-                trTongCong.className = 'summary-row';
-                trTongCong.innerHTML = `<td colspan="4">Tổng cộng</td><td style="text-align:right;white-space:nowrap">${tongCong.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trTongCong);
-
-                const trDaTT = document.createElement('tr');
-                trDaTT.className = 'summary-row';
-                trDaTT.innerHTML = `<td colspan="4">Đã thanh toán</td><td style="text-align:right;white-space:nowrap">${chiTietDaThanhToan.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trDaTT);
-
-                const trNoHienTai = document.createElement('tr');
-                trNoHienTai.className = 'summary-row';
-                trNoHienTai.innerHTML = `<td colspan="4">Nợ hiện tại</td><td style="text-align:right;white-space:nowrap">${noHienTai.toLocaleString('vi-VN')}đ</td>`;
-                tableBody.appendChild(trNoHienTai);
-
-                if (noiDungThuc !== "") {
-                    const trND = document.createElement('tr');
-                    trND.className = 'discount-reason';
-                    trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
-                    tableBody.appendChild(trND);
-                }
+            if (ghiChuText) {
+                const tr = document.createElement('tr');
+                tr.className = 'discount-reason';
+                tr.innerHTML = `<td colspan="5">${ghiChuText}</td>`;
+                tbody.appendChild(tr);
             }
         }
-    </script>
+    }
+
+    window.addEventListener('resize', autoSizeStk);
+</script>
 </body>
 </html>
