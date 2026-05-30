@@ -420,6 +420,8 @@
         }
         
         // ===== Render bảng hàng hóa theo layout 2 dòng =====
+        // Chuẩn hóa số: xóa dấu chấm hàng nghìn, đổi dấu phẩy thập phân → chấm
+        const normalizeNum = (s) => String(s).trim().replace(/\.(?=\d{3}(?:[,.]|$))/g, '').replace(',', '.');
         if (data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -434,12 +436,10 @@
                     const cols = trimmedRow.split('_a_').map(c => c.trim());
                     if (cols.length >= 3) {
                         const tenHang   = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        // Parse số lượng: hỗ trợ cả dấu chấm lẫn dấu phẩy thập phân
-                        const soLuongRaw = cols[1].trim().replace(/\./g, '').replace(',', '.');
-                        const soLuong   = parseFloat(soLuongRaw) || 0;
-                        // Parse đơn giá: bỏ dấu phân cách hàng nghìn và phần thập phân
-                        const donGiaRaw = cols[2].trim().replace(/\./g, '').replace(',', '.');
-                        const donGia    = Math.round(parseFloat(donGiaRaw)) || 0;
+                        // Parse số lượng: hỗ trợ 3.5 và 3,5
+                        const soLuong = parseFloat(normalizeNum(cols[1])) || 0;
+                        // Parse đơn giá: bỏ thập phân, chỉ lấy số nguyên
+                        const donGia  = Math.round(parseFloat(normalizeNum(cols[2]))) || 0;
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
@@ -507,8 +507,7 @@
                 tableBody.appendChild(trTT);
 
                 if (khachTrao && khachTrao !== 'null') {
-                    const ktRaw = decodeURIComponent(khachTrao).trim().replace(/\./g, '').replace(',', '.');
-                    const kt = Math.round(parseFloat(ktRaw)) || 0;
+                    const kt = Math.round(parseFloat(normalizeNum(decodeURIComponent(khachTrao)))) || 0;
                     if (kt > 0) {
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
@@ -518,8 +517,7 @@
                 }
 
                 if (conNo && conNo !== 'null') {
-                    const cnRaw = decodeURIComponent(conNo).trim().replace(/\./g, '').replace(',', '.');
-                    const cn = Math.round(parseFloat(cnRaw)) || 0;
+                    const cn = Math.round(parseFloat(normalizeNum(decodeURIComponent(conNo)))) || 0;
                     const trCN = document.createElement('tr');
                     trCN.className = 'summary-row';
                     trCN.style.color = '#e53935';
