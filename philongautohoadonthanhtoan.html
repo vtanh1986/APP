@@ -420,8 +420,53 @@
         }
         
         // ===== Render bảng hàng hóa theo layout 2 dòng =====
-        // Chuẩn hóa số: xóa dấu chấm hàng nghìn, đổi dấu phẩy thập phân → chấm
-        const normalizeNum = (s) => String(s).trim().replace(/\.(?=\d{3}(?:[,.]|$))/g, '').replace(',', '.');
+        // ===== HÀM TIỆN ÍCH SỐ =====
+        // Parse số từ chuỗi: nhận dạng dấu phẩy/chấm là thập phân hay hàng nghìn
+        const parseNum = (s) => {
+            s = String(s).trim();
+            // Có cả dấu chấm lẫn dấu phẩy → dấu nào đứng sau là thập phân
+            if (s.includes('.') && s.includes(',')) {
+                const dotPos   = s.lastIndexOf('.');
+                const commaPos = s.lastIndexOf(',');
+                if (commaPos > dotPos) {
+                    // Ví dụ: 225.000,00 → phẩy là thập phân
+                    return parseFloat(s.replace(/\./g, '').replace(',', '.'));
+                } else {
+                    // Ví dụ: 225,000.00 → chấm là thập phân
+                    return parseFloat(s.replace(/,/g, ''));
+                }
+            }
+            // Chỉ có dấu phẩy
+            if (s.includes(',')) {
+                const parts = s.split(',');
+                // Nếu phần sau dấu phẩy <= 2 chữ số → thập phân (vd: 3,5 hoặc 225,00)
+                if (parts[parts.length - 1].length <= 2) {
+                    return parseFloat(s.replace(',', '.'));
+                } else {
+                    // Vd: 225,000 → hàng nghìn
+                    return parseFloat(s.replace(/,/g, ''));
+                }
+            }
+            // Chỉ có dấu chấm
+            if (s.includes('.')) {
+                const parts = s.split('.');
+                // Nếu phần sau dấu chấm <= 2 chữ số → thập phân (vd: 3.5 hoặc 225.00)
+                if (parts[parts.length - 1].length <= 2) {
+                    return parseFloat(s);
+                } else {
+                    // Vd: 225.000 → hàng nghìn
+                    return parseFloat(s.replace(/\./g, ''));
+                }
+            }
+            // Không có dấu gì → số nguyên thuần
+            return parseFloat(s);
+        };
+        // Format tiền: dấu chấm hàng nghìn, không thập phân (tự xây, không dùng toLocaleString)
+        const fmtTien = (n) => {
+            return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        };
+        // Format số lượng: số nguyên → gọn, số lẻ → giữ chấm thập phân
+        const fmtSL = (n) => n % 1 === 0 ? n.toFixed(0) : String(n);
         if (data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -437,9 +482,9 @@
                     if (cols.length >= 3) {
                         const tenHang   = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
                         // Parse số lượng: hỗ trợ 3.5 và 3,5
-                        const soLuong = parseFloat(normalizeNum(cols[1])) || 0;
+                        const soLuong = parseNum(cols[1]) || 0;
                         // Parse đơn giá: bỏ thập phân, chỉ lấy số nguyên
-                        const donGia  = Math.round(parseFloat(normalizeNum(cols[2]))) || 0;
+                        const donGia  = Math.round(parseNum(cols[2])) || 0;
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
@@ -452,11 +497,6 @@
                 }
             });
             
-            // Hàm format tiền: làm tròn, dùng dấu chấm phân cách hàng nghìn, không thập phân
-            const fmtTien = (n) => Math.round(n).toLocaleString('vi-VN');
-            // Hàm format số lượng: số nguyên thì gọn, số lẻ dùng dấu chấm thập phân
-            const fmtSL   = (n) => n % 1 === 0 ? n.toFixed(0) : String(n).replace(',', '.');
-
             let stt = 0;
             productMap.forEach((product) => {
                 stt++;
@@ -507,7 +547,7 @@
                 tableBody.appendChild(trTT);
 
                 if (khachTrao && khachTrao !== 'null') {
-                    const kt = Math.round(parseFloat(normalizeNum(decodeURIComponent(khachTrao)))) || 0;
+                    const kt = Math.round(parseNum(decodeURIComponent(khachTrao))) || 0;
                     if (kt > 0) {
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
@@ -517,7 +557,7 @@
                 }
 
                 if (conNo && conNo !== 'null') {
-                    const cn = Math.round(parseFloat(normalizeNum(decodeURIComponent(conNo)))) || 0;
+                    const cn = Math.round(parseNum(decodeURIComponent(conNo))) || 0;
                     const trCN = document.createElement('tr');
                     trCN.className = 'summary-row';
                     trCN.style.color = '#e53935';
