@@ -69,6 +69,7 @@
             margin-bottom: 8px;
         }
         
+        .header-logo { display: block; max-height: 80px; max-width: 100%; width: auto; margin: 0 auto; object-fit: contain; }
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
         .header p  { color: #666; font-size: 14px; }
 
@@ -269,6 +270,7 @@
     
     <div class="invoice">
         <div class="header">
+            <img id="logoImg" class="header-logo" src="" alt="" style="display:none">
             <h1 id="tenShop">QUÁN CAFE ABC</h1>
             <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
             <p id="dienThoai">ĐT: 0123 456 789</p>
@@ -383,6 +385,19 @@
         const showQrcode       = urlParams.get('showqrcode');
         const loaiPhieu        = urlParams.get('loaiphieu');
         
+        // ===== LOGO =====
+        const logoUrl = urlParams.get('logo');
+        if (logoUrl) {
+            const logoImg  = document.getElementById('logoImg');
+            const tenShopEl = document.getElementById('tenShop');
+            const diaChiEl  = document.getElementById('diaChi');
+            const dienThoaiEl = document.getElementById('dienThoai');
+            logoImg.src = decodeURIComponent(logoUrl);
+            logoImg.style.display = 'block';
+            tenShopEl.style.display  = 'none';
+            diaChiEl.style.display   = 'none';
+            dienThoaiEl.style.display = 'none';
+        }
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
         if (diaChi)     document.getElementById('diaChi').textContent     = decodeURIComponent(diaChi);
         if (soPhieu)    document.getElementById('soPhieu').textContent    = decodeURIComponent(soPhieu);
