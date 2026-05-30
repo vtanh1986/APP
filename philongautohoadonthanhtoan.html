@@ -74,7 +74,8 @@
             margin-bottom: 8px;
         }
         
-        .header-logo { display: block; max-height: 100px; max-width: 100%; width: auto; margin: 0 auto; object-fit: contain; padding-bottom: 8px; border-bottom: 0.5px solid #ccc; }
+        .header-logo-wrap { width: 100%; text-align: center; padding-bottom: 10px; margin-bottom: 0; border-bottom: 0.5px solid #ccc; }
+        .header-logo { display: inline-block; max-height: 100px; max-width: 80%; width: auto; object-fit: contain; }
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
         .header p  { color: #666; font-size: 14px; }
 
@@ -275,7 +276,9 @@
     
     <div class="invoice">
         <div class="header">
-            <img id="logoImg" class="header-logo" src="" alt="" style="display:none">
+            <div id="logoWrap" class="header-logo-wrap" style="display:none">
+                <img id="logoImg" class="header-logo" src="" alt="">
+            </div>
             <h1 id="tenShop">QUÁN CAFE ABC</h1>
             <p id="diaChi">123 Đường Trần Hưng Đạo, Quận 1, TP.HCM</p>
             <p id="dienThoai">ĐT: 0123 456 789</p>
@@ -398,10 +401,9 @@
             const diaChiEl  = document.getElementById('diaChi');
             const dienThoaiEl = document.getElementById('dienThoai');
             logoImg.src = decodeURIComponent(logoUrl);
-            logoImg.style.display = 'block';
+            document.getElementById('logoWrap').style.display = 'block';
             const headerEl = document.querySelector('.header');
             headerEl.classList.add('has-logo');
-            headerEl.style.borderBottom = 'none';
             tenShopEl.style.display  = 'none';
             diaChiEl.style.display   = 'none';
             dienThoaiEl.style.display = 'none';
