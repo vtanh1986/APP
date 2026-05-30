@@ -461,11 +461,15 @@
             // Không có dấu gì → số nguyên thuần
             return parseFloat(s);
         };
-        // Format tiền: dấu chấm hàng nghìn, không thập phân (tự xây, không dùng toLocaleString)
-        const fmtTien = (n) => {
-            return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        // Format số: dấu chấm hàng nghìn, giữ nguyên thập phân nếu có
+        const fmtNum = (n) => {
+            const parts = n.toString().split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return parts.length > 1 ? parts.join(',') : parts[0];
         };
-        // Format số lượng: số nguyên → gọn, số lẻ → giữ chấm thập phân
+        // Format tiền: không thập phân (tiền luôn là số nguyên)
+        const fmtTien = (n) => fmtNum(n);
+        // Format số lượng: giữ nguyên thập phân, dùng dấu chấm
         const fmtSL = (n) => n % 1 === 0 ? n.toFixed(0) : String(n);
         if (data) {
             const tableBody = document.getElementById('tableBody');
@@ -484,7 +488,7 @@
                         // Parse số lượng: hỗ trợ 3.5 và 3,5
                         const soLuong = parseNum(cols[1]) || 0;
                         // Parse đơn giá: bỏ thập phân, chỉ lấy số nguyên
-                        const donGia  = Math.round(parseNum(cols[2])) || 0;
+                        const donGia  = parseNum(cols[2]) || 0;
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
@@ -522,8 +526,8 @@
             });
             
             if (stt > 0) {
-                let chiTietChietKhau = chietKhau ? (parseInt(chietKhau) || 0) : 0;
-                let chiTietThanhToan = thanhToan ? (parseInt(thanhToan) || 0) : (tongTien - chiTietChietKhau);
+                let chiTietChietKhau = chietKhau ? (parseNum(chietKhau) || 0) : 0;
+                let chiTietThanhToan = thanhToan ? (parseNum(thanhToan) || 0) : (tongTien - chiTietChietKhau);
                 const rawGhiChu     = ghiChu || noiDungChietKhau;
                 let noiDungChiTiet  = (rawGhiChu && rawGhiChu !== 'null')
                                       ? decodeURIComponent(rawGhiChu).trim() : "";
@@ -547,7 +551,7 @@
                 tableBody.appendChild(trTT);
 
                 if (khachTrao && khachTrao !== 'null') {
-                    const kt = Math.round(parseNum(decodeURIComponent(khachTrao))) || 0;
+                    const kt = parseNum(decodeURIComponent(khachTrao)) || 0;
                     if (kt > 0) {
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
@@ -557,7 +561,7 @@
                 }
 
                 if (conNo && conNo !== 'null') {
-                    const cn = Math.round(parseNum(decodeURIComponent(conNo))) || 0;
+                    const cn = parseNum(decodeURIComponent(conNo)) || 0;
                     const trCN = document.createElement('tr');
                     trCN.className = 'summary-row';
                     trCN.style.color = '#e53935';
