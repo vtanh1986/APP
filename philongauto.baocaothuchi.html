@@ -303,70 +303,61 @@ tr:nth-child(odd) td  { background: #ffffff; }
 
 <script>
 /*
-  URL PARAMETERS SCHEMA
-  ─────────────────────
-  Quy tắc đặt tên: {bảng}_a_{cột}_b_{dòng}
-    _a_  : ngăn cách tên cột
-    _b_  : ngăn cách số thứ tự dòng
-
-  Tham số chung:
-    chinhanh          : tên chi nhánh
-    ngay              : ngày báo cáo (dd/mm/yyyy)
-
-  A.I - Thu bán hàng  (prefix: tbh)
-    tbh_a_kh_b_{i}    : khách hàng / đối tác
-    tbh_a_dh_b_{i}    : đơn hàng
-    tbh_a_dt_b_{i}    : doanh thu
-    tbh_a_tt_b_{i}    : thực thu
-    tbh_a_ht_b_{i}    : hình thức (TM hoặc CK)
-    tbh_a_no_b_{i}    : còn nợ
-    tbh_a_cn_b_{i}    : chi nhánh
-    tbh_a_gc_b_{i}    : ghi chú
-
-  A.II - Thu khác  (prefix: tk)
-    tk_a_kh_b_{i}
-    tk_a_tt_b_{i}
-    tk_a_ht_b_{i}
-    tk_a_no_b_{i}
-    tk_a_cn_b_{i}
-    tk_a_gc_b_{i}
-
-  B.I - Chi nhà cung cấp  (prefix: cncc)
-    cncc_a_kh_b_{i}
-    cncc_a_tc_b_{i}
-    cncc_a_ht_b_{i}
-    cncc_a_no_b_{i}
-    cncc_a_cn_b_{i}
-    cncc_a_gc_b_{i}
-
-  B.II - Chi khác  (prefix: ck)
-    ck_a_kh_b_{i}
-    ck_a_tc_b_{i}
-    ck_a_ht_b_{i}
-    ck_a_no_b_{i}
-    ck_a_cn_b_{i}
-    ck_a_gc_b_{i}
-
-  VÍ DỤ URL:
-  file.html?chinhanh=HN1&ngay=30/05/2026
-    &tbh_a_kh_b_1=Nguyễn Văn A&tbh_a_dh_b_1=DH001&tbh_a_dt_b_1=5000000&tbh_a_tt_b_1=5000000&tbh_a_ht_b_1=TM
-    &tbh_a_kh_b_2=Trần Thị B&tbh_a_dh_b_2=DH002&tbh_a_tt_b_2=3000000&tbh_a_ht_b_2=CK
-    &tk_a_kh_b_1=Thu lãi&tk_a_tt_b_1=200000&tk_a_ht_b_1=TM
-    &cncc_a_kh_b_1=Nhà cung cấp X&cncc_a_tc_b_1=2000000&cncc_a_ht_b_1=CK
-    &ck_a_kh_b_1=Chi phí điện nước&ck_a_tc_b_1=300000&ck_a_ht_b_1=TM
+  ╔══════════════════════════════════════════════════════════╗
+  ║  URL PARAMETERS SCHEMA                                   ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  Tham số chung:                                          ║
+  ║    chinhanh  : tên chi nhánh                             ║
+  ║    ngay      : ngày báo cáo (dd/mm/yyyy)                 ║
+  ║                                                          ║
+  ║  Mỗi bảng = 1 param, giá trị là chuỗi ghép:             ║
+  ║    _a_  ngăn cách CỘT trong 1 dòng                       ║
+  ║    _b_  ngăn cách DÒNG với nhau                          ║
+  ║                                                          ║
+  ║  &tbh=   A.I  Thu bán hàng                               ║
+  ║    thứ tự cột: kh _a_ dh _a_ dt _a_ tt _a_ ht _a_ no _a_ cn _a_ gc
+  ║                                                          ║
+  ║  &tk=    A.II Thu khác                                   ║
+  ║    thứ tự cột: kh _a_ tt _a_ ht _a_ no _a_ cn _a_ gc    ║
+  ║                                                          ║
+  ║  &cncc=  B.I  Chi nhà cung cấp                           ║
+  ║    thứ tự cột: kh _a_ tc _a_ ht _a_ no _a_ cn _a_ gc    ║
+  ║                                                          ║
+  ║  &ck=    B.II Chi khác                                   ║
+  ║    thứ tự cột: kh _a_ tc _a_ ht _a_ no _a_ cn _a_ gc    ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  VÍ DỤ URL:                                              ║
+  ║  file.html?chinhanh=CN1&ngay=30/05/2026                  ║
+  ║    &tbh=Anh Chiến_a_DHB0001_a_1000000_a_1000000_a_TM_a_2500000_a_CN1_a__b_Người 2_a_DHB0002_a_500000_a_500000_a_CK_a__a_CN1_a_
+  ║    &tk=Thu lãi_a_200000_a_TM_a__a_CN1_a_
+  ║    &cncc=NCC X_a_2000000_a_CK_a__a_CN1_a_
+  ║    &ck=Điện nước_a_300000_a_TM_a__a_CN1_a_
+  ╚══════════════════════════════════════════════════════════╝
 */
 
 const p = new URLSearchParams(window.location.search);
 
-// Helper: đọc param theo cấu trúc {prefix}_a_{col}_b_{row}
-function g(prefix, col, row) {
-  return p.get(`${prefix}_a_${col}_b_${row}`) || '';
+// Parse 1 param thành mảng dòng, mỗi dòng là mảng cột
+// "A_a_B_a_C_b_D_a_E_a_F" => [["A","B","C"],["D","E","F"]]
+function parseParam(key) {
+  const raw = p.get(key);
+  if (!raw || !raw.trim()) return [];
+  return raw.split('_b_')
+    .map(row => row.split('_a_').map(v => v.trim()))
+    .filter(row => row.some(v => v !== ''));
 }
 
 function fmt(v) {
-  const n = parseFloat(String(v).replace(/[^0-9.\-]/g,''));
-  if (!v || isNaN(n)) return '—';
+  if (v === undefined || v === null || v === '') return '—';
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+  if (isNaN(n)) return v; // trả nguyên nếu không phải số (ví dụ tên)
   return n.toLocaleString('vi-VN') + ' đ';
+}
+
+function fmtNum(v) {
+  if (v === undefined || v === null || v === '') return '—';
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+  return isNaN(n) ? '—' : n.toLocaleString('vi-VN') + ' đ';
 }
 
 function fmtSum(n) {
@@ -383,81 +374,77 @@ function emptyRow(colspan) {
   return `<tr><td colspan="${colspan}" class="empty-msg">Không có dữ liệu</td></tr>`;
 }
 
+function col(row, i) { return (row[i] || '').trim(); }
+
 // ── Header ──
 document.getElementById('lbl-chinhanh').textContent = p.get('chinhanh') || '—';
 document.getElementById('lbl-ngay').textContent     = p.get('ngay')     || '—';
 
 // ── A.I Thu bán hàng ──
+// cột: 0=kh, 1=dh, 2=dt, 3=tt, 4=ht, 5=no, 6=cn, 7=gc
 let thuCK = 0, thuTM = 0;
+const tbhRows = parseParam('tbh');
 let rowsTBH = '';
-for (let i = 1; i <= 50; i++) {
-  const kh = g('tbh','kh',i);
-  const tt_raw = g('tbh','tt',i);
-  if (!kh && !tt_raw && i > 1) break;
-  if (!kh && !tt_raw) continue;
-  const ht = (g('tbh','ht',i) || 'TM').toUpperCase();
-  const tt = parseFloat(tt_raw) || 0;
+tbhRows.forEach((row, idx) => {
+  const ht = (col(row,4) || 'TM').toUpperCase();
+  const tt = parseFloat(col(row,3).replace(/[^0-9.\-]/g,'')) || 0;
   if (ht === 'CK') thuCK += tt; else thuTM += tt;
   rowsTBH += `<tr>
-    <td class="td-c">${i}</td>
-    <td>${kh}</td>
-    <td class="td-c">${g('tbh','dh',i)}</td>
-    <td class="td-r">${fmt(g('tbh','dt',i))}</td>
-    <td class="td-r">${fmt(tt)}</td>
+    <td class="td-c">${idx+1}</td>
+    <td>${col(row,0)}</td>
+    <td class="td-c">${col(row,1)}</td>
+    <td class="td-r">${fmtNum(col(row,2))}</td>
+    <td class="td-r">${fmtNum(col(row,3))}</td>
     <td class="td-ht">${htBadge(ht)}</td>
-    <td class="td-r">${fmt(g('tbh','no',i))}</td>
-    <td class="td-c">${g('tbh','cn',i)}</td>
-    <td>${g('tbh','gc',i)}</td>
+    <td class="td-r">${fmtNum(col(row,5))}</td>
+    <td class="td-c">${col(row,6)}</td>
+    <td>${col(row,7)}</td>
   </tr>`;
-}
+});
 document.getElementById('tbody-tbh').innerHTML = rowsTBH || emptyRow(9);
 
 // ── A.II Thu khác ──
+// cột: 0=kh, 1=tt, 2=ht, 3=no, 4=cn, 5=gc
+const tkRows = parseParam('tk');
 let rowsTK = '';
-for (let i = 1; i <= 50; i++) {
-  const kh = g('tk','kh',i);
-  const tt_raw = g('tk','tt',i);
-  if (!kh && !tt_raw && i > 1) break;
-  if (!kh && !tt_raw) continue;
-  const ht = (g('tk','ht',i) || 'TM').toUpperCase();
-  const tt = parseFloat(tt_raw) || 0;
+tkRows.forEach((row, idx) => {
+  const ht = (col(row,2) || 'TM').toUpperCase();
+  const tt = parseFloat(col(row,1).replace(/[^0-9.\-]/g,'')) || 0;
   if (ht === 'CK') thuCK += tt; else thuTM += tt;
   rowsTK += `<tr>
-    <td class="td-c">${i}</td>
-    <td>${kh}</td>
-    <td class="td-r">${fmt(tt)}</td>
+    <td class="td-c">${idx+1}</td>
+    <td>${col(row,0)}</td>
+    <td class="td-r">${fmtNum(col(row,1))}</td>
     <td class="td-ht">${htBadge(ht)}</td>
-    <td class="td-r">${fmt(g('tk','no',i))}</td>
-    <td class="td-c">${g('tk','cn',i)}</td>
-    <td>${g('tk','gc',i)}</td>
+    <td class="td-r">${fmtNum(col(row,3))}</td>
+    <td class="td-c">${col(row,4)}</td>
+    <td>${col(row,5)}</td>
   </tr>`;
-}
+});
 document.getElementById('tbody-tk').innerHTML = rowsTK || emptyRow(7);
 
 // ── B. Chi (dùng chung hàm) ──
+// cột: 0=kh, 1=tc, 2=ht, 3=no, 4=cn, 5=gc
 let chiCK = 0, chiTM = 0;
 
-function buildChiTable(prefix, tbodyId) {
-  let rows = '';
-  for (let i = 1; i <= 50; i++) {
-    const kh = g(prefix,'kh',i);
-    const tc_raw = g(prefix,'tc',i);
-    if (!kh && !tc_raw && i > 1) break;
-    if (!kh && !tc_raw) continue;
-    const ht = (g(prefix,'ht',i) || 'TM').toUpperCase();
-    const tc = parseFloat(tc_raw) || 0;
+function buildChiTable(paramKey, tbodyId) {
+  const rows = parseParam(paramKey);
+  let html = '';
+  rows.forEach((row, idx) => {
+    const ht = (col(row,2) || 'TM').toUpperCase();
+    const tc = parseFloat(col(row,1).replace(/[^0-9.\-]/g,'')) || 0;
     if (ht === 'CK') chiCK += tc; else chiTM += tc;
-    rows += `<tr>
-      <td class="td-c">${i}</td>
-      <td>${kh}</td>
-      <td class="td-r">${fmt(tc)}</td>
+    html += `<tr>
+      <td class="td-c">${idx+1}</td>
+      <td>${col(row,0)}</td>
+      <td class="td-r">${fmtNum(col(row,1))}</td>
       <td class="td-ht">${htBadge(ht)}</td>
-      <td class="td-r">${fmt(g(prefix,'no',i))}</td>
-      <td class="td-c">${g(prefix,'cn',i)}</td>
-      <td>${g(prefix,'gc',i)}</td>
+      <td class="td-r">${fmtNum(col(row,3))}</td>
+      <td class="td-c">${col(row,4)}</td>
+      <td>${col(row,5)}</td>
     </tr>`;
-  }
-  document.getElementById(tbodyId).innerHTML = rows || emptyRow(7);
+  });
+  document.getElementById(tbodyId).innerHTML = html || emptyRow(7);
 }
 
 buildChiTable('cncc', 'tbody-cncc');
