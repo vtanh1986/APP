@@ -73,9 +73,19 @@
             margin-right: -15px;
             margin-top: -15px;
             padding: 12px 15px 10px 15px;
-            border-left: none;
-            border-right: none;
+            position: relative;
         }
+        /* Che viền dọc 2 bên bằng dải trắng đè lên */
+        .header.has-logo::before,
+        .header.has-logo::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 3px;
+            background: white;
+        }
+        .header.has-logo::before { left: 0; }
+        .header.has-logo::after  { right: 0; }
         
         .header-logo { display: block; max-height: 100px; max-width: 60%; width: auto; margin: 0 auto; object-fit: contain; }
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
