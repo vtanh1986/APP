@@ -434,9 +434,12 @@
                     const cols = trimmedRow.split('_a_').map(c => c.trim());
                     if (cols.length >= 3) {
                         const tenHang   = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        // ===== SỬA: dùng parseFloat thay vì parseInt =====
-                        const soLuong   = parseFloat(cols[1]) || 0;
-                        const donGia    = parseInt(cols[2]) || 0;
+                        // Parse số lượng: hỗ trợ cả dấu chấm lẫn dấu phẩy thập phân
+                        const soLuongRaw = cols[1].trim().replace(/\./g, '').replace(',', '.');
+                        const soLuong   = parseFloat(soLuongRaw) || 0;
+                        // Parse đơn giá: bỏ dấu phân cách hàng nghìn và phần thập phân
+                        const donGiaRaw = cols[2].trim().replace(/\./g, '').replace(',', '.');
+                        const donGia    = Math.round(parseFloat(donGiaRaw)) || 0;
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
@@ -449,6 +452,11 @@
                 }
             });
             
+            // Hàm format tiền: làm tròn, dùng dấu chấm phân cách hàng nghìn, không thập phân
+            const fmtTien = (n) => Math.round(n).toLocaleString('vi-VN');
+            // Hàm format số lượng: số nguyên thì gọn, số lẻ dùng dấu chấm thập phân
+            const fmtSL   = (n) => n % 1 === 0 ? n.toFixed(0) : String(n).replace(',', '.');
+
             let stt = 0;
             productMap.forEach((product) => {
                 stt++;
@@ -458,16 +466,15 @@
                 tr1.innerHTML = `
                     <td class="cell-tt">${stt}</td>
                     <td class="cell-name">${product.tenHang}</td>
-                    <td class="cell-sub-total">${product.thanhTien.toLocaleString('vi-VN')}đ</td>
+                    <td class="cell-sub-total">${fmtTien(product.thanhTien)}đ</td>
                 `;
                 tableBody.appendChild(tr1);
 
                 const tr2 = document.createElement('tr');
                 tr2.className = 'item-row-2';
-                // ===== SỬA: hiển thị số lượng dạng thập phân 2 chữ số =====
                 tr2.innerHTML = `
                     <td></td>
-                    <td class="cell-sub-sl" colspan="2">${product.donGia.toLocaleString('vi-VN')} x ${product.soLuong.toLocaleString('vi-VN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="cell-sub-sl" colspan="2">${fmtTien(product.donGia)} x ${fmtSL(product.soLuong)}</td>
                 `;
                 tableBody.appendChild(tr2);
 
@@ -484,37 +491,39 @@
 
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="2">Tổng tiền</td><td style="text-align:right;white-space:nowrap">${tongTien.toLocaleString('vi-VN')}đ</td>`;
+                trTongTien.innerHTML = `<td colspan="2">Tổng tiền</td><td style="text-align:right;white-space:nowrap">${fmtTien(tongTien)}đ</td>`;
                 tableBody.appendChild(trTongTien);
                 
                 if (chiTietChietKhau >= 0) {
                     const trCK = document.createElement('tr');
                     trCK.className = 'summary-row';
-                    trCK.innerHTML = `<td colspan="2">Chiết khấu</td><td style="text-align:right;white-space:nowrap">-${chiTietChietKhau.toLocaleString('vi-VN')}đ</td>`;
+                    trCK.innerHTML = `<td colspan="2">Chiết khấu</td><td style="text-align:right;white-space:nowrap">-${fmtTien(chiTietChietKhau)}đ</td>`;
                     tableBody.appendChild(trCK);
                 }
                 
                 const trTT = document.createElement('tr');
                 trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${chiTietThanhToan.toLocaleString('vi-VN')}đ</td>`;
+                trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${fmtTien(chiTietThanhToan)}đ</td>`;
                 tableBody.appendChild(trTT);
 
                 if (khachTrao && khachTrao !== 'null') {
-                    const kt = parseInt(decodeURIComponent(khachTrao)) || 0;
+                    const ktRaw = decodeURIComponent(khachTrao).trim().replace(/\./g, '').replace(',', '.');
+                    const kt = Math.round(parseFloat(ktRaw)) || 0;
                     if (kt > 0) {
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
-                        trKT.innerHTML = `<td colspan="2">Khách trả</td><td style="text-align:right;white-space:nowrap">${kt.toLocaleString('vi-VN')}đ</td>`;
+                        trKT.innerHTML = `<td colspan="2">Khách trả</td><td style="text-align:right;white-space:nowrap">${fmtTien(kt)}đ</td>`;
                         tableBody.appendChild(trKT);
                     }
                 }
 
                 if (conNo && conNo !== 'null') {
-                    const cn = parseInt(decodeURIComponent(conNo)) || 0;
+                    const cnRaw = decodeURIComponent(conNo).trim().replace(/\./g, '').replace(',', '.');
+                    const cn = Math.round(parseFloat(cnRaw)) || 0;
                     const trCN = document.createElement('tr');
                     trCN.className = 'summary-row';
                     trCN.style.color = '#e53935';
-                    trCN.innerHTML = `<td colspan="2">Còn nợ</td><td style="text-align:right;white-space:nowrap">${cn.toLocaleString('vi-VN')}đ</td>`;
+                    trCN.innerHTML = `<td colspan="2">Còn nợ</td><td style="text-align:right;white-space:nowrap">${fmtTien(cn)}đ</td>`;
                     tableBody.appendChild(trCN);
                 }
 
