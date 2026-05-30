@@ -68,8 +68,16 @@
             padding-bottom: 8px;
             margin-bottom: 8px;
         }
+        .header.has-logo {
+            margin-left: -15px;
+            margin-right: -15px;
+            margin-top: -15px;
+            padding: 12px 15px 10px 15px;
+            border-left: none;
+            border-right: none;
+        }
         
-        .header-logo { display: block; max-height: 80px; max-width: 100%; width: auto; margin: 0 auto; object-fit: contain; }
+        .header-logo { display: block; max-height: 100px; max-width: 60%; width: auto; margin: 0 auto; object-fit: contain; }
         .header h1 { font-size: 24px; color: #333; margin-bottom: 2px; }
         .header p  { color: #666; font-size: 14px; }
 
@@ -394,6 +402,7 @@
             const dienThoaiEl = document.getElementById('dienThoai');
             logoImg.src = decodeURIComponent(logoUrl);
             logoImg.style.display = 'block';
+            document.querySelector('.header').classList.add('has-logo');
             tenShopEl.style.display  = 'none';
             diaChiEl.style.display   = 'none';
             dienThoaiEl.style.display = 'none';
