@@ -220,6 +220,28 @@
         
         .qrcode-container img { display: block; max-width: 150px; height: auto; }
         .qrcode-text { font-size: 12px; color: #666; margin-top: 8px; }
+
+        /* ===== ĐẶT LỊCH NGAY ===== */
+        .dat-lich-section {
+            text-align: center;
+            margin: 8px 0 6px 0;
+            padding: 8px 0;
+            border-top: 1px dashed #ccc;
+        }
+        .dat-lich-img {
+            display: block;
+            margin: 0 auto 6px auto;
+            max-width: 150px;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .dat-lich-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 1px;
+        }
         
         .footer {
             text-align: center;
@@ -343,6 +365,12 @@
             </div>
             <div class="qrcode-text" id="qrcodeText"></div>
         </div>
+
+        <!-- ĐẶT LỊCH NGAY - luôn hiển thị, độc lập với QR code -->
+        <div class="dat-lich-section">
+            <img class="dat-lich-img" src="https://i.ibb.co/LDMJ59y1/zalo-OA-philong.jpg" alt="Đặt lịch ngay">
+            <div class="dat-lich-text">ĐẶT LỊCH NGAY</div>
+        </div>
         
         <div class="footer">
             <p id="footerText">Cảm ơn quý khách và hẹn gặp lại!</p>
@@ -396,16 +424,16 @@
         // ===== LOGO =====
         const logoUrl = urlParams.get('logo');
         if (logoUrl) {
-            const logoImg  = document.getElementById('logoImg');
-            const tenShopEl = document.getElementById('tenShop');
-            const diaChiEl  = document.getElementById('diaChi');
+            const logoImg     = document.getElementById('logoImg');
+            const tenShopEl   = document.getElementById('tenShop');
+            const diaChiEl    = document.getElementById('diaChi');
             const dienThoaiEl = document.getElementById('dienThoai');
             logoImg.src = decodeURIComponent(logoUrl);
             document.getElementById('logoWrap').style.display = 'block';
             const headerEl = document.querySelector('.header');
             headerEl.classList.add('has-logo');
-            tenShopEl.style.display  = 'none';
-            diaChiEl.style.display   = 'none';
+            tenShopEl.style.display   = 'none';
+            diaChiEl.style.display    = 'none';
             dienThoaiEl.style.display = 'none';
         }
         if (tenShop)    document.getElementById('tenShop').textContent    = decodeURIComponent(tenShop);
@@ -424,11 +452,11 @@
             el.style.display = 'block';
         }
         
-        // QR Code
-        const qrcodeSection     = document.getElementById('qrcodeSection');
-        const qrcodeImage       = document.getElementById('qrcodeImage');
-        const qrcodeTextEl      = document.getElementById('qrcodeText');
-        const shouldShowQrcode  = showQrcode !== 'false';
+        // ===== QR Code =====
+        const qrcodeSection    = document.getElementById('qrcodeSection');
+        const qrcodeImage      = document.getElementById('qrcodeImage');
+        const qrcodeTextEl     = document.getElementById('qrcodeText');
+        const shouldShowQrcode = showQrcode !== 'false';
         
         if (shouldShowQrcode) {
             if (qrcodeUrl) {
@@ -444,58 +472,45 @@
             qrcodeSection.style.display = 'none';
         }
         
-        // ===== Render bảng hàng hóa theo layout 2 dòng =====
         // ===== HÀM TIỆN ÍCH SỐ =====
-        // Parse số từ chuỗi: nhận dạng dấu phẩy/chấm là thập phân hay hàng nghìn
         const parseNum = (s) => {
             s = String(s).trim();
-            // Có cả dấu chấm lẫn dấu phẩy → dấu nào đứng sau là thập phân
             if (s.includes('.') && s.includes(',')) {
                 const dotPos   = s.lastIndexOf('.');
                 const commaPos = s.lastIndexOf(',');
                 if (commaPos > dotPos) {
-                    // Ví dụ: 225.000,00 → phẩy là thập phân
                     return parseFloat(s.replace(/\./g, '').replace(',', '.'));
                 } else {
-                    // Ví dụ: 225,000.00 → chấm là thập phân
                     return parseFloat(s.replace(/,/g, ''));
                 }
             }
-            // Chỉ có dấu phẩy
             if (s.includes(',')) {
                 const parts = s.split(',');
-                // Nếu phần sau dấu phẩy <= 2 chữ số → thập phân (vd: 3,5 hoặc 225,00)
                 if (parts[parts.length - 1].length <= 2) {
                     return parseFloat(s.replace(',', '.'));
                 } else {
-                    // Vd: 225,000 → hàng nghìn
                     return parseFloat(s.replace(/,/g, ''));
                 }
             }
-            // Chỉ có dấu chấm
             if (s.includes('.')) {
                 const parts = s.split('.');
-                // Nếu phần sau dấu chấm <= 2 chữ số → thập phân (vd: 3.5 hoặc 225.00)
                 if (parts[parts.length - 1].length <= 2) {
                     return parseFloat(s);
                 } else {
-                    // Vd: 225.000 → hàng nghìn
                     return parseFloat(s.replace(/\./g, ''));
                 }
             }
-            // Không có dấu gì → số nguyên thuần
             return parseFloat(s);
         };
-        // Format số: dấu chấm hàng nghìn, giữ nguyên thập phân nếu có
-        const fmtNum = (n) => {
+        const fmtNum  = (n) => {
             const parts = n.toString().split('.');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             return parts.length > 1 ? parts.join(',') : parts[0];
         };
-        // Format tiền: không thập phân (tiền luôn là số nguyên)
         const fmtTien = (n) => fmtNum(n);
-        // Format số lượng: giữ nguyên thập phân, dùng dấu chấm
-        const fmtSL = (n) => n % 1 === 0 ? n.toFixed(0) : String(n);
+        const fmtSL   = (n) => n % 1 === 0 ? n.toFixed(0) : String(n);
+
+        // ===== Render bảng hàng hóa =====
         if (data) {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
@@ -510,10 +525,8 @@
                     const cols = trimmedRow.split('_a_').map(c => c.trim());
                     if (cols.length >= 3) {
                         const tenHang   = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        // Parse số lượng: hỗ trợ 3.5 và 3,5
-                        const soLuong = parseNum(cols[1]) || 0;
-                        // Parse đơn giá: bỏ thập phân, chỉ lấy số nguyên
-                        const donGia  = parseNum(cols[2]) || 0;
+                        const soLuong   = parseNum(cols[1]) || 0;
+                        const donGia    = parseNum(cols[2]) || 0;
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
