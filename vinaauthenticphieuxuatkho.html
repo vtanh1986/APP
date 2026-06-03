@@ -129,6 +129,14 @@
     font-size: 8.5pt;
   }
 
+  .sig-col .ten-ky {
+    display: block;
+    margin-top: 42px;
+    font-weight: bold;
+    font-size: 9pt;
+    min-height: 14px;
+  }
+
   .print-btn {
     position: fixed;
     bottom: 24px;
@@ -158,15 +166,19 @@
   function getParams() {
     const p = new URLSearchParams(window.location.search);
     return {
-      tieude: p.get('tieude') || 'Phiếu Nhập Kho',
-      ngay:   p.get('ngay')   || '',
-      donvi:  p.get('donvi')  || '',
-      data:   p.get('data')   || '',  // "TenHang_a_DVT_a_SoLuong_a_TonThoiDiem_b_..."
+      tieude:   p.get('tieude')   || 'Phiếu Nhập Kho',
+      ngay:     p.get('ngay')     || '',
+      donvi:    p.get('donvi')    || '',
+      data:     p.get('data')     || '',  // "TenHang_a_DVT_a_SoLuong_a_TonThoiDiem_b_..."
+      nguoigiao: p.get('nguoigiao') || '',  // Tên người giao hàng
+      thukho:    p.get('thukho')    || '',  // Tên thủ kho
+      ketoan:    p.get('ketoan')    || '',  // Tên kế toán
+      giamdoc:   p.get('giamdoc')   || '',  // Tên giám đốc
     };
   }
 
   window.addEventListener('DOMContentLoaded', function () {
-    const { tieude, ngay, donvi, data } = getParams();
+    const { tieude, ngay, donvi, data, nguoigiao, thukho, ketoan, giamdoc } = getParams();
 
     document.getElementById('txt-tieude').textContent = tieude;
     document.title = tieude;
@@ -183,6 +195,12 @@
 
     // --- Lý do ---
     document.getElementById('txt-donvi').textContent = donvi;
+
+    // --- Tên người ký ---
+    document.getElementById('ten-nguoigiao').textContent = nguoigiao;
+    document.getElementById('ten-thukho').textContent    = thukho;
+    document.getElementById('ten-ketoan').textContent    = ketoan;
+    document.getElementById('ten-giamdoc').textContent   = giamdoc;
 
     // --- Bảng dữ liệu ---
     const tbody = document.getElementById('main-tbody');
@@ -249,18 +267,22 @@
     <div class="sig-col">
       Người giao hàng<br>
       <span class="sub">(Ký, ghi rõ họ tên)</span>
+      <span class="ten-ky" id="ten-nguoigiao"></span>
     </div>
     <div class="sig-col">
-      Thủ kho<br>
+      Người thực hiện<br>
       <span class="sub">(Ký, ghi rõ họ tên)</span>
+      <span class="ten-ky" id="ten-thukho"></span>
     </div>
     <div class="sig-col">
       Kế toán<br>
       <span class="sub">(Ký, ghi rõ họ tên)</span>
+      <span class="ten-ky" id="ten-ketoan"></span>
     </div>
     <div class="sig-col">
       Giám đốc<br>
       <span class="sub">(Ký, ghi rõ họ tên)</span>
+      <span class="ten-ky" id="ten-giamdoc"></span>
     </div>
   </div>
 
