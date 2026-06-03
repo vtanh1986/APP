@@ -22,8 +22,28 @@
 
   /* Header */
   .header {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     margin-bottom: 6px;
+  }
+
+  .header-logo {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .header-logo img {
+    height: 60px;
+    width: auto;
+    display: block;
+  }
+
+  .header-center {
+    text-align: center;
   }
 
   .title {
@@ -176,7 +196,7 @@
         const tenHang = cols[0] || '';
         const dvt     = cols[1] || '';
         const soLuong = cols[2] || '';
-        const ton     = cols[3] || '';  // Tồn thời điểm
+        const ton     = cols[3] || '';
 
         const tr = document.createElement('tr');
         tr.innerHTML =
@@ -196,8 +216,13 @@
 
   <!-- Header -->
   <div class="header">
-    <div class="title" id="txt-tieude">Phiếu Nhập Kho</div>
-    <div class="subtitle">Ngày: <span id="txt-ngay"></span></div>
+    <div class="header-logo">
+      <img src="https://i.ibb.co/vvwJdGd6/Thiet-ke-chua-co-ten-1.png" alt="Logo">
+    </div>
+    <div class="header-center">
+      <div class="title" id="txt-tieude">Phiếu Nhập Kho</div>
+      <div class="subtitle">Ngày: <span id="txt-ngay"></span></div>
+    </div>
   </div>
 
   <!-- Info -->
