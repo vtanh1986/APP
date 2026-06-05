@@ -161,6 +161,74 @@
     border-bottom: 1px solid #c8daf0;
   }
 
+  /* ── BỘ LỌC ── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #eaf1fb;
+    border-bottom: 1px solid #c8daf0;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e3a6e;
+    white-space: nowrap;
+  }
+  .select-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 420px;
+  }
+  .select-wrap select {
+    width: 100%;
+    appearance: none;
+    background: #fff;
+    border: 1.5px solid #a0bde0;
+    border-radius: 7px;
+    padding: 8px 36px 8px 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a2332;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .select-wrap select:focus { border-color: #2d5299; }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: #5a7aa8;
+    pointer-events: none;
+    font-size: 13px;
+  }
+  .reset-btn {
+    background: #fff;
+    border: 1.5px solid #a0bde0;
+    border-radius: 7px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #c0392b;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .reset-btn:hover { background: #fef0f0; border-color: #e08080; }
+  .filter-count {
+    font-size: 12px;
+    color: #5a7aa8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
   /* ── BẢNG ── */
   .table-wrap { overflow-x: auto; }
   table {
@@ -237,7 +305,7 @@
   /* ── IN ── */
   @media print {
     body { background: #fff; padding: 0; }
-    .top-bar { display: none; }
+    .top-bar, .filter-bar { display: none; }
     .page { border: none; border-radius: 0; }
   }
   @media (max-width: 640px) {
@@ -293,8 +361,17 @@
     </div>
   </div>
 
-  <!-- SECTION -->
-
+  <!-- BỘ LỌC KHÁCH HÀNG -->
+  <div class="filter-bar">
+    <label class="filter-label" for="kh-select">🔍 Lọc khách hàng / đối tác:</label>
+    <div class="select-wrap">
+      <select id="kh-select" onchange="filterTable()">
+        <option value="">— Tất cả —</option>
+      </select>
+    </div>
+    <button class="reset-btn" onclick="resetFilter()">✕ Bỏ lọc</button>
+    <span class="filter-count" id="filter-count"></span>
+  </div>
 
   <div class="table-wrap">
     <table>
@@ -344,9 +421,14 @@
 <script>
   // ----------------------------------------------------------------
   // AppSheet truyền qua URL:
-  //   ?ngay=04/06/26&chinhanh=CN1,CN2&data=KH_a_DH_a_DT_a_TT_a_HT_a_ConNo_a_NoCu_a_NoLuyk_a_ChiNhanh_a_GhiChu_b_...
+  //   ?ngay=04/06/26&chinhanh=CN1,CN2
+  //   &customers=KH1_b_KH2_b_KH3   ← danh sách KH để lọc (phân cách _b_)
+  //   &data=KH_a_DH_a_DT_a_TT_a_HT_a_ConNo_a_NoCu_a_NoLuyk_a_ChiNhanh_a_GhiChu_b_...
   // Phân cách cột: _a_  |  Phân cách dòng: _b_
+  // Nếu không truyền &customers thì tự động lấy danh sách KH từ data
   // ----------------------------------------------------------------
+
+  let allRows = [];   // mảng object mỗi dòng dữ liệu
 
   function fmt(n) {
     const num = parseFloat(n);
@@ -366,6 +448,59 @@
     return `<span class="badge ${cls}">${esc(ht) || 'TM'}</span>`;
   }
 
+  function renderRows(rows) {
+    const tbody = document.getElementById('table-body');
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      updateSummary([]);
+      return;
+    }
+    let html = '';
+    rows.forEach((r, idx) => {
+      html += `<tr>
+        <td style="color:#5a7aa8;font-weight:600">${idx + 1}</td>
+        <td class="left" style="font-weight:500">${esc(r.kh) || '<span style="color:#bbb">—</span>'}</td>
+        <td style="font-size:12px;color:#3a5a8a">${esc(r.dh) || '—'}</td>
+        <td class="num">${fmt(r.doanhthu)}</td>
+        <td class="num">${fmt(r.thucthu)}</td>
+        <td>${badge(r.hinhthu)}</td>
+        <td class="num" style="color:${r.connodh > 0 ? '#c0392b' : '#1a6630'};font-weight:600">${fmt(r.connodh)}</td>
+        <td class="num">${fmt(r.nocu)}</td>
+        <td class="num" style="font-weight:700;color:${r.noluyk > 0 ? '#c0392b' : '#1a6630'}">${fmt(r.noluyk)}</td>
+        <td style="font-weight:600;color:#1e3a6e">${esc(r.cn_name)}</td>
+        <td style="color:#666;font-size:12px">${esc(r.ghichu)}</td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+    updateSummary(rows);
+  }
+
+  function updateSummary(rows) {
+    let sumDT=0, sumTT=0, sumCN=0, sumNC=0, sumNL=0;
+    rows.forEach(r => {
+      sumDT += r.doanhthu; sumTT += r.thucthu;
+      sumCN += r.connodh;  sumNC += r.nocu; sumNL += r.noluyk;
+    });
+    document.getElementById('sum-doanhthu').textContent = fmt(sumDT);
+    document.getElementById('sum-thucthu').textContent  = fmt(sumTT);
+    document.getElementById('sum-connodh').textContent  = fmt(sumCN);
+    document.getElementById('sum-nocu').textContent     = fmt(sumNC);
+    document.getElementById('sum-noluyk').textContent   = fmt(sumNL);
+  }
+
+  function filterTable() {
+    const sel = document.getElementById('kh-select').value;
+    const filtered = sel === '' ? allRows : allRows.filter(r => r.kh === sel);
+    renderRows(filtered);
+    const count = document.getElementById('filter-count');
+    count.textContent = sel ? `${filtered.length} dòng` : '';
+  }
+
+  function resetFilter() {
+    document.getElementById('kh-select').value = '';
+    filterTable();
+  }
+
   function loadFromURL() {
     const params = new URLSearchParams(window.location.search);
 
@@ -379,57 +514,54 @@
 
     if (!raw || raw.trim() === '') {
       tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">
-        Chưa có dữ liệu<code>data</code>.</td></tr>`;
+        Chưa có dữ liệu — AppSheet chưa truyền tham số <code>data</code>.</td></tr>`;
       return;
     }
 
-    const rows = raw.split('_b_').filter(r => r.trim() !== '');
-    if (!rows.length) {
+    const rowStrings = raw.split('_b_').filter(r => r.trim() !== '');
+    if (!rowStrings.length) {
       tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Dữ liệu trống.</td></tr>`;
       return;
     }
 
-    let sumDT=0, sumTT=0, sumCN=0, sumNC=0, sumNL=0;
-    let html = '';
-
-    rows.forEach((rowStr, idx) => {
+    // Parse toàn bộ dòng → allRows
+    allRows = rowStrings.map(rowStr => {
       const c = rowStr.split('_a_');
-      const kh      = c[0] || '';
-      const dh      = c[1] || '';
-      const doanhthu = parseNum(c[2]);
-      const thucthu  = parseNum(c[3]);
-      const hinhthu  = c[4] || '';
-      const connodh  = parseNum(c[5]);
-      const nocu     = parseNum(c[6]);
-      const noluyk   = parseNum(c[7]);
-      const cn_name  = c[8] || '';
-      const ghichu   = c[9] || '';
-
-      sumDT += doanhthu; sumTT += thucthu;
-      sumCN += connodh;  sumNC += nocu; sumNL += noluyk;
-
-      html += `<tr>
-        <td style="color:#5a7aa8;font-weight:600">${idx + 1}</td>
-        <td class="left" style="font-weight:500">${esc(kh) || '<span style="color:#bbb">—</span>'}</td>
-        <td style="font-size:12px;color:#3a5a8a">${esc(dh) || '—'}</td>
-        <td class="num">${fmt(doanhthu)}</td>
-        <td class="num">${fmt(thucthu)}</td>
-        <td>${badge(hinhthu)}</td>
-        <td class="num" style="color:${connodh > 0 ? '#c0392b' : '#1a6630'};font-weight:600">${fmt(connodh)}</td>
-        <td class="num">${fmt(nocu)}</td>
-        <td class="num" style="font-weight:700;color:${noluyk > 0 ? '#c0392b' : '#1a6630'}">${fmt(noluyk)}</td>
-        <td style="font-weight:600;color:#1e3a6e">${esc(cn_name)}</td>
-        <td style="color:#666;font-size:12px">${esc(ghichu)}</td>
-      </tr>`;
+      return {
+        kh:       c[0] || '',
+        dh:       c[1] || '',
+        doanhthu: parseNum(c[2]),
+        thucthu:  parseNum(c[3]),
+        hinhthu:  c[4] || '',
+        connodh:  parseNum(c[5]),
+        nocu:     parseNum(c[6]),
+        noluyk:   parseNum(c[7]),
+        cn_name:  c[8] || '',
+        ghichu:   c[9] || '',
+      };
     });
 
-    tbody.innerHTML = html;
+    // Xây dựng dropdown KH
+    // Ưu tiên dùng &customers nếu AppSheet truyền riêng, fallback tự lấy từ data
+    const custParam = params.get('customers');
+    let khList = [];
+    if (custParam && custParam.trim()) {
+      khList = custParam.split('_b_').map(s => s.trim()).filter(Boolean);
+    } else {
+      // Lấy unique từ data, giữ thứ tự xuất hiện
+      const seen = new Set();
+      allRows.forEach(r => { if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); } });
+    }
 
-    document.getElementById('sum-doanhthu').textContent = fmt(sumDT);
-    document.getElementById('sum-thucthu').textContent  = fmt(sumTT);
-    document.getElementById('sum-connodh').textContent  = fmt(sumCN);
-    document.getElementById('sum-nocu').textContent     = fmt(sumNC);
-    document.getElementById('sum-noluyk').textContent   = fmt(sumNL);
+    const sel = document.getElementById('kh-select');
+    khList.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+
+    renderRows(allRows);
   }
 
   loadFromURL();
