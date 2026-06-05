@@ -328,12 +328,37 @@
 
   /* ── IN ── */
   @media print {
-    body { background: #fff; padding: 0; }
-    .top-bar, .filter-bar { display: none; }
-    .page { border: none; border-radius: 0; overflow: visible; }
+    @page { size: A4 landscape; margin: 10mm 8mm; }
+    body { background: #fff; padding: 0; margin: 0; }
+    .top-bar, .filter-bar { display: none !important; }
+    .page { border: none; border-radius: 0; overflow: visible; box-shadow: none; max-width: 100%; }
     .table-wrap { overflow: visible; }
-    table { page-break-inside: auto; }
+    table { width: 100%; table-layout: fixed; font-size: 9px; page-break-inside: auto; }
+    table thead th, table td {
+      min-width: 0 !important;
+      padding: 5px 4px;
+      white-space: normal;
+      word-break: break-word;
+      font-size: 9px;
+    }
+    thead th { font-size: 8.5px; }
     tr { page-break-inside: avoid; }
+    .summary-strip { font-size: 10px; }
+    .sum-value { font-size: 12px; }
+    .header-info .title { font-size: 16px; }
+    .badge { font-size: 8px; padding: 1px 5px; }
+    /* Phân bố độ rộng cột khi in */
+    table th:nth-child(1), table td:nth-child(1) { width: 4%; }
+    table th:nth-child(2), table td:nth-child(2) { width: 18%; }
+    table th:nth-child(3), table td:nth-child(3) { width: 13%; }
+    table th:nth-child(4), table td:nth-child(4) { width: 9%; }
+    table th:nth-child(5), table td:nth-child(5) { width: 9%; }
+    table th:nth-child(6), table td:nth-child(6) { width: 7%; }
+    table th:nth-child(7), table td:nth-child(7) { width: 9%; }
+    table th:nth-child(8), table td:nth-child(8) { width: 8%; }
+    table th:nth-child(9), table td:nth-child(9) { width: 9%; }
+    table th:nth-child(10), table td:nth-child(10) { width: 7%; }
+    table th:nth-child(11), table td:nth-child(11) { width: 7%; }
   }
   @media (max-width: 640px) {
     .summary-strip { grid-template-columns: repeat(2, 1fr); }
