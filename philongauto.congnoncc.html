@@ -392,15 +392,15 @@
   <!-- TỔNG KẾT -->
   <div class="summary-strip">
     <div class="sum-item">
-      <div class="sum-label">Tổng doanh thu</div>
+      <div class="sum-label">Tổng thành tiền</div>
       <div class="sum-value" id="sum-doanhthu">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Tổng thực thu</div>
+      <div class="sum-label">Tổng thực chi</div>
       <div class="sum-value" id="sum-thucthu">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Còn nợ theo ĐH</div>
+      <div class="sum-label">Còn nợ theo nhập xuất</div>
       <div class="sum-value danger" id="sum-connodh">——</div>
     </div>
     <div class="sum-item">
@@ -415,7 +415,7 @@
 
   <!-- BỘ LỌC KHÁCH HÀNG -->
   <div class="filter-bar">
-    <label class="filter-label">🔍 Lọc khách hàng / đối tác:</label>
+    <label class="filter-label">🔍 Lọc NCC:</label>
     <div class="combo-wrap" id="combo-wrap">
       <input type="text" id="kh-input" placeholder="Gõ tên hoặc chọn từ danh sách..." autocomplete="off"
         oninput="onComboInput()" onfocus="openDropdown()" />
@@ -431,7 +431,7 @@
       <thead>
         <tr>
           <th style="width:40px">TT</th>
-          <th class="left" style="min-width:180px">Khách hàng / Đối tác</th>
+          <th class="left" style="min-width:180px">NCC</th>
           <th style="min-width:140px">Số phiếu</th>
           <th style="min-width:110px">Thành tiền</th>
           <th style="min-width:110px">Thực chi</th>
