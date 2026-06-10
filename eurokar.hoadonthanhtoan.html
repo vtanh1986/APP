@@ -21,7 +21,7 @@
 
     .invoice-wrapper {
       background: #ffffff;
-      width: 800px;
+      width: 960px;
       max-width: 100%;
       border-radius: 4px;
       box-shadow: 0 2px 16px rgba(0,0,0,0.10);
@@ -162,12 +162,14 @@
         <thead>
           <tr>
             <th style="width:36px;">STT</th>
-            <th style="width:90px;">Mã hàng</th>
+            <th style="width:80px;">Mã hàng</th>
             <th>Tên hàng hoá</th>
-            <th style="width:70px;">ĐVT</th>
-            <th style="width:72px;">Số lượng</th>
-            <th style="width:90px;">Đơn giá</th>
-            <th style="width:100px;">Thành tiền</th>
+            <th style="width:55px;">ĐVT</th>
+            <th style="width:60px;">Số lượng</th>
+            <th style="width:80px;">Đơn giá</th>
+            <th style="width:85px;">Thành tiền</th>
+            <th style="width:55px;">% VAT</th>
+            <th style="width:85px;">Tiền thuế GTGT</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -265,20 +267,21 @@ function soThanhChu(n) {
 
 // ── Render bảng ──────────────────────────────────────────────────────────────
 function renderTable(dataStr) {
-  // dataStr: mỗi hàng cách nhau bằng _b_, mỗi cột cách nhau bằng _a_
-  // Cột: MaHang | TenHang | DVT | SoLuong | DonGia | ThanhTien
+  // Cột: MaHang | TenHang | DVT | SoLuong | DonGia | ThanhTien | %VAT | TienThueGTGT
   const rows = dataStr ? dataStr.split('_b_') : [];
   const tbody = document.getElementById('table-body');
   let totalQty = 0, totalAmt = 0;
 
   rows.forEach((row, idx) => {
     const cols = row.split('_a_');
-    const maHang  = (cols[0] || '').trim();
-    const tenHang = (cols[1] || '').trim();
-    const dvt     = (cols[2] || '').trim();
-    const soLuong = parseInt((cols[3] || '0').replace(/[^0-9]/g,'')) || 0;
-    const donGia  = parseInt((cols[4] || '0').replace(/[^0-9]/g,'')) || 0;
-    const thanhTien = parseInt((cols[5] || '0').replace(/[^0-9]/g,'')) || 0;
+    const maHang      = (cols[0] || '').trim();
+    const tenHang     = (cols[1] || '').trim();
+    const dvt         = (cols[2] || '').trim();
+    const soLuong     = parseInt((cols[3] || '0').replace(/[^0-9]/g,'')) || 0;
+    const donGia      = parseInt((cols[4] || '0').replace(/[^0-9]/g,'')) || 0;
+    const thanhTien   = parseInt((cols[5] || '0').replace(/[^0-9]/g,'')) || 0;
+    const pctVat      = (cols[6] || '').trim();
+    const tienThue    = parseInt((cols[7] || '0').replace(/[^0-9]/g,'')) || 0;
 
     totalQty += soLuong;
     totalAmt += thanhTien;
@@ -292,6 +295,8 @@ function renderTable(dataStr) {
       <td class="center">${soLuong}</td>
       <td class="right">${fmt(donGia)}</td>
       <td class="right">${fmt(thanhTien)}</td>
+      <td class="center">${pctVat}</td>
+      <td class="right">${tienThue > 0 ? fmt(tienThue) : ''}</td>
     `;
     tbody.appendChild(tr);
   });
