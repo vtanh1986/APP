@@ -15,14 +15,14 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 32px 16px;
+      padding: 8px 4px;
       min-height: 100vh;
     }
 
     .invoice-wrapper {
       background: #ffffff;
-      width: 960px;
-      max-width: 100%;
+      width: 100%;
+      max-width: 1060px;
       border-radius: 4px;
       box-shadow: 0 2px 16px rgba(0,0,0,0.10);
       overflow: hidden;
@@ -31,78 +31,80 @@
     .header {
       background: #ffffff;
       color: #000;
-      padding: 24px 32px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
       border-bottom: 1px solid #ccc;
     }
 
-    .logo-box { display: flex; align-items: center; min-width: 90px; }
+    .logo-box { display: flex; align-items: center; flex-shrink: 0; }
 
     .company-info h1 {
-      font-size: 13px; font-weight: 700; color: #000;
+      font-size: 15px; font-weight: 700; color: #000;
       text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;
     }
-    .company-info p { font-size: 11px; color: #000; line-height: 1.7; margin-top: 4px; }
+    .company-info p { font-size: 13px; color: #000; line-height: 1.7; margin-top: 4px; }
 
     .title-band {
-      background: #ffffff; padding: 16px 32px;
+      background: #ffffff; padding: 10px 16px;
       text-align: center; border-bottom: 1px solid #ccc;
     }
-    .title-band h2 { font-size: 20px; font-weight: 700; color: #000; text-transform: uppercase; letter-spacing: 1px; }
-    .title-band .invoice-meta { font-size: 12px; color: #000; margin-top: 4px; }
+    .title-band h2 { font-size: 22px; font-weight: 700; color: #000; text-transform: uppercase; letter-spacing: 1px; }
+    .title-band .invoice-meta { font-size: 14px; color: #000; margin-top: 4px; }
     .title-band .invoice-meta span { margin: 0 10px; }
 
-    .body { padding: 24px 32px; }
+    .body { padding: 12px 16px; }
 
     .customer-section {
       display: grid; grid-template-columns: 1fr auto;
-      gap: 16px; margin-bottom: 20px;
-      padding-bottom: 16px; border-bottom: 1px solid #ccc;
+      gap: 16px; margin-bottom: 14px;
+      padding-bottom: 12px; border-bottom: 1px solid #ccc;
     }
     .customer-left .row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; }
-    .customer-left .label { font-size: 11.5px; color: #000; white-space: nowrap; font-weight: 600; }
-    .customer-left .value { font-size: 12.5px; font-weight: 700; color: #000; }
-    .customer-right { text-align: right; font-size: 12px; color: #000; line-height: 1.8; }
-    .customer-right .phone { font-weight: 700; color: #000; }
+    .customer-left .label { font-size: 13.5px; color: #000; white-space: nowrap; font-weight: 600; }
+    .customer-left .value { font-size: 14px; font-weight: 700; color: #000; }
+    .customer-right { text-align: right; font-size: 13.5px; color: #000; line-height: 1.0; }
+    .customer-right .cr-row { display: flex; justify-content: flex-end; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+    .customer-right .cr-label { font-weight: 600; white-space: nowrap; }
+    .customer-right .cr-value { font-weight: 700; }
 
-    .table-wrap { border-radius: 4px; overflow: hidden; border: 1px solid #ccc; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .table-wrap { border-radius: 4px; overflow: hidden; border: 1px solid #ccc; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
     thead tr { background: #ffffff; color: #000; border-bottom: 2px solid #000; }
-    thead th { padding: 10px 12px; text-align: center; font-weight: 700; font-size: 12px; color: #000; }
+    thead th { padding: 9px 10px; text-align: center; font-weight: 700; font-size: 13px; color: #000; }
     thead th:nth-child(3) { text-align: left; }
     tbody tr { border-bottom: 1px solid #ccc; }
     tbody tr:last-child { border-bottom: none; }
-    tbody td { padding: 10px 12px; color: #000; vertical-align: middle; }
+    tbody td { padding: 8px 10px; color: #000; vertical-align: middle; }
     tbody td.center { text-align: center; }
     tbody td.right { text-align: right; }
     .product-name { font-weight: 600; color: #000; }
 
-    .totals-section { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-    .totals-box { width: 320px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; font-size: 12.5px; }
+    .totals-section { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    .totals-box { width: 340px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; font-size: 13.5px; }
     .totals-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; border-bottom: 1px solid #ccc; }
     .totals-row:last-child { border-bottom: none; }
     .totals-row .t-label { color: #000; }
     .totals-row .t-value { font-weight: 600; color: #000; }
     .totals-row.grand-total { background: #ffffff; border-top: 2px solid #000; }
     .totals-row.grand-total .t-label,
-    .totals-row.grand-total .t-value { color: #000; font-size: 13.5px; font-weight: 700; }
+    .totals-row.grand-total .t-value { color: #000; font-size: 15px; font-weight: 700; }
 
     .amount-words {
-      font-size: 11.5px; color: #000; font-style: italic;
-      text-align: center; margin-bottom: 28px; padding: 10px 16px;
+      font-size: 13px; color: #000; font-style: italic;
+      text-align: center; margin-bottom: 20px; padding: 9px 14px;
       background: #ffffff; border-radius: 4px; border-left: 3px solid #000;
     }
     .amount-words strong { color: #000; font-style: normal; }
 
     .signature-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
     .sig-box { text-align: center; }
-    .sig-box .sig-title { font-size: 12px; font-weight: 700; color: #000; margin-bottom: 2px; }
-    .sig-box .sig-note { font-size: 10.5px; color: #000; font-style: italic; }
+    .sig-box .sig-title { font-size: 14px; font-weight: 700; color: #000; margin-bottom: 2px; }
+    .sig-box .sig-note { font-size: 12px; color: #000; font-style: italic; }
     .sig-box .sig-line { height: 56px; border-bottom: 1px dashed #000; margin: 8px 16px 0; }
 
-    .footer-date { text-align: right; font-size: 12px; color: #000; font-style: italic; margin-bottom: 16px; }
+    .footer-date { text-align: right; font-size: 13px; color: #000; font-style: italic; margin-bottom: 14px; }
 
     @media print { body { background: #fff; padding: 0; } .invoice-wrapper { box-shadow: none; } }
     @media (max-width: 600px) {
@@ -119,7 +121,7 @@
 
   <div class="header">
     <div class="logo-box">
-      <img src="https://i.ibb.co/NgrC76kz/eurokar.jpg" alt="Euro Kar Logo" style="width:90px;height:auto;display:block;" />
+      <img src="https://i.ibb.co/NgrC76kz/eurokar.jpg" alt="Euro Kar Logo" style="width:160px;height:auto;display:block;" />
     </div>
     <div class="company-info">
       <h1>Công ty TNHH Thương Mại DV &amp; Xuất Nhập Khẩu Euro Kar</h1>
@@ -152,8 +154,14 @@
         </div>
       </div>
       <div class="customer-right">
-        <div>SĐT: <span class="phone" id="el-sdt"></span></div>
-        <div style="margin-top:4px;">NVBH: <strong id="el-nvbh"></strong></div>
+        <div class="cr-row">
+          <span class="cr-label">SĐT:</span>
+          <span class="cr-value" id="el-sdt"></span>
+        </div>
+        <div class="cr-row">
+          <span class="cr-label">NVBH:</span>
+          <span class="cr-value" id="el-nvbh"></span>
+        </div>
       </div>
     </div>
 
