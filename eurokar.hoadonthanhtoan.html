@@ -286,31 +286,49 @@ function renderTable(dataStr) {
   const tbody = document.getElementById('table-body');
   let totalQty = 0, totalAmt = 0;
 
-  rows.forEach((row, idx) => {
-    const cols = row.split('_a_');
-    const maHang      = (cols[0] || '').trim();
-    const tenHang     = (cols[1] || '').trim();
-    const dvt         = (cols[2] || '').trim();
-    const soLuong     = parseInt((cols[3] || '0').replace(/[^0-9]/g,'')) || 0;
-    const donGia      = parseInt((cols[4] || '0').replace(/[^0-9]/g,'')) || 0;
-    const thanhTien   = parseInt((cols[5] || '0').replace(/[^0-9]/g,'')) || 0;
-    const pctVat      = (cols[6] || '').trim();
-    const tienThue    = parseInt((cols[7] || '0').replace(/[^0-9]/g,'')) || 0;
+  // Gộp các dòng trùng mã hàng
+  const mergedMap = new Map(); // key: maHang, value: object
+  const mergedOrder = []; // giữ thứ tự xuất hiện
 
-    totalQty += soLuong;
-    totalAmt += thanhTien;
+  rows.forEach(row => {
+    const cols = row.split('_a_');
+    const maHang    = (cols[0] || '').trim();
+    const tenHang   = (cols[1] || '').trim();
+    const dvt       = (cols[2] || '').trim();
+    const soLuong   = parseInt((cols[3] || '0').replace(/[^0-9]/g,'')) || 0;
+    const donGia    = parseInt((cols[4] || '0').replace(/[^0-9]/g,'')) || 0;
+    const thanhTien = parseInt((cols[5] || '0').replace(/[^0-9]/g,'')) || 0;
+    const pctVat    = (cols[6] || '').trim();
+    const tienThue  = parseInt((cols[7] || '0').replace(/[^0-9]/g,'')) || 0;
+
+    if (mergedMap.has(maHang)) {
+      const existing = mergedMap.get(maHang);
+      existing.soLuong   += soLuong;
+      existing.thanhTien += thanhTien;
+      existing.tienThue  += tienThue;
+    } else {
+      const item = { maHang, tenHang, dvt, soLuong, donGia, thanhTien, pctVat, tienThue };
+      mergedMap.set(maHang, item);
+      mergedOrder.push(maHang);
+    }
+  });
+
+  mergedOrder.forEach((maHang, idx) => {
+    const d = mergedMap.get(maHang);
+    totalQty += d.soLuong;
+    totalAmt += d.thanhTien;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="center">${idx + 1}</td>
-      <td class="center">${maHang}</td>
-      <td><div class="product-name">${tenHang}</div></td>
-      <td class="center">${dvt}</td>
-      <td class="center">${soLuong}</td>
-      <td class="right">${fmt(donGia)}</td>
-      <td class="right">${fmt(thanhTien)}</td>
-      <td class="center">${pctVat}</td>
-      <td class="right">${tienThue > 0 ? fmt(tienThue) : ''}</td>
+      <td class="center">${d.maHang}</td>
+      <td><div class="product-name">${d.tenHang}</div></td>
+      <td class="center">${d.dvt}</td>
+      <td class="center">${d.soLuong}</td>
+      <td class="right">${fmt(d.donGia)}</td>
+      <td class="right">${fmt(d.thanhTien)}</td>
+      <td class="center">${d.pctVat}</td>
+      <td class="right">${d.tienThue > 0 ? fmt(d.tienThue) : ''}</td>
     `;
     tbody.appendChild(tr);
   });
