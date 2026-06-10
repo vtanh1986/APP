@@ -234,15 +234,19 @@ function fmt(n) {
 const CH_0_9  = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
 const CH_UNIT = ['','nghìn','triệu','tỷ'];
 
-function docNhom(n, full) {
+function docNhom(n, hasTram) {
+  // hasTram: nhóm này có hàng trăm (dùng để quyết định có thêm "linh" không)
   let tram = Math.floor(n / 100);
   let chuc = Math.floor((n % 100) / 10);
   let dv   = n % 10;
   let s = '';
-  if (tram > 0 || full) s += CH_0_9[tram] + ' trăm ';
+  if (tram > 0 || hasTram) s += CH_0_9[tram] + ' trăm ';
   if (chuc === 0 && dv === 0) return s.trim();
-  if (chuc === 0) { s += 'linh ' + CH_0_9[dv]; }
-  else if (chuc === 1) {
+  if (chuc === 0) {
+    // chỉ thêm "linh" nếu nhóm này có phần trăm
+    if (tram > 0 || hasTram) s += 'linh ';
+    s += CH_0_9[dv];
+  } else if (chuc === 1) {
     s += 'mười ';
     if (dv === 5) s += 'lăm';
     else if (dv > 0) s += CH_0_9[dv];
@@ -264,7 +268,9 @@ function soThanhChu(n) {
   let parts = [];
   for (let i = groups.length - 1; i >= 0; i--) {
     if (groups[i] === 0) continue;
-    let chunk = docNhom(groups[i], i < groups.length - 1);
+    // hasTram: true nếu nhóm này >= 100, hoặc nếu không phải nhóm cao nhất
+    const hasTram = groups[i] >= 100 || i < groups.length - 1;
+    let chunk = docNhom(groups[i], hasTram);
     if (CH_UNIT[i]) chunk += ' ' + CH_UNIT[i];
     parts.push(chunk);
   }
