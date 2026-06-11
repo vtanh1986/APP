@@ -239,20 +239,6 @@
     </div>
   </div>
 
-  <!-- BỘ LỌC KHÁCH HÀNG -->
-  <div class="filter-bar">
-    <label class="filter-label">🔍 Khách hàng / đối tác:</label>
-    <div class="filter-list-wrap" id="filter-wrap">
-      <input type="text" class="filter-search" id="filter-search"
-        placeholder="▾  Chọn khách hàng / đối tác..."
-        oninput="onSearchInput()" onfocus="openFilterList()" readonly
-        onclick="openFilterList()" />
-      <div class="filter-list" id="filter-list"></div>
-    </div>
-    <button class="reset-btn" onclick="resetFilter()">✕ Bỏ lọc</button>
-    <span class="filter-count" id="filter-count"></span>
-  </div>
-
   <!-- BỘ LỌC ĐƠN HÀNG -->
   <div class="filter-bar">
     <label class="filter-label">📋 Đơn hàng:</label>
@@ -293,7 +279,7 @@
       <tbody id="table-body">
         <tr>
           <td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
-            Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
+            Vui lòng chọn đơn hàng để xem dữ liệu.
           </td>
         </tr>
       </tbody>
@@ -322,13 +308,15 @@
   // ----------------------------------------------------------------
   // URL params:
   //   ?ngay=04/06/26
-  //   &data=KH_a_DH_a_MaSP_a_TenSP_a_DVT_a_SL_a_DonGiaCV_a_VAT_a_DonGiaVAT_a_ThanhTien_a_GhiNo_a_GhiCo_b_...
+  //   &customers=KH1_a_DH1,KH1_a_DH2,KH2_a_DH3,...
+  //   &data=Ngay_a_DH_a_MaSP_a_TenSP_a_DVT_a_SL_a_DonGiaCV_a_VAT_a_DonGiaVAT_a_ThanhTien_b_...
+  //
+  // Bộ lọc chính của báo cáo này là theo "Đơn hàng" (cột dh).
   // ----------------------------------------------------------------
 
-  let allRows = [];
-  let khList  = [];
-  let dhList  = [];
-  let selectedKH = new Set();
+  let allRows = [];   // toàn bộ dòng dữ liệu (sản phẩm)
+  let dhList  = [];   // danh sách mã đơn hàng để lọc
+  let dhToKH  = {};   // map: mã đơn hàng -> tên khách hàng (lấy từ "customers")
   let selectedDH = new Set();
 
   function fmt(n) {
@@ -346,30 +334,39 @@
     return parseFloat(s.toString().replace(/[^\d.-]/g, '')) || 0;
   }
   function esc(s) {
-    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // ── KH NAME BAR ──
+  // ── KH NAME BAR (hiển thị tên KH tương ứng với các ĐH đang chọn) ──
   function updateKhNameBar() {
     const bar = document.getElementById('kh-name-bar');
     const val = document.getElementById('kh-name-value');
-    if (selectedKH.size === 0) {
+
+    if (selectedDH.size === 0) {
       bar.style.display = 'none';
-    } else if (selectedKH.size === khList.length) {
-      val.textContent = 'Tất cả';
-      bar.style.display = 'flex';
-    } else {
-      val.textContent = [...selectedKH].join(' • ');
-      bar.style.display = 'flex';
+      return;
     }
+
+    const khNames = new Set();
+    selectedDH.forEach(dh => {
+      if (dhToKH[dh]) khNames.add(dhToKH[dh]);
+    });
+
+    if (khNames.size === 0) {
+      bar.style.display = 'none';
+      return;
+    }
+
+    val.textContent = [...khNames].join(' • ');
+    bar.style.display = 'flex';
   }
 
   // ── RENDER ──
   function renderRows(rows) {
     const tbody = document.getElementById('table-body');
 
-    if (selectedKH.size === 0) {
-      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+    if (selectedDH.size === 0) {
+      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn đơn hàng để xem dữ liệu.</td></tr>`;
       updateSummary([]);
       updateKhNameBar();
       return;
@@ -413,126 +410,9 @@
 
   function applyFilter() {
     let filtered = allRows;
-    if (selectedKH.size > 0) filtered = filtered.filter(r => selectedKH.has(r.kh));
     if (selectedDH.size > 0) filtered = filtered.filter(r => selectedDH.has(r.dh));
     renderRows(filtered);
-    document.getElementById('filter-count').textContent = filtered.length ? `${filtered.length} dòng` : '';
-
-    // Cập nhật lại danh sách đơn hàng theo KH đang chọn
-    refreshDHList();
-  }
-
-  function refreshDHList() {
-    const seen = new Set();
-    dhList = [];
-
-    if (selectedKH.size === 0) {
-      // Chưa chọn KH → hiện tất cả đơn hàng
-      khList.forEach(kh => {
-        (khToDH[kh] || []).forEach(dh => {
-          if (dh && !seen.has(dh)) { seen.add(dh); dhList.push(dh); }
-        });
-      });
-    } else {
-      // Chỉ hiện đơn hàng của các KH đang chọn
-      [...selectedKH].forEach(kh => {
-        (khToDH[kh] || []).forEach(dh => {
-          if (dh && !seen.has(dh)) { seen.add(dh); dhList.push(dh); }
-        });
-      });
-    }
-
-    // Bỏ các DH đang chọn không còn hợp lệ
-    const validDH = new Set(dhList);
-    [...selectedDH].forEach(dh => { if (!validDH.has(dh)) selectedDH.delete(dh); });
-
-    buildDHChips();
-    updateDHLabel();
-  }
-
-  // ── FILTER DROPDOWN ──
-  function openFilterList() {
-    document.getElementById('filter-list').classList.add('open');
-  }
-  function closeFilterList() {
-    document.getElementById('filter-list').classList.remove('open');
-  }
-
-  function buildChips(query) {
-    const q = (query || '').trim().toLowerCase();
-    const matches = q ? khList.filter(k => k.toLowerCase().includes(q)) : khList;
-    const list = document.getElementById('filter-list');
-    const wasOpen = list.classList.contains('open');
-    const allSelected = khList.length > 0 && selectedKH.size === khList.length;
-
-    list.innerHTML =
-      `<div class="filter-chip all-chip${allSelected ? ' selected' : ''}" onclick="toggleAll()">
-        <span class="chip-check">${allSelected ? '✓' : ''}</span> Tất cả
-      </div>` +
-      matches.map(k => `
-        <div class="filter-chip${selectedKH.has(k) ? ' selected' : ''}" onclick="toggleKH('${esc(k)}')">
-          <span class="chip-check">${selectedKH.has(k) ? '✓' : ''}</span> ${esc(k)}
-        </div>`
-      ).join('');
-    if (wasOpen) list.classList.add('open');
-  }
-
-  function updateSearchLabel() {
-    const input = document.getElementById('filter-search');
-    if (selectedKH.size === 0) {
-      input.value = '';
-      input.placeholder = '▾  Chọn khách hàng / đối tác...';
-    } else if (selectedKH.size === khList.length) {
-      input.value = 'Tất cả (' + khList.length + ')';
-    } else {
-      input.value = [...selectedKH].join(', ');
-    }
-  }
-
-  function toggleKH(kh) {
-    if (selectedKH.has(kh)) {
-      selectedKH.delete(kh);
-    } else {
-      selectedKH.add(kh);
-    }
-    buildChips('');
-    updateSearchLabel();
-    applyFilter();
-    // Tự động chọn tất cả đơn hàng của các KH đang chọn
-    selectedDH.clear();
-    dhList.forEach(dh => selectedDH.add(dh));
-    buildDHChips();
-    updateDHLabel();
-    applyFilter();
-  }
-
-  function toggleAll() {
-    if (selectedKH.size === khList.length) {
-      selectedKH.clear();
-    } else {
-      khList.forEach(k => selectedKH.add(k));
-    }
-    buildChips('');
-    updateSearchLabel();
-    applyFilter();
-    // Tự động chọn tất cả đơn hàng
-    selectedDH.clear();
-    dhList.forEach(dh => selectedDH.add(dh));
-    buildDHChips();
-    updateDHLabel();
-    applyFilter();
-  }
-
-  function onSearchInput() {
-    // Input đang readonly — không cần xử lý gõ
-  }
-
-  function resetFilter() {
-    selectedKH.clear();
-    updateSearchLabel();
-    buildChips('');
-    closeFilterList();
-    applyFilter();
+    document.getElementById('dh-filter-count').textContent = filtered.length ? `${filtered.length} dòng` : '';
   }
 
   // ── FILTER ĐƠN HÀNG ──
@@ -547,13 +427,14 @@
     const list = document.getElementById('dh-filter-list');
     const wasOpen = list.classList.contains('open');
     const allSelected = dhList.length > 0 && selectedDH.size === dhList.length;
+
     list.innerHTML =
       `<div class="filter-chip all-chip${allSelected ? ' selected' : ''}" onclick="toggleAllDH()">
         <span class="chip-check">${allSelected ? '✓' : ''}</span> Tất cả
       </div>` +
-      dhList.map(k => `
-        <div class="filter-chip${selectedDH.has(k) ? ' selected' : ''}" onclick="toggleDH('${esc(k)}')">
-          <span class="chip-check">${selectedDH.has(k) ? '✓' : ''}</span> ${esc(k)}
+      dhList.map(dh => `
+        <div class="filter-chip${selectedDH.has(dh) ? ' selected' : ''}" onclick="toggleDH('${esc(dh)}')">
+          <span class="chip-check">${selectedDH.has(dh) ? '✓' : ''}</span> ${esc(dh)}${dhToKH[dh] ? ' <span style="color:#888;font-weight:400;margin-left:6px;">(' + esc(dhToKH[dh]) + ')</span>' : ''}
         </div>`
       ).join('');
     if (wasOpen) list.classList.add('open');
@@ -595,13 +476,10 @@
     applyFilter();
   }
 
-  // Đóng cả 2 dropdown khi click ra ngoài
+  // Đóng dropdown khi click ra ngoài
   document.addEventListener('click', e => {
-    if (!document.getElementById('filter-wrap').contains(e.target)) closeFilterList();
     if (!document.getElementById('dh-filter-wrap').contains(e.target)) closeDHList();
   });
-
-  let khToDH = {}; // map: tên KH → [danh sách mã ĐH]
 
   // ── LOAD TỪ URL ──
   function loadFromURL() {
@@ -609,60 +487,64 @@
     const ngay = params.get('ngay');
     if (ngay) document.getElementById('meta-ngay').textContent = ngay;
 
+    // ---- Parse dữ liệu sản phẩm ----
     const raw = params.get('data');
-    if (!raw || raw.trim() === '') return;
+    if (raw && raw.trim() !== '') {
+      const rowStrings = raw.split('_b_').map(s => s.trim()).filter(r => r !== '');
 
-    const rowStrings = raw.split('_b_').filter(r => r.trim() !== '');
-    if (!rowStrings.length) return;
+      allRows = rowStrings.map(rowStr => {
+        const c = rowStr.split('_a_');
+        return {
+          ngay:      (c[0]  || '').trim(),
+          dh:        (c[1]  || '').trim(),
+          masp:       c[2]  || '',
+          tensp:      c[3]  || '',
+          dvt:        c[4]  || '',
+          sl:         c[5]  || '',
+          dongiact:   parseNum(c[6]),
+          vat:        c[7]  || '',
+          dongiavat:  parseNum(c[8]),
+          thanhtien:  parseNum(c[9]),
+          // Các trường dưới đây hiện chưa có trong "data", mặc định = 0
+          ghino:      parseNum(c[10]),
+          ghico:      parseNum(c[11]),
+          nocu:       parseNum(c[12]),
+          noluyk:     parseNum(c[13]),
+        };
+      });
+    }
 
-    allRows = rowStrings.map(rowStr => {
-      const c = rowStr.split('_a_');
-      return {
-        kh:        (c[0]  || '').trim().replace(/\s+/g, ' '),
-        dh:         c[1]  || '',
-        masp:       c[2]  || '',
-        tensp:      c[3]  || '',
-        dvt:        c[4]  || '',
-        sl:         c[5]  || '',
-        dongiact:   parseNum(c[6]),
-        vat:        c[7]  || '',
-        dongiavat:  parseNum(c[8]),
-        thanhtien:  parseNum(c[9]),
-        ghino:      parseNum(c[10]),
-        ghico:      parseNum(c[11]),
-        nocu:       parseNum(c[12]),
-        noluyk:     parseNum(c[13]),
-      };
-    });
-
-    // Parse customers param: "KH1_a_DH1,KH1_a_DH2,KH2_a_DH3"
+    // ---- Parse danh sách Đơn hàng + map ĐH -> KH từ "customers" ----
+    // Định dạng: "TenKH_a_MaDH,TenKH_a_MaDH,..."
     const custParam = params.get('customers');
+    const seenDH = new Set();
+    dhList = [];
+    dhToKH = {};
+
     if (custParam && custParam.trim()) {
-      const seenKH = new Set();
       custParam.split(',').map(s => s.trim()).filter(Boolean).forEach(pair => {
         const parts = pair.split('_a_');
         const kh = (parts[0] || '').trim().replace(/\s+/g, ' ');
         const dh = (parts[1] || '').trim();
-        if (kh) {
-          if (!seenKH.has(kh)) { seenKH.add(kh); khList.push(kh); }
-          if (!khToDH[kh]) khToDH[kh] = [];
-          if (dh && !khToDH[kh].includes(dh)) khToDH[kh].push(dh);
-        }
-      });
-    } else {
-      // Fallback: lấy từ allRows
-      const seenKH = new Set();
-      allRows.forEach(r => {
-        if (r.kh && !seenKH.has(r.kh)) { seenKH.add(r.kh); khList.push(r.kh); }
-        if (r.kh && r.dh) {
-          if (!khToDH[r.kh]) khToDH[r.kh] = [];
-          if (!khToDH[r.kh].includes(r.dh)) khToDH[r.kh].push(r.dh);
+        if (dh && !seenDH.has(dh)) {
+          seenDH.add(dh);
+          dhList.push(dh);
+          dhToKH[dh] = kh;
         }
       });
     }
 
-    buildChips('');
-    refreshDHList();
+    // Fallback: nếu không có "customers" hoặc còn ĐH trong "data" mà chưa nằm trong dhList
+    allRows.forEach(r => {
+      if (r.dh && !seenDH.has(r.dh)) {
+        seenDH.add(r.dh);
+        dhList.push(r.dh);
+      }
+    });
+
+    buildDHChips();
+    updateDHLabel();
+    applyFilter();
   }
 
   loadFromURL();
