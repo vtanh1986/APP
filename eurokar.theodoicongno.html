@@ -423,15 +423,26 @@
   }
 
   function refreshDHList() {
-    // Lấy các DH hợp lệ theo KH đang chọn (hoặc tất cả nếu chưa chọn KH)
-    const validRows = selectedKH.size > 0 ? allRows.filter(r => selectedKH.has(r.kh)) : allRows;
     const seen = new Set();
     dhList = [];
-    validRows.forEach(r => {
-      if (r.dh && !seen.has(r.dh)) { seen.add(r.dh); dhList.push(r.dh); }
-    });
 
-    // Bỏ các DH đang chọn mà không còn hợp lệ
+    if (selectedKH.size === 0) {
+      // Chưa chọn KH → hiện tất cả đơn hàng
+      khList.forEach(kh => {
+        (khToDH[kh] || []).forEach(dh => {
+          if (dh && !seen.has(dh)) { seen.add(dh); dhList.push(dh); }
+        });
+      });
+    } else {
+      // Chỉ hiện đơn hàng của các KH đang chọn
+      [...selectedKH].forEach(kh => {
+        (khToDH[kh] || []).forEach(dh => {
+          if (dh && !seen.has(dh)) { seen.add(dh); dhList.push(dh); }
+        });
+      });
+    }
+
+    // Bỏ các DH đang chọn không còn hợp lệ
     const validDH = new Set(dhList);
     [...selectedDH].forEach(dh => { if (!validDH.has(dh)) selectedDH.delete(dh); });
 
@@ -578,6 +589,8 @@
     if (!document.getElementById('dh-filter-wrap').contains(e.target)) closeDHList();
   });
 
+  let khToDH = {}; // map: tên KH → [danh sách mã ĐH]
+
   // ── LOAD TỪ URL ──
   function loadFromURL() {
     const params = new URLSearchParams(window.location.search);
@@ -610,24 +623,34 @@
       };
     });
 
-    // Lấy danh sách KH từ param &customers=KH1_a_DH1,KH2_a_DH2
-    // (phần _a_DH bỏ qua vì dhList sẽ được tính động theo KH đang chọn)
+    // Parse customers param: "KH1_a_DH1,KH1_a_DH2,KH2_a_DH3"
     const custParam = params.get('customers');
     if (custParam && custParam.trim()) {
       const seenKH = new Set();
       custParam.split(',').map(s => s.trim()).filter(Boolean).forEach(pair => {
-        const kh = (pair.split('_a_')[0] || '').trim().replace(/\s+/g, ' ');
-        if (kh && !seenKH.has(kh)) { seenKH.add(kh); khList.push(kh); }
+        const parts = pair.split('_a_');
+        const kh = (parts[0] || '').trim().replace(/\s+/g, ' ');
+        const dh = (parts[1] || '').trim();
+        if (kh) {
+          if (!seenKH.has(kh)) { seenKH.add(kh); khList.push(kh); }
+          if (!khToDH[kh]) khToDH[kh] = [];
+          if (dh && !khToDH[kh].includes(dh)) khToDH[kh].push(dh);
+        }
       });
     } else {
+      // Fallback: lấy từ allRows
       const seenKH = new Set();
       allRows.forEach(r => {
         if (r.kh && !seenKH.has(r.kh)) { seenKH.add(r.kh); khList.push(r.kh); }
+        if (r.kh && r.dh) {
+          if (!khToDH[r.kh]) khToDH[r.kh] = [];
+          if (!khToDH[r.kh].includes(r.dh)) khToDH[r.kh].push(r.dh);
+        }
       });
     }
 
     buildChips('');
-    refreshDHList(); // build dhList động từ allRows ban đầu
+    refreshDHList();
   }
 
   loadFromURL();
