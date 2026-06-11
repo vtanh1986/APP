@@ -239,9 +239,9 @@
     </div>
   </div>
 
-  <!-- BỘ LỌC -->
+  <!-- BỘ LỌC KHÁCH HÀNG -->
   <div class="filter-bar">
-    <label class="filter-label">🔍 Lọc khách hàng / đối tác:</label>
+    <label class="filter-label">🔍 Khách hàng / đối tác:</label>
     <div class="filter-list-wrap" id="filter-wrap">
       <input type="text" class="filter-search" id="filter-search"
         placeholder="▾  Chọn khách hàng / đối tác..."
@@ -251,6 +251,19 @@
     </div>
     <button class="reset-btn" onclick="resetFilter()">✕ Bỏ lọc</button>
     <span class="filter-count" id="filter-count"></span>
+  </div>
+
+  <!-- BỘ LỌC ĐƠN HÀNG -->
+  <div class="filter-bar">
+    <label class="filter-label">📋 Đơn hàng:</label>
+    <div class="filter-list-wrap" id="dh-filter-wrap">
+      <input type="text" class="filter-search" id="dh-filter-search"
+        placeholder="▾  Chọn đơn hàng..."
+        onfocus="openDHList()" readonly onclick="openDHList()" />
+      <div class="filter-list" id="dh-filter-list"></div>
+    </div>
+    <button class="reset-btn" onclick="resetDHFilter()">✕ Bỏ lọc</button>
+    <span class="filter-count" id="dh-filter-count"></span>
   </div>
 
   <!-- TÊN KHÁCH HÀNG -->
@@ -314,7 +327,9 @@
 
   let allRows = [];
   let khList  = [];
-  let selectedKH = new Set(); // tập hợp KH đang được chọn (rỗng = chưa chọn gì)
+  let dhList  = [];
+  let selectedKH = new Set();
+  let selectedDH = new Set();
 
   function fmt(n) {
     const num = parseFloat(n);
@@ -397,12 +412,13 @@
   }
 
   function applyFilter() {
-    const filtered = selectedKH.size > 0
-      ? allRows.filter(r => selectedKH.has(r.kh))
-      : [];
+    let filtered = allRows;
+    if (selectedKH.size > 0) filtered = filtered.filter(r => selectedKH.has(r.kh));
+    if (selectedDH.size > 0) filtered = filtered.filter(r => selectedDH.has(r.dh));
     renderRows(filtered);
-    const count = document.getElementById('filter-count');
-    count.textContent = filtered.length ? `${filtered.length} dòng` : '';
+    const total = filtered.length;
+    document.getElementById('filter-count').textContent = total ? `${total} dòng` : '';
+    document.getElementById('dh-filter-count').textContent = '';
   }
 
   // ── FILTER DROPDOWN ──
@@ -476,10 +492,68 @@
     applyFilter();
   }
 
-  // Đóng dropdown khi click ra ngoài
+  // ── FILTER ĐƠN HÀNG ──
+  function openDHList() {
+    document.getElementById('dh-filter-list').classList.add('open');
+  }
+  function closeDHList() {
+    document.getElementById('dh-filter-list').classList.remove('open');
+  }
+
+  function buildDHChips() {
+    const list = document.getElementById('dh-filter-list');
+    const allSelected = dhList.length > 0 && selectedDH.size === dhList.length;
+    list.innerHTML =
+      `<div class="filter-chip all-chip${allSelected ? ' selected' : ''}" onclick="toggleAllDH()">
+        <span class="chip-check">${allSelected ? '✓' : ''}</span> Tất cả
+      </div>` +
+      dhList.map(k => `
+        <div class="filter-chip${selectedDH.has(k) ? ' selected' : ''}" onclick="toggleDH('${esc(k)}')">
+          <span class="chip-check">${selectedDH.has(k) ? '✓' : ''}</span> ${esc(k)}
+        </div>`
+      ).join('');
+  }
+
+  function updateDHLabel() {
+    const input = document.getElementById('dh-filter-search');
+    if (selectedDH.size === 0) {
+      input.value = '';
+      input.placeholder = '▾  Chọn đơn hàng...';
+    } else if (selectedDH.size === dhList.length) {
+      input.value = 'Tất cả (' + dhList.length + ')';
+    } else {
+      input.value = [...selectedDH].join(', ');
+    }
+  }
+
+  function toggleAllDH() {
+    if (selectedDH.size === dhList.length) { selectedDH.clear(); }
+    else { dhList.forEach(k => selectedDH.add(k)); }
+    buildDHChips();
+    updateDHLabel();
+    applyFilter();
+  }
+
+  function toggleDH(dh) {
+    if (selectedDH.has(dh)) { selectedDH.delete(dh); }
+    else { selectedDH.add(dh); }
+    buildDHChips();
+    updateDHLabel();
+    applyFilter();
+  }
+
+  function resetDHFilter() {
+    selectedDH.clear();
+    updateDHLabel();
+    buildDHChips();
+    closeDHList();
+    applyFilter();
+  }
+
+  // Đóng cả 2 dropdown khi click ra ngoài
   document.addEventListener('click', e => {
-    const wrap = document.getElementById('filter-wrap');
-    if (wrap && !wrap.contains(e.target)) closeFilterList();
+    if (!document.getElementById('filter-wrap').contains(e.target)) closeFilterList();
+    if (!document.getElementById('dh-filter-wrap').contains(e.target)) closeDHList();
   });
 
   // ── LOAD TỪ URL ──
@@ -514,19 +588,28 @@
       };
     });
 
-    // Lấy danh sách KH từ param &customers=KH1,KH2,KH3
+    // Lấy danh sách KH và ĐH từ param &customers=KH1_a_DH1,KH2_a_DH2
     const custParam = params.get('customers');
     if (custParam && custParam.trim()) {
-      khList = custParam.split(',').map(s => s.trim().replace(/\s+/g, ' ')).filter(Boolean);
+      const pairs = custParam.split(',').map(s => s.trim()).filter(Boolean);
+      const seenKH = new Set(), seenDH = new Set();
+      pairs.forEach(pair => {
+        const parts = pair.split('_a_');
+        const kh = (parts[0] || '').trim().replace(/\s+/g, ' ');
+        const dh = (parts[1] || '').trim();
+        if (kh && !seenKH.has(kh)) { seenKH.add(kh); khList.push(kh); }
+        if (dh && !seenDH.has(dh)) { seenDH.add(dh); dhList.push(dh); }
+      });
     } else {
-      // Fallback: deduplicate từ allRows
-      const seen = new Set();
+      const seenKH = new Set(), seenDH = new Set();
       allRows.forEach(r => {
-        if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
+        if (r.kh && !seenKH.has(r.kh)) { seenKH.add(r.kh); khList.push(r.kh); }
+        if (r.dh && !seenDH.has(r.dh)) { seenDH.add(r.dh); dhList.push(r.dh); }
       });
     }
 
     buildChips('');
+    buildDHChips();
   }
 
   loadFromURL();
