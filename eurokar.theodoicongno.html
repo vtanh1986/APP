@@ -81,11 +81,11 @@
   }
   .filter-search:focus { border-color: #555; }
   .filter-search::placeholder { color: #aaa; }
-  .filter-list { display: flex; flex-wrap: wrap; gap: 6px; max-height: 130px; overflow-y: auto; }
+  .filter-list { display: flex; flex-direction: column; gap: 2px; max-height: 200px; overflow-y: auto; }
   .filter-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: #fff; border: 1.5px solid #bbb; border-radius: 20px;
-    padding: 5px 13px; font-size: 12.5px; font-weight: 500; color: #000;
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 1.5px solid #bbb; border-radius: 6px;
+    padding: 7px 14px; font-size: 13px; font-weight: 500; color: #000;
     cursor: pointer; transition: all 0.15s; user-select: none;
   }
   .filter-chip:hover { border-color: #555; background: #f0f0f0; }
@@ -457,11 +457,17 @@
       };
     });
 
-    // Deduplicate KH
-    const seen = new Set();
-    allRows.forEach(r => {
-      if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
-    });
+    // Lấy danh sách KH từ param &customers=KH1,KH2,KH3
+    const custParam = params.get('customers');
+    if (custParam && custParam.trim()) {
+      khList = custParam.split(',').map(s => s.trim().replace(/\s+/g, ' ')).filter(Boolean);
+    } else {
+      // Fallback: deduplicate từ allRows
+      const seen = new Set();
+      allRows.forEach(r => {
+        if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
+      });
+    }
 
     buildChips('');
   }
