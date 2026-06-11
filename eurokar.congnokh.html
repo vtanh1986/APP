@@ -414,7 +414,6 @@
       <thead>
         <tr>
           <th style="width:40px">TT</th>
-          <th class="left" style="min-width:180px">Khách hàng / Đối tác</th>
           <th style="min-width:140px">Đơn hàng</th>
           <th style="min-width:110px">Doanh thu</th>
           <th style="min-width:110px">Thực thu</th>
@@ -425,7 +424,7 @@
       </thead>
       <tbody id="table-body">
         <tr id="placeholder-row">
-          <td colspan="8" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
+          <td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
             Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
           </td>
         </tr>
@@ -499,7 +498,7 @@
     const inputVal = document.getElementById('kh-input').value.trim();
 
     if (!activeKH && !inputVal) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
       updateSummary([]);
       updateKhNameBar('');
       return;
@@ -508,14 +507,13 @@
     updateKhNameBar(activeKH || inputVal);
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       updateSummary([]);
       return;
     }
 
     tbody.innerHTML = rows.map((r, idx) => `<tr>
       <td style="color:#555;font-weight:600">${idx + 1}</td>
-      <td class="left" style="font-weight:500">${esc(r.kh) || '<span style="color:#bbb">—</span>'}</td>
       <td style="font-size:12px;">${esc(r.dh) || '—'}</td>
       <td class="num">${fmt(r.doanhthu)}</td>
       <td class="num">${fmt(r.thucthu)}</td>
