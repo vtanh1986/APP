@@ -451,6 +451,7 @@
     const q = (query || '').trim().toLowerCase();
     const matches = q ? khList.filter(k => k.toLowerCase().includes(q)) : khList;
     const list = document.getElementById('filter-list');
+    const wasOpen = list.classList.contains('open');
     const allSelected = khList.length > 0 && selectedKH.size === khList.length;
 
     list.innerHTML =
@@ -462,6 +463,7 @@
           <span class="chip-check">${selectedKH.has(k) ? '✓' : ''}</span> ${esc(k)}
         </div>`
       ).join('');
+    if (wasOpen) list.classList.add('open');
   }
 
   function updateSearchLabel() {
@@ -520,6 +522,7 @@
 
   function buildDHChips() {
     const list = document.getElementById('dh-filter-list');
+    const wasOpen = list.classList.contains('open');
     const allSelected = dhList.length > 0 && selectedDH.size === dhList.length;
     list.innerHTML =
       `<div class="filter-chip all-chip${allSelected ? ' selected' : ''}" onclick="toggleAllDH()">
@@ -530,6 +533,7 @@
           <span class="chip-check">${selectedDH.has(k) ? '✓' : ''}</span> ${esc(k)}
         </div>`
       ).join('');
+    if (wasOpen) list.classList.add('open');
   }
 
   function updateDHLabel() {
