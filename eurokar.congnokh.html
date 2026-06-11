@@ -41,7 +41,7 @@
 
   /* ── TRANG BÁO CÁO ── */
   .page {
-    max-width: 1120px;
+    max-width: 1280px;
     margin: 0 auto;
     background: #fff;
     border-radius: 10px;
@@ -100,7 +100,7 @@
     background: #fff;
     border-bottom: 2px solid #ddd;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
   .sum-item {
     padding: 14px 16px;
@@ -270,18 +270,6 @@
   td.left { text-align: left; }
   td.num { font-variant-numeric: tabular-nums; }
 
-  /* ── BADGE ── */
-  .badge {
-    display: inline-block;
-    padding: 2px 11px;
-    border-radius: 20px;
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-  }
-  .badge.tm { background: #d4edda; color: #1a6630; border: 1px solid #a8d5b5; }
-  .badge.ck { background: #d0e8ff; color: #1a4a8a; border: 1px solid #9ec6f0; }
-
   /* ── FOOTER CHỮ KÝ ── */
   .footer-row {
     display: flex;
@@ -328,15 +316,19 @@
     .summary-strip { font-size: 10px; }
     .sum-value { font-size: 12px; }
     .header-info .title { font-size: 16px; }
-    .badge { font-size: 8px; padding: 1px 5px; }
-    table th:nth-child(1), table td:nth-child(1) { width: 4%; }
-    table th:nth-child(2), table td:nth-child(2) { width: 20%; }
-    table th:nth-child(3), table td:nth-child(3) { width: 16%; }
-    table th:nth-child(4), table td:nth-child(4) { width: 13%; }
-    table th:nth-child(5), table td:nth-child(5) { width: 13%; }
-    table th:nth-child(6), table td:nth-child(6) { width: 9%; }
-    table th:nth-child(7), table td:nth-child(7) { width: 13%; }
-    table th:nth-child(8), table td:nth-child(8) { width: 12%; }
+    /* Độ rộng cột khi in */
+    table th:nth-child(1),  table td:nth-child(1)  { width: 3%; }   /* TT */
+    table th:nth-child(2),  table td:nth-child(2)  { width: 14%; }  /* KH */
+    table th:nth-child(3),  table td:nth-child(3)  { width: 12%; }  /* Đơn hàng */
+    table th:nth-child(4),  table td:nth-child(4)  { width: 8%; }   /* Mã hàng */
+    table th:nth-child(5),  table td:nth-child(5)  { width: 18%; }  /* Tên hàng */
+    table th:nth-child(6),  table td:nth-child(6)  { width: 5%; }   /* ĐVT */
+    table th:nth-child(7),  table td:nth-child(7)  { width: 5%; }   /* SL */
+    table th:nth-child(8),  table td:nth-child(8)  { width: 9%; }   /* Đơn giá */
+    table th:nth-child(9),  table td:nth-child(9)  { width: 9%; }   /* Thành tiền */
+    table th:nth-child(10), table td:nth-child(10) { width: 5%; }   /* % VAT */
+    table th:nth-child(11), table td:nth-child(11) { width: 9%; }   /* Tiền thuế */
+    table th:nth-child(12), table td:nth-child(12) { width: 9%; }   /* Tổng tiền */
   }
   @media (max-width: 640px) {
     .summary-strip { grid-template-columns: repeat(2, 1fr); }
@@ -369,24 +361,20 @@
   <!-- TỔNG KẾT -->
   <div class="summary-strip">
     <div class="sum-item">
-      <div class="sum-label">Tổng doanh thu</div>
-      <div class="sum-value" id="sum-doanhthu">——</div>
+      <div class="sum-label">Tổng thành tiền</div>
+      <div class="sum-value" id="sum-thanhtien">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Tổng thực thu</div>
-      <div class="sum-value" id="sum-thucthu">——</div>
+      <div class="sum-label">Tổng tiền thuế GTGT</div>
+      <div class="sum-value" id="sum-tienthue">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Còn nợ theo ĐH</div>
-      <div class="sum-value danger" id="sum-connodh">——</div>
+      <div class="sum-label">Tổng tiền (sau thuế)</div>
+      <div class="sum-value" id="sum-tongtien">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Nợ cũ</div>
-      <div class="sum-value danger" id="sum-nocu">——</div>
-    </div>
-    <div class="sum-item">
-      <div class="sum-label">Nợ lũy kế</div>
-      <div class="sum-value danger" id="sum-noluyk">——</div>
+      <div class="sum-label">Số dòng</div>
+      <div class="sum-value" id="sum-sodong">——</div>
     </div>
   </div>
 
@@ -414,17 +402,22 @@
       <thead>
         <tr>
           <th style="width:40px">TT</th>
-          <th style="min-width:140px">Đơn hàng</th>
-          <th style="min-width:110px">Doanh thu</th>
-          <th style="min-width:110px">Thực thu</th>
-          <th style="min-width:85px">Hình thức</th>
-          <th style="min-width:110px">Còn nợ</th>
-          <th style="min-width:110px">Ghi chú</th>
+          <th style="min-width:130px" class="left">Khách hàng / Đối tác</th>
+          <th style="min-width:120px">Đơn hàng</th>
+          <th style="min-width:90px">Mã hàng</th>
+          <th style="min-width:160px" class="left">Tên hàng hóa</th>
+          <th style="min-width:55px">ĐVT</th>
+          <th style="min-width:55px">SL</th>
+          <th style="min-width:100px">Đơn giá</th>
+          <th style="min-width:110px">Thành tiền</th>
+          <th style="min-width:60px">% VAT</th>
+          <th style="min-width:110px">Tiền thuế GTGT</th>
+          <th style="min-width:110px">Tổng tiền</th>
         </tr>
       </thead>
       <tbody id="table-body">
         <tr id="placeholder-row">
-          <td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
+          <td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
             Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
           </td>
         </tr>
@@ -452,19 +445,42 @@
 
 <script>
   // ----------------------------------------------------------------
-  // AppSheet truyền qua URL:
+  // URL params:
   //   ?ngay=04/06/26
-  //   &data=KH_a_DH_a_DT_a_TT_a_HT_a_ConNo_a_NoCu_a_NoLuyk_a_ChiNhanh_a_GhiChu_b_...
+  //   &data=KH _a_ DH _a_ MaHang _a_ TenHang _a_ DVT _a_ SL _a_ DonGia _a_ ThanhTien _a_ VAT _a_ TienThue _a_ TongTien _b_ ...
+  //
+  // Thứ tự cột (index):
+  //   0: KH (Khách hàng/Đối tác)
+  //   1: DH (Đơn hàng)
+  //   2: MaHang
+  //   3: TenHang
+  //   4: DVT
+  //   5: SL
+  //   6: DonGia
+  //   7: ThanhTien
+  //   8: VAT (%)
+  //   9: TienThue
+  //  10: TongTien
   // ----------------------------------------------------------------
 
   let allRows = [];
-  let khList  = [];   // danh sách KH duy nhất (đã deduplicate)
+  let khList  = [];
   let activeKH = '';
 
   function fmt(n) {
     const num = parseFloat(n);
-    if (isNaN(num)) return '—';
+    if (isNaN(num) || num === 0) return '—';
     return num.toLocaleString('vi-VN') + ' đ';
+  }
+  function fmtNum(n) {
+    const num = parseFloat(n);
+    if (isNaN(num)) return '—';
+    return num.toLocaleString('vi-VN');
+  }
+  function fmtVat(n) {
+    const num = parseFloat(n);
+    if (isNaN(num)) return '—';
+    return num + '%';
   }
   function parseNum(s) {
     if (!s) return 0;
@@ -472,12 +488,6 @@
   }
   function esc(s) {
     return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function badge(ht, thucthu) {
-    if (!thucthu || thucthu === 0) return '';
-    const v = (ht || '').trim().toUpperCase();
-    const cls = v === 'CK' ? 'ck' : 'tm';
-    return `<span class="badge ${cls}">${esc(ht) || 'TM'}</span>`;
   }
 
   // ── KH NAME BAR ──
@@ -498,7 +508,7 @@
     const inputVal = document.getElementById('kh-input').value.trim();
 
     if (!activeKH && !inputVal) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
       updateSummary([]);
       updateKhNameBar('');
       return;
@@ -507,32 +517,40 @@
     updateKhNameBar(activeKH || inputVal);
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       updateSummary([]);
       return;
     }
 
     tbody.innerHTML = rows.map((r, idx) => `<tr>
       <td style="color:#555;font-weight:600">${idx + 1}</td>
+      <td class="left" style="font-size:12px;">${esc(r.kh) || '—'}</td>
       <td style="font-size:12px;">${esc(r.dh) || '—'}</td>
-      <td class="num">${fmt(r.doanhthu)}</td>
-      <td class="num">${fmt(r.thucthu)}</td>
-      <td>${badge(r.hinhthu, r.thucthu)}</td>
-      <td class="num" style="color:${r.connodh > 0 ? '#c0392b' : '#1a6630'};font-weight:600">${fmt(r.connodh)}</td>
-      <td style="color:#444;font-size:12px">${esc(r.ghichu)}</td>
+      <td style="font-size:12px;">${esc(r.mahang) || '—'}</td>
+      <td class="left" style="font-size:12px;">${esc(r.tenhang) || '—'}</td>
+      <td>${esc(r.dvt) || '—'}</td>
+      <td class="num">${fmtNum(r.sl)}</td>
+      <td class="num">${fmt(r.dongia)}</td>
+      <td class="num">${fmt(r.thanhtien)}</td>
+      <td>${fmtVat(r.vat)}</td>
+      <td class="num">${fmt(r.tienthue)}</td>
+      <td class="num" style="font-weight:700;">${fmt(r.tongtien)}</td>
     </tr>`).join('');
 
     updateSummary(rows);
   }
 
   function updateSummary(rows) {
-    let s = {dt:0, tt:0, cn:0, nc:0, nl:0};
-    rows.forEach(r => { s.dt += r.doanhthu; s.tt += r.thucthu; s.cn += r.connodh; s.nc += r.nocu; s.nl += r.noluyk; });
-    document.getElementById('sum-doanhthu').textContent = rows.length ? fmt(s.dt) : '——';
-    document.getElementById('sum-thucthu').textContent  = rows.length ? fmt(s.tt) : '——';
-    document.getElementById('sum-connodh').textContent  = rows.length ? fmt(s.cn) : '——';
-    document.getElementById('sum-nocu').textContent     = rows.length ? fmt(s.nc) : '——';
-    document.getElementById('sum-noluyk').textContent   = rows.length ? fmt(s.nl) : '——';
+    let sThanhtien = 0, sTienthue = 0, sTongtien = 0;
+    rows.forEach(r => {
+      sThanhtien += r.thanhtien;
+      sTienthue  += r.tienthue;
+      sTongtien  += r.tongtien;
+    });
+    document.getElementById('sum-thanhtien').textContent = rows.length ? fmt(sThanhtien) : '——';
+    document.getElementById('sum-tienthue').textContent  = rows.length ? fmt(sTienthue)  : '——';
+    document.getElementById('sum-tongtien').textContent  = rows.length ? fmt(sTongtien)  : '——';
+    document.getElementById('sum-sodong').textContent    = rows.length ? rows.length + ' dòng' : '——';
   }
 
   function applyFilter() {
@@ -601,6 +619,7 @@
   // ── LOAD TỪ URL ──
   function loadFromURL() {
     const params = new URLSearchParams(window.location.search);
+
     const ngay = params.get('ngay');
     if (ngay) document.getElementById('meta-ngay').textContent = ngay;
 
@@ -613,23 +632,21 @@
     allRows = rowStrings.map(rowStr => {
       const c = rowStr.split('_a_');
       return {
-        kh:       c[0] || '',
-        dh:       c[1] || '',
-        doanhthu: parseNum(c[2]),
-        thucthu:  parseNum(c[3]),
-        hinhthu:  c[4] || '',
-        connodh:  parseNum(c[5]),
-        nocu:     parseNum(c[6]),
-        noluyk:   parseNum(c[7]),
-        cn_name:  c[8] || '',
-        ghichu:   c[9] || '',
+        kh:       (c[0]  || '').trim().replace(/\s+/g, ' '),
+        dh:       c[1]  || '',
+        mahang:   c[2]  || '',
+        tenhang:  c[3]  || '',
+        dvt:      c[4]  || '',
+        sl:       parseNum(c[5]),
+        dongia:   parseNum(c[6]),
+        thanhtien:parseNum(c[7]),
+        vat:      parseNum(c[8]),
+        tienthue: parseNum(c[9]),
+        tongtien: parseNum(c[10]),
       };
     });
 
-    // Normalize tên KH: trim + collapse khoảng trắng thừa
-    allRows.forEach(r => { r.kh = (r.kh || '').trim().replace(/\s+/g, ' '); });
-
-    // Deduplicate sau khi normalize
+    // Deduplicate danh sách KH
     const seen = new Set();
     allRows.forEach(r => {
       if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
