@@ -628,7 +628,7 @@
       };
     });
 
-    // Deduplicate KH list từ allRows — mỗi tên chỉ xuất hiện 1 lần
+    // Luôn deduplicate từ allRows — bỏ qua customers param
     const seen = new Set();
     allRows.forEach(r => {
       if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
