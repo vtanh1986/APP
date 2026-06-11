@@ -322,7 +322,6 @@
     font-size: 12.5px;
     font-weight: 700;
     color: #1a2332;
-    border-top: 1.5px solid #1e3a6e;
     padding-top: 6px;
   }
 
@@ -442,9 +441,9 @@
         </tr>
       </thead>
       <tbody id="table-body">
-        <tr>
-          <td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">
-            Đang chờ dữ liệu...
+        <tr id="placeholder-row">
+          <td colspan="10" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">
+            Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
           </td>
         </tr>
       </tbody>
@@ -480,6 +479,7 @@
   let allRows = [];
   let khList  = [];
   let activeKH = '';   // KH đang được chọn (rỗng = tất cả)
+  let dataLoaded = false; // cờ đánh dấu đã load data chưa
 
   function fmt(n) {
     const num = parseFloat(n);
@@ -493,7 +493,9 @@
   function esc(s) {
     return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
-  function badge(ht) {
+  function badge(ht, thucthu) {
+    // Nếu thực thu = 0 thì bỏ trống cột hình thức
+    if (!thucthu || thucthu === 0) return '';
     const v = (ht || '').trim().toUpperCase();
     const cls = v === 'CK' ? 'ck' : 'tm';
     return `<span class="badge ${cls}">${esc(ht) || 'TM'}</span>`;
@@ -502,8 +504,16 @@
   // ── RENDER ──
   function renderRows(rows) {
     const tbody = document.getElementById('table-body');
+
+    // Nếu chưa chọn KH nào (filter rỗng hoàn toàn), hiện placeholder
+    if (!activeKH && !document.getElementById('kh-input').value.trim()) {
+      tbody.innerHTML = `<tr id="placeholder-row"><td colspan="10" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      updateSummary([]);
+      return;
+    }
+
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       updateSummary([]);
       return;
     }
@@ -513,11 +523,10 @@
       <td style="font-size:12px;color:#3a5a8a">${esc(r.dh) || '—'}</td>
       <td class="num">${fmt(r.doanhthu)}</td>
       <td class="num">${fmt(r.thucthu)}</td>
-      <td>${badge(r.hinhthu)}</td>
+      <td>${badge(r.hinhthu, r.thucthu)}</td>
       <td class="num" style="color:${r.connodh > 0 ? '#c0392b' : '#1a6630'};font-weight:600">${fmt(r.connodh)}</td>
       <td class="num">${fmt(r.nocu)}</td>
       <td class="num" style="font-weight:700;color:${r.noluyk > 0 ? '#c0392b' : '#1a6630'}">${fmt(r.noluyk)}</td>
-      <td style="font-weight:600;color:#1e3a6e">${esc(r.cn_name)}</td>
       <td style="color:#666;font-size:12px">${esc(r.ghichu)}</td>
     </tr>`).join('');
     updateSummary(rows);
@@ -526,18 +535,26 @@
   function updateSummary(rows) {
     let s = {dt:0,tt:0,cn:0,nc:0,nl:0};
     rows.forEach(r => { s.dt+=r.doanhthu; s.tt+=r.thucthu; s.cn+=r.connodh; s.nc+=r.nocu; s.nl+=r.noluyk; });
-    document.getElementById('sum-doanhthu').textContent = fmt(s.dt);
-    document.getElementById('sum-thucthu').textContent  = fmt(s.tt);
-    document.getElementById('sum-connodh').textContent  = fmt(s.cn);
-    document.getElementById('sum-nocu').textContent     = fmt(s.nc);
-    document.getElementById('sum-noluyk').textContent   = fmt(s.nl);
+    document.getElementById('sum-doanhthu').textContent = rows.length ? fmt(s.dt) : '——';
+    document.getElementById('sum-thucthu').textContent  = rows.length ? fmt(s.tt) : '——';
+    document.getElementById('sum-connodh').textContent  = rows.length ? fmt(s.cn) : '——';
+    document.getElementById('sum-nocu').textContent     = rows.length ? fmt(s.nc) : '——';
+    document.getElementById('sum-noluyk').textContent   = rows.length ? fmt(s.nl) : '——';
   }
 
   function applyFilter() {
-    const filtered = activeKH ? allRows.filter(r => r.kh === activeKH) : allRows;
+    const input = document.getElementById('kh-input').value.trim().toLowerCase();
+    let filtered;
+    if (activeKH) {
+      filtered = allRows.filter(r => r.kh === activeKH);
+    } else if (input) {
+      filtered = allRows.filter(r => r.kh.toLowerCase().includes(input));
+    } else {
+      filtered = [];
+    }
     renderRows(filtered);
     const count = document.getElementById('filter-count');
-    count.textContent = activeKH ? `${filtered.length} dòng` : '';
+    count.textContent = (activeKH || input) && filtered.length ? `${filtered.length} dòng` : '';
   }
 
   // ── COMBO DROPDOWN ──
@@ -564,26 +581,10 @@
   }
 
   function onComboInput() {
-    activeKH = '';          // gõ mới → bỏ filter cũ
+    activeKH = '';
     buildDropdown(document.getElementById('kh-input').value);
     document.getElementById('combo-dropdown').classList.add('open');
-    applyFilter();          // lọc theo text gõ vào trực tiếp
-  }
-
-  // Override applyFilter để cũng lọc theo text input khi chưa chọn hẳn
-  function applyFilter() {
-    const input = document.getElementById('kh-input').value.trim().toLowerCase();
-    let filtered;
-    if (activeKH) {
-      filtered = allRows.filter(r => r.kh === activeKH);
-    } else if (input) {
-      filtered = allRows.filter(r => r.kh.toLowerCase().includes(input));
-    } else {
-      filtered = allRows;
-    }
-    renderRows(filtered);
-    const count = document.getElementById('filter-count');
-    count.textContent = (activeKH || input) ? `${filtered.length} dòng` : '';
+    applyFilter();
   }
 
   function selectKH(el) {
@@ -615,22 +616,16 @@
     const ngay = params.get('ngay');
     const chinhanh = params.get('chinhanh');
     if (ngay) document.getElementById('meta-ngay').textContent = ngay;
-    if (chinhanh) document.getElementById('chi-nhanh-header').textContent = chinhanh;
 
     const raw = params.get('data');
-    const tbody = document.getElementById('table-body');
 
     if (!raw || raw.trim() === '') {
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">
-        Chưa có dữ liệu — AppSheet chưa truyền tham số <code>data</code>.</td></tr>`;
+      // Không có data → giữ placeholder
       return;
     }
 
     const rowStrings = raw.split('_b_').filter(r => r.trim() !== '');
-    if (!rowStrings.length) {
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Dữ liệu trống.</td></tr>`;
-      return;
-    }
+    if (!rowStrings.length) return;
 
     allRows = rowStrings.map(rowStr => {
       const c = rowStr.split('_a_');
@@ -652,7 +647,8 @@
       allRows.forEach(r => { if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); } });
     }
 
-    renderRows(allRows);
+    // Không renderRows ở đây — chờ user chọn filter
+    dataLoaded = true;
   }
 
   loadFromURL();
