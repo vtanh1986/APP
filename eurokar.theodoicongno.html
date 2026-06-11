@@ -272,6 +272,9 @@
     <span class="kh-name-value" id="kh-name-value"></span>
   </div>
 
+  <!-- DEBUG BOX: tạm thời để đối chiếu mã ĐH giữa "customers" và "data" -->
+  <div id="debug-box" style="display:none; padding:12px 20px; background:#fff8e1; border-bottom:1px solid #ddd; font-size:12px; font-family:monospace; white-space:pre-wrap; color:#000;"></div>
+
   <div class="table-wrap">
     <table>
       <thead>
@@ -428,6 +431,26 @@
 
     // Cập nhật lại danh sách đơn hàng theo KH đang chọn
     refreshDHList();
+
+    // ── DEBUG: đối chiếu mã ĐH trong bộ lọc (từ "customers") vs mã ĐH thực có trong "data" ──
+    showDebug();
+  }
+
+  function showDebug() {
+    const box = document.getElementById('debug-box');
+    const realDH = new Set(allRows.map(r => r.dh));
+    const lines = [];
+    lines.push('--- DEBUG (đối chiếu mã Đơn hàng) ---');
+    lines.push('selectedDH (đang chọn trong bộ lọc, từ "customers"): ' + (selectedDH.size ? [...selectedDH].join(', ') : '(trống)'));
+    lines.push('dh có thật trong "data": ' + (realDH.size ? [...realDH].join(', ') : '(trống)'));
+    const matched = [...selectedDH].filter(dh => realDH.has(dh));
+    const notInData = [...selectedDH].filter(dh => !realDH.has(dh));
+    const notInFilter = [...realDH].filter(dh => !selectedDH.has(dh));
+    lines.push('=> Khớp: ' + (matched.length ? matched.join(', ') : '(không có)'));
+    lines.push('=> Có trong bộ lọc nhưng KHÔNG có trong data: ' + (notInData.length ? notInData.join(', ') : '(không có)'));
+    lines.push('=> Có trong data nhưng KHÔNG có trong bộ lọc đang chọn: ' + (notInFilter.length ? notInFilter.join(', ') : '(không có)'));
+    box.textContent = lines.join('\n');
+    box.style.display = 'block';
   }
 
   function refreshDHList() {
