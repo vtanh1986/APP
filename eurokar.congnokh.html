@@ -628,7 +628,10 @@
       };
     });
 
-    // Luôn deduplicate từ allRows — bỏ qua customers param
+    // Normalize tên KH: trim + collapse khoảng trắng thừa
+    allRows.forEach(r => { r.kh = (r.kh || '').trim().replace(/\s+/g, ' '); });
+
+    // Deduplicate sau khi normalize
     const seen = new Set();
     allRows.forEach(r => {
       if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
