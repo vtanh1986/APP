@@ -253,6 +253,27 @@
     white-space: nowrap;
   }
 
+  /* ── TÊN KHÁCH HÀNG ── */
+  .kh-name-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #eaf1fb;
+    border-bottom: 1px solid #c8daf0;
+  }
+  .kh-name-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #5a7aa8;
+    white-space: nowrap;
+  }
+  .kh-name-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e3a6e;
+  }
+
   /* ── BẢNG ── */
   .table-wrap { overflow-x: auto; }
   table {
@@ -348,16 +369,13 @@
     .badge { font-size: 8px; padding: 1px 5px; }
     /* Phân bố độ rộng cột khi in */
     table th:nth-child(1), table td:nth-child(1) { width: 4%; }
-    table th:nth-child(2), table td:nth-child(2) { width: 18%; }
-    table th:nth-child(3), table td:nth-child(3) { width: 13%; }
-    table th:nth-child(4), table td:nth-child(4) { width: 9%; }
-    table th:nth-child(5), table td:nth-child(5) { width: 9%; }
-    table th:nth-child(6), table td:nth-child(6) { width: 7%; }
-    table th:nth-child(7), table td:nth-child(7) { width: 9%; }
-    table th:nth-child(8), table td:nth-child(8) { width: 8%; }
-    table th:nth-child(9), table td:nth-child(9) { width: 9%; }
-    table th:nth-child(10), table td:nth-child(10) { width: 7%; }
-    table th:nth-child(11), table td:nth-child(11) { width: 7%; }
+    table th:nth-child(2), table td:nth-child(2) { width: 20%; }
+    table th:nth-child(3), table td:nth-child(3) { width: 16%; }
+    table th:nth-child(4), table td:nth-child(4) { width: 13%; }
+    table th:nth-child(5), table td:nth-child(5) { width: 13%; }
+    table th:nth-child(6), table td:nth-child(6) { width: 9%; }
+    table th:nth-child(7), table td:nth-child(7) { width: 13%; }
+    table th:nth-child(8), table td:nth-child(8) { width: 12%; }
   }
   @media (max-width: 640px) {
     .summary-strip { grid-template-columns: repeat(2, 1fr); }
@@ -424,6 +442,12 @@
     <span class="filter-count" id="filter-count"></span>
   </div>
 
+  <!-- TÊN KHÁCH HÀNG -->
+  <div class="kh-name-bar" id="kh-name-bar" style="display:none;">
+    <span class="kh-name-label">Khách hàng / Đối tác:</span>
+    <span class="kh-name-value" id="kh-name-value"></span>
+  </div>
+
   <div class="table-wrap">
     <table>
       <thead>
@@ -435,14 +459,12 @@
           <th style="min-width:110px">Thực thu</th>
           <th style="min-width:85px">Hình thức</th>
           <th style="min-width:110px">Còn nợ</th>
-          <th style="min-width:100px">Nợ cũ</th>
-          <th style="min-width:110px">Nợ lũy kế</th>
           <th style="min-width:110px">Ghi chú</th>
         </tr>
       </thead>
       <tbody id="table-body">
         <tr id="placeholder-row">
-          <td colspan="10" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">
+          <td colspan="8" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">
             Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
           </td>
         </tr>
@@ -454,15 +476,15 @@
   <div class="footer-row">
     <div class="sign-block">
       <div class="sign-label">Người lập báo cáo</div>
-      <div class="sign-name">................................</div>
+      <div class="sign-name"></div>
     </div>
     <div class="sign-block">
       <div class="sign-label">Kế toán trưởng</div>
-      <div class="sign-name">................................</div>
+      <div class="sign-name"></div>
     </div>
     <div class="sign-block">
       <div class="sign-label">Giám đốc</div>
-      <div class="sign-name">................................</div>
+      <div class="sign-name"></div>
     </div>
   </div>
 
@@ -502,18 +524,32 @@
   }
 
   // ── RENDER ──
+  function updateKhNameBar(name) {
+    const bar = document.getElementById('kh-name-bar');
+    const val = document.getElementById('kh-name-value');
+    if (name) {
+      val.textContent = name;
+      bar.style.display = 'flex';
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+
   function renderRows(rows) {
     const tbody = document.getElementById('table-body');
 
     // Nếu chưa chọn KH nào (filter rỗng hoàn toàn), hiện placeholder
     if (!activeKH && !document.getElementById('kh-input').value.trim()) {
-      tbody.innerHTML = `<tr id="placeholder-row"><td colspan="10" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      tbody.innerHTML = `<tr id="placeholder-row"><td colspan="8" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
       updateSummary([]);
+      updateKhNameBar('');
       return;
     }
 
+    updateKhNameBar(activeKH || document.getElementById('kh-input').value.trim());
+
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:36px;color:#7a9cbf;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       updateSummary([]);
       return;
     }
@@ -525,8 +561,6 @@
       <td class="num">${fmt(r.thucthu)}</td>
       <td>${badge(r.hinhthu, r.thucthu)}</td>
       <td class="num" style="color:${r.connodh > 0 ? '#c0392b' : '#1a6630'};font-weight:600">${fmt(r.connodh)}</td>
-      <td class="num">${fmt(r.nocu)}</td>
-      <td class="num" style="font-weight:700;color:${r.noluyk > 0 ? '#c0392b' : '#1a6630'}">${fmt(r.noluyk)}</td>
       <td style="color:#666;font-size:12px">${esc(r.ghichu)}</td>
     </tr>`).join('');
     updateSummary(rows);
