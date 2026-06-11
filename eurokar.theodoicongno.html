@@ -416,9 +416,27 @@
     if (selectedKH.size > 0) filtered = filtered.filter(r => selectedKH.has(r.kh));
     if (selectedDH.size > 0) filtered = filtered.filter(r => selectedDH.has(r.dh));
     renderRows(filtered);
-    const total = filtered.length;
-    document.getElementById('filter-count').textContent = total ? `${total} dòng` : '';
-    document.getElementById('dh-filter-count').textContent = '';
+    document.getElementById('filter-count').textContent = filtered.length ? `${filtered.length} dòng` : '';
+
+    // Cập nhật lại danh sách đơn hàng theo KH đang chọn
+    refreshDHList();
+  }
+
+  function refreshDHList() {
+    // Lấy các DH hợp lệ theo KH đang chọn (hoặc tất cả nếu chưa chọn KH)
+    const validRows = selectedKH.size > 0 ? allRows.filter(r => selectedKH.has(r.kh)) : allRows;
+    const seen = new Set();
+    dhList = [];
+    validRows.forEach(r => {
+      if (r.dh && !seen.has(r.dh)) { seen.add(r.dh); dhList.push(r.dh); }
+    });
+
+    // Bỏ các DH đang chọn mà không còn hợp lệ
+    const validDH = new Set(dhList);
+    [...selectedDH].forEach(dh => { if (!validDH.has(dh)) selectedDH.delete(dh); });
+
+    buildDHChips();
+    updateDHLabel();
   }
 
   // ── FILTER DROPDOWN ──
@@ -588,28 +606,24 @@
       };
     });
 
-    // Lấy danh sách KH và ĐH từ param &customers=KH1_a_DH1,KH2_a_DH2
+    // Lấy danh sách KH từ param &customers=KH1_a_DH1,KH2_a_DH2
+    // (phần _a_DH bỏ qua vì dhList sẽ được tính động theo KH đang chọn)
     const custParam = params.get('customers');
     if (custParam && custParam.trim()) {
-      const pairs = custParam.split(',').map(s => s.trim()).filter(Boolean);
-      const seenKH = new Set(), seenDH = new Set();
-      pairs.forEach(pair => {
-        const parts = pair.split('_a_');
-        const kh = (parts[0] || '').trim().replace(/\s+/g, ' ');
-        const dh = (parts[1] || '').trim();
+      const seenKH = new Set();
+      custParam.split(',').map(s => s.trim()).filter(Boolean).forEach(pair => {
+        const kh = (pair.split('_a_')[0] || '').trim().replace(/\s+/g, ' ');
         if (kh && !seenKH.has(kh)) { seenKH.add(kh); khList.push(kh); }
-        if (dh && !seenDH.has(dh)) { seenDH.add(dh); dhList.push(dh); }
       });
     } else {
-      const seenKH = new Set(), seenDH = new Set();
+      const seenKH = new Set();
       allRows.forEach(r => {
         if (r.kh && !seenKH.has(r.kh)) { seenKH.add(r.kh); khList.push(r.kh); }
-        if (r.dh && !seenDH.has(r.dh)) { seenDH.add(r.dh); dhList.push(r.dh); }
       });
     }
 
     buildChips('');
-    buildDHChips();
+    refreshDHList(); // build dhList động từ allRows ban đầu
   }
 
   loadFromURL();
