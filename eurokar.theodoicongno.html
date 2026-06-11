@@ -489,6 +489,23 @@
     }
   }
 
+  function toggleKH(kh) {
+    if (selectedKH.has(kh)) {
+      selectedKH.delete(kh);
+    } else {
+      selectedKH.add(kh);
+    }
+    buildChips('');
+    updateSearchLabel();
+    applyFilter();
+    // Tự động chọn tất cả đơn hàng của các KH đang chọn
+    selectedDH.clear();
+    dhList.forEach(dh => selectedDH.add(dh));
+    buildDHChips();
+    updateDHLabel();
+    applyFilter();
+  }
+
   function toggleAll() {
     if (selectedKH.size === khList.length) {
       selectedKH.clear();
@@ -498,16 +515,11 @@
     buildChips('');
     updateSearchLabel();
     applyFilter();
-  }
-
-  function toggleKH(kh) {
-    if (selectedKH.has(kh)) {
-      selectedKH.delete(kh);
-    } else {
-      selectedKH.add(kh);
-    }
-    buildChips('');
-    updateSearchLabel();
+    // Tự động chọn tất cả đơn hàng
+    selectedDH.clear();
+    dhList.forEach(dh => selectedDH.add(dh));
+    buildDHChips();
+    updateDHLabel();
     applyFilter();
   }
 
