@@ -274,8 +274,9 @@
   .section-title {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
-    padding: 12px 20px;
+    padding: 10px 20px;
     background: #1e3a6e;
     color: #fff;
     font-size: 13px;
@@ -284,9 +285,34 @@
     text-transform: uppercase;
     border-top: 2px solid #ddd;
   }
+  .section-title .sec-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title .sec-stat {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    background: rgba(255,255,255,0.15);
+    border-radius: 6px;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+  .section-title .sec-stat .stat-val {
+    font-weight: 800;
+    font-size: 13px;
+  }
+  .section-title .sec-stat.positive .stat-val { color: #7effa0; }
+  .section-title .sec-stat.negative .stat-val { color: #ffb3b3; }
 
   /* ── BẢNG DATA 2 ── */
   #table2 thead tr { background: #4a4a6a; }
+
+  /* ── ẨN CỘT KH bảng 2 khi đã lọc ── */
+  #table2.hide-kh-col th.col-kh,
+  #table2.hide-kh-col td.col-kh { display: none; }
 
   /* ── FOOTER CHỮ KÝ ── */
   .footer-row {
@@ -334,7 +360,8 @@
     .summary-strip { font-size: 10px; }
     .sum-value { font-size: 12px; }
     .header-info .title { font-size: 16px; }
-    .section-title { font-size: 10px; padding: 8px 12px; }
+    .section-title { font-size: 10px; padding: 6px 12px; }
+    .section-title .sec-stat { font-size: 9px; }
     /* Bảng 1 */
     #table1 th:nth-child(1),  #table1 td:nth-child(1)  { width: 3%; }
     #table1 th:nth-child(2),  #table1 td:nth-child(2)  { width: 8%; }
@@ -425,7 +452,12 @@
   </div>
 
   <!-- TIÊU ĐỀ BẢNG 1 -->
-  <div class="section-title">📋 Chi tiết đơn hàng</div>
+  <div class="section-title" id="sec-title-1">
+    <div class="sec-left">📋 Chi tiết đơn hàng</div>
+    <div class="sec-stat" id="sec1-stat" style="display:none;">
+      Tổng tiền: <span class="stat-val" id="sec1-tongtien">——</span>
+    </div>
+  </div>
 
   <div class="table-wrap">
     <table id="table1">
@@ -456,14 +488,19 @@
   </div>
 
   <!-- TIÊU ĐỀ BẢNG 2 -->
-  <div class="section-title">💳 Lịch sử thanh toán / thu chi</div>
+  <div class="section-title" id="sec-title-2">
+    <div class="sec-left">💳 Thanh toán</div>
+    <div class="sec-stat" id="sec2-stat" style="display:none;">
+      THU − CHI: <span class="stat-val" id="sec2-net">——</span>
+    </div>
+  </div>
 
   <div class="table-wrap">
     <table id="table2">
       <thead>
         <tr>
           <th style="width:40px">TT</th>
-          <th style="min-width:160px" class="left">Khách hàng / Đối tác</th>
+          <th class="col-kh left" style="min-width:160px">Khách hàng / Đối tác</th>
           <th style="min-width:90px">Ngày</th>
           <th style="min-width:110px">Loại phiếu</th>
           <th style="min-width:120px">Số phiếu</th>
@@ -507,16 +544,23 @@
   //
   // URL params bảng 2 (data2):
   //   &data2=KH _a_ Ngay _a_ LoaiPhieu _a_ SoPhieu _a_ SoTien _a_ HinhThuc _b_ ...
+  //   LoaiPhieu phân biệt THU / CHI (so sánh không phân biệt hoa thường)
   // ----------------------------------------------------------------
 
-  let allRows  = [];   // bảng 1
-  let allRows2 = [];   // bảng 2
+  let allRows  = [];
+  let allRows2 = [];
   let khList   = [];
   let activeKH = '';
 
   function fmt(n) {
     const num = parseFloat(n);
     if (isNaN(num) || num === 0) return '—';
+    return num.toLocaleString('vi-VN') + ' đ';
+  }
+  function fmtSigned(n) {
+    // Dùng cho THU-CHI, hiển thị cả số âm
+    const num = parseFloat(n);
+    if (isNaN(num)) return '—';
     return num.toLocaleString('vi-VN') + ' đ';
   }
   function fmtNum(n) {
@@ -551,13 +595,16 @@
 
   // ── RENDER BẢNG 1 ──
   function renderRows(rows) {
-    const tbody   = document.getElementById('table-body');
+    const tbody    = document.getElementById('table-body');
     const inputVal = document.getElementById('kh-input').value.trim();
+    const statBox  = document.getElementById('sec1-stat');
+    const statVal  = document.getElementById('sec1-tongtien');
 
     if (!activeKH && !inputVal) {
       tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
       updateSummary([]);
       updateKhNameBar('');
+      statBox.style.display = 'none';
       return;
     }
 
@@ -566,6 +613,7 @@
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       updateSummary([]);
+      statBox.style.display = 'none';
       return;
     }
 
@@ -605,32 +653,62 @@
     }).join('');
 
     updateSummary(rows);
+
+    // Tổng tiền hiển thị trên section title bảng 1
+    const totalTT = rows.reduce((s, r) => s + r.tongtien, 0);
+    statVal.textContent = fmt(totalTT);
+    statBox.style.display = '';
   }
 
   // ── RENDER BẢNG 2 ──
   function renderRows2(rows) {
-    const tbody = document.getElementById('table2-body');
+    const tbody    = document.getElementById('table2-body');
     const inputVal = document.getElementById('kh-input').value.trim();
+    const table2   = document.getElementById('table2');
+    const statBox  = document.getElementById('sec2-stat');
+    const statNet  = document.getElementById('sec2-net');
+
+    // Ẩn/hiện cột KH theo trạng thái lọc
+    const isFiltered = !!(activeKH || inputVal);
+    table2.classList.toggle('hide-kh-col', isFiltered);
+
+    const colspan = isFiltered ? 6 : 7;
 
     if (!activeKH && !inputVal) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      statBox.style.display = 'none';
       return;
     }
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      statBox.style.display = 'none';
       return;
     }
 
     tbody.innerHTML = rows.map((r, idx) => `<tr>
       <td style="color:#555;font-weight:600">${idx + 1}</td>
-      <td class="left" style="font-size:12px;font-weight:600;">${esc(r.kh) || '—'}</td>
+      <td class="col-kh left" style="font-size:12px;font-weight:600;">${esc(r.kh) || '—'}</td>
       <td style="font-size:12px;">${esc(r.ngay) || '—'}</td>
       <td>${esc(r.loaiphieu) || '—'}</td>
       <td style="font-size:12px;">${esc(r.sophieu) || '—'}</td>
       <td class="num" style="font-weight:700;">${fmt(r.sotien)}</td>
       <td>${esc(r.hinhthuc) || '—'}</td>
     </tr>`).join('');
+
+    // Tính THU - CHI cho section title bảng 2
+    let thu = 0, chi = 0;
+    rows.forEach(r => {
+      const lp = (r.loaiphieu || '').trim().toUpperCase();
+      if (lp === 'THU') thu += r.sotien;
+      else if (lp === 'CHI') chi += r.sotien;
+    });
+    const net = thu - chi;
+    statNet.textContent = fmtSigned(net);
+    statNet.className = 'stat-val' + (net >= 0 ? ' ' : ' '); // reset
+    statBox.className = 'sec-stat' + (net >= 0 ? ' positive' : ' negative');
+    statNet.textContent = fmtSigned(net);
+    statBox.style.display = '';
   }
 
   function updateSummary(rows) {
