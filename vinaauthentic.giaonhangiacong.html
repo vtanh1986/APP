@@ -67,8 +67,7 @@
     margin-top: 3px;
     letter-spacing: 0.3px;
     text-align: center;
-    max-width: 70px;
-    word-break: break-all;
+    white-space: nowrap;
   }
 
   .title {
@@ -198,6 +197,7 @@
       lydo:      p.get('lydo')      || '',
       data:      p.get('data')      || '',
       qrdata:    p.get('qrdata')    || '',
+      nhangiao:  p.get('nhangiao')  || 'Người giao hàng',
       nguoigiao: p.get('nguoigiao') || '',
       thukho:    p.get('thukho')    || '',
       ketoan:    p.get('ketoan')    || '',
@@ -207,7 +207,7 @@
 
   window.addEventListener('DOMContentLoaded', function () {
     const { tieude, ngay, donvi, daidien, dienthoai, lydo,
-            data, qrdata, nguoigiao, thukho, ketoan, giamdoc } = getParams();
+            data, qrdata, nhangiao, nguoigiao, thukho, ketoan, giamdoc } = getParams();
 
     document.getElementById('txt-tieude').textContent = tieude;
     document.title = tieude;
@@ -239,6 +239,7 @@
 
     // --- Tên người ký ---
     document.getElementById('ten-nguoigiao').textContent = nguoigiao;
+    document.getElementById('label-nguoigiao').textContent = nhangiao;
     document.getElementById('ten-thukho').textContent    = thukho;
     document.getElementById('ten-ketoan').textContent    = ketoan;
     document.getElementById('ten-giamdoc').textContent   = giamdoc;
@@ -310,7 +311,7 @@
   <!-- Signatures -->
   <div class="signatures">
     <div class="sig-col">
-      Người giao hàng<br>
+      <span id="label-nguoigiao">Người giao hàng</span><br>
       <span class="sub">(Ký, ghi rõ họ tên)</span>
       <span class="ten-ky" id="ten-nguoigiao"></span>
     </div>
