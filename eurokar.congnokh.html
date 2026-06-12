@@ -415,20 +415,20 @@
   <!-- TỔNG KẾT -->
   <div class="summary-strip">
     <div class="sum-item">
-      <div class="sum-label">Tổng thành tiền</div>
-      <div class="sum-value" id="sum-thanhtien">——</div>
+      <div class="sum-label">Tổng phát sinh</div>
+      <div class="sum-value" id="sum-phatsinh">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Tổng tiền thuế GTGT</div>
-      <div class="sum-value" id="sum-tienthue">——</div>
+      <div class="sum-label">Tổng thanh toán</div>
+      <div class="sum-value" id="sum-thanhtoan">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Tổng tiền (sau thuế)</div>
-      <div class="sum-value" id="sum-tongtien">——</div>
+      <div class="sum-label">Nợ cũ</div>
+      <div class="sum-value" id="sum-nocuu">——</div>
     </div>
     <div class="sum-item">
-      <div class="sum-label">Số dòng</div>
-      <div class="sum-value" id="sum-sodong">——</div>
+      <div class="sum-label">Nợ lũy kế</div>
+      <div class="sum-value" id="sum-noluyka">——</div>
     </div>
   </div>
 
@@ -604,6 +604,7 @@
       tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
       updateSummary([]);
       updateKhNameBar('');
+      document.getElementById('sum-phatsinh').textContent = '——';
       statBox.style.display = 'none';
       return;
     }
@@ -613,6 +614,7 @@
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       updateSummary([]);
+      document.getElementById('sum-phatsinh').textContent = '——';
       statBox.style.display = 'none';
       return;
     }
@@ -677,12 +679,14 @@
     if (!activeKH && !inputVal) {
       tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
       statBox.style.display = 'none';
+      document.getElementById('sum-thanhtoan').textContent = '——';
       return;
     }
 
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       statBox.style.display = 'none';
+      document.getElementById('sum-thanhtoan').textContent = '——';
       return;
     }
 
@@ -696,7 +700,7 @@
       <td>${esc(r.hinhthuc) || '—'}</td>
     </tr>`).join('');
 
-    // Tính THU - CHI cho section title bảng 2
+    // Tính THU - CHI cho section title bảng 2 + summary strip
     let thu = 0, chi = 0;
     rows.forEach(r => {
       const lp = (r.loaiphieu || '').trim().toUpperCase();
@@ -709,19 +713,24 @@
     statBox.className = 'sec-stat' + (net >= 0 ? ' positive' : ' negative');
     statNet.textContent = fmtSigned(net);
     statBox.style.display = '';
+    updateSummaryNet2(net);
   }
 
+  // net2 = THU - CHI từ bảng 2 (được truyền vào sau khi renderRows2 tính xong)
+  let _lastNet2 = null;
+
   function updateSummary(rows) {
-    let sThanhtien = 0, sTienthue = 0, sTongtien = 0;
-    rows.forEach(r => {
-      sThanhtien += r.thanhtien;
-      sTienthue  += r.tienthue;
-      sTongtien  += r.tongtien;
-    });
-    document.getElementById('sum-thanhtien').textContent = rows.length ? fmt(sThanhtien) : '——';
-    document.getElementById('sum-tienthue').textContent  = rows.length ? fmt(sTienthue)  : '——';
-    document.getElementById('sum-tongtien').textContent  = rows.length ? fmt(sTongtien)  : '——';
-    document.getElementById('sum-sodong').textContent    = rows.length ? rows.length + ' dòng' : '——';
+    // Tổng phát sinh = tổng cột tongtien bảng 1
+    const phatsinh = rows.reduce((s, r) => s + r.tongtien, 0);
+    document.getElementById('sum-phatsinh').textContent = rows.length ? fmt(phatsinh) : '——';
+    // sum-thanhtoan cập nhật từ renderRows2 qua updateSummaryNet2()
+    // Nợ cũ: từ URL param no_cu
+    // Nợ lũy kế: từ URL param no_luy_ke
+  }
+
+  function updateSummaryNet2(net) {
+    _lastNet2 = net;
+    document.getElementById('sum-thanhtoan').textContent = fmt(net);
   }
 
   function applyFilter() {
@@ -802,6 +811,14 @@
 
     const ngay = params.get('ngay');
     if (ngay) document.getElementById('meta-ngay').textContent = ngay;
+
+    // Nợ cũ từ URL param no_cu
+    const noCu = params.get('no_cu');
+    document.getElementById('sum-nocuu').textContent = noCu ? fmt(parseNum(noCu)) : '——';
+
+    // Nợ lũy kế từ URL param no_luy_ke
+    const noLuyKe = params.get('no_luy_ke');
+    document.getElementById('sum-noluyka').textContent = noLuyKe ? fmt(parseNum(noLuyKe)) : '——';
 
     // --- Bảng 1 ---
     const raw = params.get('data');
