@@ -270,6 +270,24 @@
   td.left { text-align: left; }
   td.num { font-variant-numeric: tabular-nums; }
 
+  /* ── TIÊU ĐỀ PHÂN ĐOẠN ── */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: #1e3a6e;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-top: 2px solid #ddd;
+  }
+
+  /* ── BẢNG DATA 2 ── */
+  #table2 thead tr { background: #4a4a6a; }
+
   /* ── FOOTER CHỮ KÝ ── */
   .footer-row {
     display: flex;
@@ -316,19 +334,28 @@
     .summary-strip { font-size: 10px; }
     .sum-value { font-size: 12px; }
     .header-info .title { font-size: 16px; }
-    /* Độ rộng cột khi in (12 cột, đã ẩn KH) */
-    table th:nth-child(1),  table td:nth-child(1)  { width: 3%; }   /* TT */
-    table th:nth-child(2),  table td:nth-child(2)  { width: 8%; }   /* Ngày */
-    table th:nth-child(3),  table td:nth-child(3)  { width: 12%; }  /* Đơn hàng */
-    table th:nth-child(4),  table td:nth-child(4)  { width: 8%; }   /* Mã hàng */
-    table th:nth-child(5),  table td:nth-child(5)  { width: 19%; }  /* Tên hàng */
-    table th:nth-child(6),  table td:nth-child(6)  { width: 5%; }   /* ĐVT */
-    table th:nth-child(7),  table td:nth-child(7)  { width: 5%; }   /* SL */
-    table th:nth-child(8),  table td:nth-child(8)  { width: 9%; }   /* Đơn giá */
-    table th:nth-child(9),  table td:nth-child(9)  { width: 9%; }   /* Thành tiền */
-    table th:nth-child(10), table td:nth-child(10) { width: 5%; }   /* % VAT */
-    table th:nth-child(11), table td:nth-child(11) { width: 9%; }   /* Tiền thuế */
-    table th:nth-child(12), table td:nth-child(12) { width: 9%; }   /* Tổng tiền */
+    .section-title { font-size: 10px; padding: 8px 12px; }
+    /* Bảng 1 */
+    #table1 th:nth-child(1),  #table1 td:nth-child(1)  { width: 3%; }
+    #table1 th:nth-child(2),  #table1 td:nth-child(2)  { width: 8%; }
+    #table1 th:nth-child(3),  #table1 td:nth-child(3)  { width: 12%; }
+    #table1 th:nth-child(4),  #table1 td:nth-child(4)  { width: 8%; }
+    #table1 th:nth-child(5),  #table1 td:nth-child(5)  { width: 19%; }
+    #table1 th:nth-child(6),  #table1 td:nth-child(6)  { width: 5%; }
+    #table1 th:nth-child(7),  #table1 td:nth-child(7)  { width: 5%; }
+    #table1 th:nth-child(8),  #table1 td:nth-child(8)  { width: 9%; }
+    #table1 th:nth-child(9),  #table1 td:nth-child(9)  { width: 9%; }
+    #table1 th:nth-child(10), #table1 td:nth-child(10) { width: 5%; }
+    #table1 th:nth-child(11), #table1 td:nth-child(11) { width: 9%; }
+    #table1 th:nth-child(12), #table1 td:nth-child(12) { width: 9%; }
+    /* Bảng 2 */
+    #table2 th:nth-child(1), #table2 td:nth-child(1) { width: 4%; }
+    #table2 th:nth-child(2), #table2 td:nth-child(2) { width: 22%; }
+    #table2 th:nth-child(3), #table2 td:nth-child(3) { width: 12%; }
+    #table2 th:nth-child(4), #table2 td:nth-child(4) { width: 14%; }
+    #table2 th:nth-child(5), #table2 td:nth-child(5) { width: 14%; }
+    #table2 th:nth-child(6), #table2 td:nth-child(6) { width: 18%; }
+    #table2 th:nth-child(7), #table2 td:nth-child(7) { width: 16%; }
   }
   @media (max-width: 640px) {
     .summary-strip { grid-template-columns: repeat(2, 1fr); }
@@ -397,8 +424,11 @@
     <span class="kh-name-value" id="kh-name-value"></span>
   </div>
 
+  <!-- TIÊU ĐỀ BẢNG 1 -->
+  <div class="section-title">📋 Chi tiết đơn hàng</div>
+
   <div class="table-wrap">
-    <table>
+    <table id="table1">
       <thead>
         <tr>
           <th style="width:40px">TT</th>
@@ -416,8 +446,34 @@
         </tr>
       </thead>
       <tbody id="table-body">
-        <tr id="placeholder-row">
+        <tr>
           <td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
+            Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TIÊU ĐỀ BẢNG 2 -->
+  <div class="section-title">💳 Lịch sử thanh toán / thu chi</div>
+
+  <div class="table-wrap">
+    <table id="table2">
+      <thead>
+        <tr>
+          <th style="width:40px">TT</th>
+          <th style="min-width:160px" class="left">Khách hàng / Đối tác</th>
+          <th style="min-width:90px">Ngày</th>
+          <th style="min-width:110px">Loại phiếu</th>
+          <th style="min-width:120px">Số phiếu</th>
+          <th style="min-width:120px">Số tiền</th>
+          <th style="min-width:110px">Hình thức</th>
+        </tr>
+      </thead>
+      <tbody id="table2-body">
+        <tr>
+          <td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
             Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
           </td>
         </tr>
@@ -445,26 +501,17 @@
 
 <script>
   // ----------------------------------------------------------------
-  // URL params:
+  // URL params bảng 1 (data):
   //   ?ngay=04/06/26
-  //   &data=KH _a_ DH _a_ MaHang _a_ TenHang _a_ DVT _a_ SL _a_ DonGia _a_ ThanhTien _a_ VAT _a_ TienThue _a_ TongTien _b_ ...
+  //   &data=KH _a_ Ngay _a_ DH _a_ MaHang _a_ TenHang _a_ DVT _a_ SL _a_ DonGia _a_ ThanhTien _a_ VAT _a_ TienThue _a_ TongTien _b_ ...
   //
-  // Thứ tự cột (index):
-  //   0: KH (Khách hàng/Đối tác)
-  //   1: DH (Đơn hàng)
-  //   2: MaHang
-  //   3: TenHang
-  //   4: DVT
-  //   5: SL
-  //   6: DonGia
-  //   7: ThanhTien
-  //   8: VAT (%)
-  //   9: TienThue
-  //  10: TongTien
+  // URL params bảng 2 (data2):
+  //   &data2=KH _a_ Ngay _a_ LoaiPhieu _a_ SoPhieu _a_ SoTien _a_ HinhThuc _b_ ...
   // ----------------------------------------------------------------
 
-  let allRows = [];
-  let khList  = [];
+  let allRows  = [];   // bảng 1
+  let allRows2 = [];   // bảng 2
+  let khList   = [];
   let activeKH = '';
 
   function fmt(n) {
@@ -502,9 +549,9 @@
     }
   }
 
-  // ── RENDER ──
+  // ── RENDER BẢNG 1 ──
   function renderRows(rows) {
-    const tbody = document.getElementById('table-body');
+    const tbody   = document.getElementById('table-body');
     const inputVal = document.getElementById('kh-input').value.trim();
 
     if (!activeKH && !inputVal) {
@@ -522,8 +569,7 @@
       return;
     }
 
-    // Tính rowspan cho các nhóm "Đơn hàng" liên tiếp giống nhau
-    // (gộp luôn cột "Ngày" theo nhóm "Đơn hàng")
+    // Rowspan theo nhóm đơn hàng
     const groupStart = new Array(rows.length).fill(false);
     const groupSpan  = new Array(rows.length).fill(1);
     let i = 0;
@@ -542,24 +588,49 @@
       const dhCell = groupStart[idx]
         ? `<td style="font-size:12px;" rowspan="${groupSpan[idx]}">${esc(r.dh) || '—'}</td>`
         : '';
-
       return `<tr>
-      <td style="color:#555;font-weight:600">${idx + 1}</td>
-      ${ngayCell}
-      ${dhCell}
-      <td style="font-size:12px;">${esc(r.mahang) || '—'}</td>
-      <td class="left" style="font-size:12px;">${esc(r.tenhang) || '—'}</td>
-      <td>${esc(r.dvt) || '—'}</td>
-      <td class="num">${fmtNum(r.sl)}</td>
-      <td class="num">${fmt(r.dongia)}</td>
-      <td class="num">${fmt(r.thanhtien)}</td>
-      <td>${fmtVat(r.vat)}</td>
-      <td class="num">${fmt(r.tienthue)}</td>
-      <td class="num" style="font-weight:700;">${fmt(r.tongtien)}</td>
-    </tr>`;
+        <td style="color:#555;font-weight:600">${idx + 1}</td>
+        ${ngayCell}
+        ${dhCell}
+        <td style="font-size:12px;">${esc(r.mahang) || '—'}</td>
+        <td class="left" style="font-size:12px;">${esc(r.tenhang) || '—'}</td>
+        <td>${esc(r.dvt) || '—'}</td>
+        <td class="num">${fmtNum(r.sl)}</td>
+        <td class="num">${fmt(r.dongia)}</td>
+        <td class="num">${fmt(r.thanhtien)}</td>
+        <td>${fmtVat(r.vat)}</td>
+        <td class="num">${fmt(r.tienthue)}</td>
+        <td class="num" style="font-weight:700;">${fmt(r.tongtien)}</td>
+      </tr>`;
     }).join('');
 
     updateSummary(rows);
+  }
+
+  // ── RENDER BẢNG 2 ──
+  function renderRows2(rows) {
+    const tbody = document.getElementById('table2-body');
+    const inputVal = document.getElementById('kh-input').value.trim();
+
+    if (!activeKH && !inputVal) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
+      return;
+    }
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map((r, idx) => `<tr>
+      <td style="color:#555;font-weight:600">${idx + 1}</td>
+      <td class="left" style="font-size:12px;font-weight:600;">${esc(r.kh) || '—'}</td>
+      <td style="font-size:12px;">${esc(r.ngay) || '—'}</td>
+      <td>${esc(r.loaiphieu) || '—'}</td>
+      <td style="font-size:12px;">${esc(r.sophieu) || '—'}</td>
+      <td class="num" style="font-weight:700;">${fmt(r.sotien)}</td>
+      <td>${esc(r.hinhthuc) || '—'}</td>
+    </tr>`).join('');
   }
 
   function updateSummary(rows) {
@@ -577,17 +648,26 @@
 
   function applyFilter() {
     const input = document.getElementById('kh-input').value.trim().toLowerCase();
-    let filtered;
+
+    let filtered1, filtered2;
     if (activeKH) {
-      filtered = allRows.filter(r => r.kh === activeKH);
+      filtered1 = allRows.filter(r => r.kh === activeKH);
+      filtered2 = allRows2.filter(r => r.kh === activeKH);
     } else if (input) {
-      filtered = allRows.filter(r => r.kh.toLowerCase().includes(input));
+      filtered1 = allRows.filter(r => r.kh.toLowerCase().includes(input));
+      filtered2 = allRows2.filter(r => r.kh.toLowerCase().includes(input));
     } else {
-      filtered = [];
+      filtered1 = [];
+      filtered2 = [];
     }
-    renderRows(filtered);
+
+    renderRows(filtered1);
+    renderRows2(filtered2);
+
     const count = document.getElementById('filter-count');
-    count.textContent = (activeKH || input) && filtered.length ? `${filtered.length} dòng` : '';
+    count.textContent = (activeKH || input) && (filtered1.length || filtered2.length)
+      ? `${filtered1.length} dòng hàng · ${filtered2.length} phiếu`
+      : '';
   }
 
   // ── COMBO DROPDOWN ──
@@ -645,33 +725,49 @@
     const ngay = params.get('ngay');
     if (ngay) document.getElementById('meta-ngay').textContent = ngay;
 
+    // --- Bảng 1 ---
     const raw = params.get('data');
-    if (!raw || raw.trim() === '') return;
+    if (raw && raw.trim() !== '') {
+      const rowStrings = raw.split('_b_').filter(r => r.trim() !== '');
+      allRows = rowStrings.map(rowStr => {
+        const c = rowStr.split('_a_');
+        return {
+          kh:        (c[0]  || '').trim().replace(/\s+/g, ' '),
+          ngay:      c[1]  || '',
+          dh:        c[2]  || '',
+          mahang:    c[3]  || '',
+          tenhang:   c[4]  || '',
+          dvt:       c[5]  || '',
+          sl:        parseNum(c[6]),
+          dongia:    parseNum(c[7]),
+          thanhtien: parseNum(c[8]),
+          vat:       parseNum(c[9]),
+          tienthue:  parseNum(c[10]),
+          tongtien:  parseNum(c[11]),
+        };
+      });
+    }
 
-    const rowStrings = raw.split('_b_').filter(r => r.trim() !== '');
-    if (!rowStrings.length) return;
+    // --- Bảng 2 ---
+    const raw2 = params.get('data2');
+    if (raw2 && raw2.trim() !== '') {
+      const rowStrings2 = raw2.split('_b_').filter(r => r.trim() !== '');
+      allRows2 = rowStrings2.map(rowStr => {
+        const c = rowStr.split('_a_');
+        return {
+          kh:        (c[0] || '').trim().replace(/\s+/g, ' '),
+          ngay:      c[1] || '',
+          loaiphieu: c[2] || '',
+          sophieu:   c[3] || '',
+          sotien:    parseNum(c[4]),
+          hinhthuc:  c[5] || '',
+        };
+      });
+    }
 
-    allRows = rowStrings.map(rowStr => {
-      const c = rowStr.split('_a_');
-      return {
-        kh:        (c[0]  || '').trim().replace(/\s+/g, ' '),
-        ngay:      c[1]  || '',
-        dh:        c[2]  || '',
-        mahang:    c[3]  || '',
-        tenhang:   c[4]  || '',
-        dvt:       c[5]  || '',
-        sl:        parseNum(c[6]),
-        dongia:    parseNum(c[7]),
-        thanhtien: parseNum(c[8]),
-        vat:       parseNum(c[9]),
-        tienthue:  parseNum(c[10]),
-        tongtien:  parseNum(c[11]),
-      };
-    });
-
-    // Deduplicate danh sách KH
+    // Build danh sách KH từ cả 2 nguồn, không trùng
     const seen = new Set();
-    allRows.forEach(r => {
+    [...allRows, ...allRows2].forEach(r => {
       if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
     });
   }
