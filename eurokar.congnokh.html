@@ -129,7 +129,7 @@
     background: #f7f7f7;
     border: 1.5px solid #ccc;
     border-radius: 6px;
-    padding: 5px 10px;
+    padding: 5px 28px 5px 10px;
     font-family: 'Be Vietnam Pro', sans-serif;
     font-size: 15px;
     font-weight: 700;
@@ -141,6 +141,22 @@
   }
   .sum-input:focus { border-color: #1e3a6e; background: #fff; }
   .sum-input::placeholder { color: #bbb; font-weight: 400; font-size: 13px; }
+  .sum-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-top: 2px;
+  }
+  .sum-input-wrap .sum-input { margin-top: 0; }
+  .sum-input-suffix {
+    position: absolute;
+    right: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    pointer-events: none;
+    user-select: none;
+  }
   @media print { .sum-input { border: none; background: transparent; } }
 
   /* ── BỘ LỌC ── */
@@ -448,8 +464,11 @@
     </div>
     <div class="sum-item">
       <div class="sum-label">Nợ lũy kế</div>
-      <input class="sum-input" id="sum-noluyka-input" type="text" inputmode="numeric"
-        placeholder="Nhập số..." oninput="onNoLuyKeInput()" />
+      <div class="sum-input-wrap">
+        <input class="sum-input" id="sum-noluyka-input" type="text" inputmode="numeric"
+          placeholder="0" oninput="onNoLuyKeInput()" />
+        <span class="sum-input-suffix">đ</span>
+      </div>
     </div>
   </div>
 
