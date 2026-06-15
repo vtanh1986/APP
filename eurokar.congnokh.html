@@ -485,7 +485,7 @@
     <span class="filter-count" id="filter-count"></span>
   </div>
 
-  <!-- TÊN KHÁCH HÀNG -->
+  <!-- TÊN KHÁCH HÀNG (chỉ hiện khi đang lọc 1 KH cụ thể) -->
   <div class="kh-name-bar" id="kh-name-bar" style="display:none;">
     <span class="kh-name-label">Khách hàng / Đối tác:</span>
     <span class="kh-name-value" id="kh-name-value"></span>
@@ -520,7 +520,7 @@
       <tbody id="table-body">
         <tr>
           <td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
-            Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
+            Đang tải dữ liệu...
           </td>
         </tr>
       </tbody>
@@ -551,7 +551,7 @@
       <tbody id="table2-body">
         <tr>
           <td colspan="7" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">
-            Vui lòng chọn khách hàng / đối tác để xem dữ liệu.
+            Đang tải dữ liệu...
           </td>
         </tr>
       </tbody>
@@ -624,7 +624,8 @@
   function updateKhNameBar(name) {
     const bar = document.getElementById('kh-name-bar');
     const val = document.getElementById('kh-name-value');
-    if (name) {
+    // Chỉ hiện khi lọc 1 KH cụ thể (activeKH), không hiện khi xem tất cả
+    if (name && activeKH) {
       val.textContent = name;
       bar.style.display = 'flex';
     } else {
@@ -634,22 +635,9 @@
 
   // ── RENDER BẢNG 1 ──
   function renderRows(rows) {
-    const tbody    = document.getElementById('table-body');
-    const inputVal = document.getElementById('kh-input').value.trim();
-    const statBox  = document.getElementById('sec1-stat');
-    const statVal  = document.getElementById('sec1-tongtien');
-
-    if (!activeKH && !inputVal) {
-      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
-      _phatsinh = 0;
-      document.getElementById('sum-phatsinh').textContent = '——';
-      updateKhNameBar('');
-      statBox.style.display = 'none';
-      recalcNoCuu();
-      return;
-    }
-
-    updateKhNameBar(activeKH || inputVal);
+    const tbody   = document.getElementById('table-body');
+    const statBox = document.getElementById('sec1-stat');
+    const statVal = document.getElementById('sec1-tongtien');
 
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
@@ -657,8 +645,11 @@
       document.getElementById('sum-phatsinh').textContent = '——';
       statBox.style.display = 'none';
       recalcNoCuu();
+      updateKhNameBar('');
       return;
     }
+
+    updateKhNameBar(activeKH);
 
     // Rowspan theo nhóm đơn hàng
     const groupStart = new Array(rows.length).fill(false);
@@ -666,7 +657,7 @@
     let i = 0;
     while (i < rows.length) {
       let j = i + 1;
-      while (j < rows.length && rows[j].dh === rows[i].dh) j++;
+      while (j < rows.length && rows[j].dh === rows[i].dh && rows[j].kh === rows[i].kh) j++;
       groupStart[i] = true;
       groupSpan[i]  = j - i;
       i = j;
@@ -704,28 +695,22 @@
 
   // ── RENDER BẢNG 2 ──
   function renderRows2(rows) {
-    const tbody    = document.getElementById('table2-body');
-    const inputVal = document.getElementById('kh-input').value.trim();
-    const table2   = document.getElementById('table2');
-    const statBox  = document.getElementById('sec2-stat');
-    const statNet  = document.getElementById('sec2-net');
+    const tbody   = document.getElementById('table2-body');
+    const table2  = document.getElementById('table2');
+    const statBox = document.getElementById('sec2-stat');
+    const statNet = document.getElementById('sec2-net');
 
-    const isFiltered = !!(activeKH || inputVal);
-    table2.classList.toggle('hide-kh-col', isFiltered);
+    // Ẩn cột KH chỉ khi đang lọc theo 1 KH cụ thể
+    table2.classList.toggle('hide-kh-col', !!activeKH);
 
-    const colspan = isFiltered ? 6 : 7;
-
-    if (!activeKH && !inputVal) {
-      tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Vui lòng chọn khách hàng / đối tác để xem dữ liệu.</td></tr>`;
-      statBox.style.display = 'none';
-      document.getElementById('sum-thanhtoan').textContent = '——';
-      return;
-    }
+    const colspan = activeKH ? 6 : 7;
 
     if (!rows.length) {
       tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center;padding:36px;color:#aaa;font-style:italic;">Không có dữ liệu phù hợp.</td></tr>`;
       statBox.style.display = 'none';
       document.getElementById('sum-thanhtoan').textContent = '——';
+      _thanhtoan = 0;
+      recalcNoCuu();
       return;
     }
 
@@ -792,28 +777,35 @@
     recalcNoCuu();
   }
 
+  // ── LỌC & RENDER ──
   function applyFilter() {
     const input = document.getElementById('kh-input').value.trim().toLowerCase();
 
     let filtered1, filtered2;
+
     if (activeKH) {
+      // Lọc chính xác theo KH được chọn
       filtered1 = allRows.filter(r => r.kh === activeKH);
       filtered2 = allRows2.filter(r => r.kh === activeKH);
     } else if (input) {
+      // Tìm kiếm gần đúng theo text nhập
       filtered1 = allRows.filter(r => r.kh.toLowerCase().includes(input));
       filtered2 = allRows2.filter(r => r.kh.toLowerCase().includes(input));
     } else {
-      filtered1 = [];
-      filtered2 = [];
+      // Không lọc → hiện tất cả
+      filtered1 = allRows;
+      filtered2 = allRows2;
     }
 
     renderRows(filtered1);
     renderRows2(filtered2);
 
     const count = document.getElementById('filter-count');
-    count.textContent = (activeKH || input) && (filtered1.length || filtered2.length)
-      ? `${filtered1.length} dòng hàng · ${filtered2.length} phiếu`
-      : '';
+    if (activeKH || input) {
+      count.textContent = `${filtered1.length} dòng hàng · ${filtered2.length} phiếu`;
+    } else {
+      count.textContent = `${allRows.length} dòng hàng · ${allRows2.length} phiếu (tất cả)`;
+    }
   }
 
   // ── COMBO DROPDOWN ──
@@ -825,7 +817,7 @@
     if (!matches.length) {
       dd.innerHTML = `<div class="combo-option no-result">Không tìm thấy kết quả</div>`;
     } else {
-      dd.innerHTML = `<div class="combo-option" data-val="" onclick="selectKH(this)">— Tất cả —</div>`
+      dd.innerHTML = `<div class="combo-option" data-val="" onclick="selectKH(this)">— Tất cả khách hàng —</div>`
         + matches.map(k =>
           `<div class="combo-option${k === activeKH ? ' active' : ''}" data-val="${esc(k)}" onclick="selectKH(this)">${esc(k)}</div>`
         ).join('');
@@ -866,7 +858,6 @@
 
   // ── LOAD TỪ URL ──
   function loadFromURL() {
-    // Reset toàn bộ trạng thái
     allRows  = [];
     allRows2 = [];
     khList   = [];
@@ -922,8 +913,10 @@
       if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
     });
 
-    // Populate dropdown ngay khi load xong (bảng vẫn rỗng cho đến khi chọn)
     buildDropdown('');
+
+    // ── HIỆN TOÀN BỘ DATA NGAY KHI LOAD ──
+    applyFilter();
   }
 
   loadFromURL();
