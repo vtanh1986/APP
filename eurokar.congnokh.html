@@ -598,7 +598,6 @@
     return num.toLocaleString('vi-VN') + ' đ';
   }
   function fmtSigned(n) {
-    // Dùng cho THU-CHI, hiển thị cả số âm
     const num = parseFloat(n);
     if (isNaN(num)) return '—';
     return num.toLocaleString('vi-VN') + ' đ';
@@ -645,7 +644,6 @@
       _phatsinh = 0;
       document.getElementById('sum-phatsinh').textContent = '——';
       updateKhNameBar('');
-      document.getElementById('sum-phatsinh').textContent = '——';
       statBox.style.display = 'none';
       recalcNoCuu();
       return;
@@ -699,7 +697,6 @@
 
     updateSummary(rows);
 
-    // Tổng tiền hiển thị trên section title bảng 1
     const totalTT = rows.reduce((s, r) => s + r.tongtien, 0);
     statVal.textContent = fmt(totalTT);
     statBox.style.display = '';
@@ -713,7 +710,6 @@
     const statBox  = document.getElementById('sec2-stat');
     const statNet  = document.getElementById('sec2-net');
 
-    // Ẩn/hiện cột KH theo trạng thái lọc
     const isFiltered = !!(activeKH || inputVal);
     table2.classList.toggle('hide-kh-col', isFiltered);
 
@@ -743,7 +739,6 @@
       <td>${esc(r.hinhthuc) || '—'}</td>
     </tr>`).join('');
 
-    // Tính THU - CHI cho section title bảng 2 + summary strip
     let thu = 0, chi = 0;
     rows.forEach(r => {
       const lp = (r.loaiphieu || '').trim().toUpperCase();
@@ -751,8 +746,6 @@
       else if (lp === 'CHI') chi += r.sotien;
     });
     const net = thu - chi;
-    statNet.textContent = fmtSigned(net);
-    statNet.className = 'stat-val' + (net >= 0 ? ' ' : ' '); // reset
     statBox.className = 'sec-stat' + (net >= 0 ? ' positive' : ' negative');
     statNet.textContent = fmtSigned(net);
     statBox.style.display = '';
@@ -760,16 +753,14 @@
   }
 
   // ── BIẾN TRUNG GIAN ──
-  let _phatsinh  = 0;   // tổng tongtien bảng 1
-  let _thanhtoan = 0;   // THU - CHI bảng 2
+  let _phatsinh  = 0;
+  let _thanhtoan = 0;
 
-  // Đọc Nợ lũy kế từ input (cho phép dấu chấm/phẩy phân cách)
   function getNoLuyKe() {
     const raw = document.getElementById('sum-noluyka-input').value;
     return parseNum(raw);
   }
 
-  // Tính lại Nợ cũ = Nợ lũy kế + Tổng thanh toán - Tổng phát sinh
   function recalcNoCuu() {
     const noLuyKe = getNoLuyKe();
     const noCuu   = noLuyKe + _thanhtoan - _phatsinh;
@@ -779,13 +770,11 @@
     el.style.color = noCuu < 0 ? '#c0392b' : '#000';
   }
 
-  // Format dấu chấm phân cách nghìn khi gõ vào input Nợ lũy kế
   function onNoLuyKeInput() {
     const input = document.getElementById('sum-noluyka-input');
     const raw = input.value.replace(/\./g, '').replace(/[^\d]/g, '');
     if (raw === '') { input.value = ''; recalcNoCuu(); return; }
     const num = parseInt(raw, 10);
-    // Giữ con trỏ cuối
     input.value = num.toLocaleString('vi-VN');
     recalcNoCuu();
   }
@@ -836,7 +825,7 @@
     if (!matches.length) {
       dd.innerHTML = `<div class="combo-option no-result">Không tìm thấy kết quả</div>`;
     } else {
-      dd.innerHTML = (q ? '' : `<div class="combo-option" data-val="" onclick="selectKH(this)">— Tất cả —</div>`)
+      dd.innerHTML = `<div class="combo-option" data-val="" onclick="selectKH(this)">— Tất cả —</div>`
         + matches.map(k =>
           `<div class="combo-option${k === activeKH ? ' active' : ''}" data-val="${esc(k)}" onclick="selectKH(this)">${esc(k)}</div>`
         ).join('');
@@ -877,6 +866,11 @@
 
   // ── LOAD TỪ URL ──
   function loadFromURL() {
+    // Reset toàn bộ trạng thái
+    allRows  = [];
+    allRows2 = [];
+    khList   = [];
+
     const params = new URLSearchParams(window.location.search);
 
     const ngay = params.get('ngay');
@@ -927,6 +921,9 @@
     [...allRows, ...allRows2].forEach(r => {
       if (r.kh && !seen.has(r.kh)) { seen.add(r.kh); khList.push(r.kh); }
     });
+
+    // Populate dropdown ngay khi load xong (bảng vẫn rỗng cho đến khi chọn)
+    buildDropdown('');
   }
 
   loadFromURL();
