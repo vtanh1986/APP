@@ -497,7 +497,8 @@
   }
   function parseNum(s) {
     if (!s) return 0;
-    return parseFloat(s.toString().replace(/[^\d.-]/g, '')) || 0;
+    // Xóa dấu . phân nghìn kiểu vi-VN trước khi parse
+    return parseFloat(s.toString().replace(/\./g, '').replace(/[^\d-]/g, '')) || 0;
   }
   function esc(s) {
     return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
