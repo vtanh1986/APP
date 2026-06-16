@@ -641,6 +641,15 @@
       document.getElementById('kh-name-bar').style.display = 'flex';
     }
 
+    // Nợ lũy kế
+    const noLuyKe = params.get('noluyka');
+    if (noLuyKe && noLuyKe.trim()) {
+      const num = parseNum(noLuyKe);
+      if (!isNaN(num) && num !== 0) {
+        document.getElementById('sum-noluyka-input').value = num.toLocaleString('vi-VN');
+      }
+    }
+
     // --- Bảng 1 ---
     const rows1 = [];
     const raw = params.get('data');
