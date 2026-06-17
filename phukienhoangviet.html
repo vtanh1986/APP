@@ -486,6 +486,7 @@
 
         const noCuu      = parseInt(g('nocuu'))       || 0;
         const daTT       = parseInt(g('dathanhtoan')) || 0;
+        const chietKhau  = parseInt(g('chietkhau'))   || 0;
         const rawGhiChu  = g('ghichu') || g('noidungchietkhau');
         const ghiChuText = (rawGhiChu && rawGhiChu !== 'null') ? decodeURIComponent(rawGhiChu).trim() : '';
 
@@ -522,8 +523,7 @@
         });
 
         if (stt > 0) {
-            const tongCong   = tongTien + noCuu;
-            const noHienTai  = tongCong - daTT;
+            const noHienTai  = tongTien + noCuu - daTT;
 
             const addRow = (label, value, cls = '') => {
                 const tr = document.createElement('tr');
@@ -534,7 +534,7 @@
 
             addRow('Tổng tiền hàng', tongTien, 'first-summary');
             addRow('Nợ cũ',          noCuu);
-            addRow('Tổng cộng',      tongCong);
+            addRow('Chiết khấu',     chietKhau);
             addRow('Đã thanh toán',  daTT);
             addRow('Nợ hiện tại',    noHienTai, 'highlight');
 
