@@ -249,7 +249,7 @@
   </div>
 
   <div class="bottom-note editable" contenteditable="true">
-    <span data-thu="Đã nhận đủ số tiền" data-chi="Đã chi đủ số tiền"></span> (viết bằng chữ): ...................................................................................
+    <span data-thu="Đã nhận đủ số tiền" data-chi="Đã chi đủ số tiền"></span> (viết bằng chữ): <span id="f-vietbangchu-2"></span>
   </div>
 </div>
 
@@ -352,9 +352,10 @@ function applyFieldValues(params) {
 
 function updateVietBangChu() {
   const sotienEl = document.getElementById('f-sotien');
-  const vietbangchuEl = document.getElementById('f-vietbangchu');
   const amount = parseAmount(sotienEl.textContent);
-  vietbangchuEl.textContent = amount !== null ? docSoTien(amount) : "";
+  const text = amount !== null ? docSoTien(amount) : "";
+  document.getElementById('f-vietbangchu').textContent = text;
+  document.getElementById('f-vietbangchu-2').textContent = text;
 }
 
 function clearAll() {
