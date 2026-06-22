@@ -519,8 +519,8 @@
                     const cols = trimmedRow.split('_a_').map(c => c.trim());
                     if (cols.length >= 3) {
                         const tenHang   = cols[0].replace(/_c_([^_]*)/g, '<br><s>$1</s>');
-                        const soLuong   = parseNum(cols[1]) || 0;
-                        const donGia    = parseNum(cols[2]) || 0;
+                        const donGia    = parseNum(cols[1]) || 0;
+                        const soLuong   = parseNum(cols[2]) || 0;
                         const productKey = `${cols[0]}_${donGia}`;
                         if (productMap.has(productKey)) {
                             const p = productMap.get(productKey);
