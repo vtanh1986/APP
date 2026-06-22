@@ -126,8 +126,8 @@
 
         th.col-tt     { width: 22px;  text-align: center; }
         th.col-name   { text-align: center; }
+        th.col-dongia { width: 70px;  text-align: right; }
         th.col-sl     { width: 40px;  text-align: center; }
-        th.col-dongia { width: 64px;  text-align: right; }
         th.col-tt2    { width: 80px;  text-align: center; }
 
         tr.item-row-1 td {
@@ -151,6 +151,7 @@
 
         tr.item-row-1 td.cell-dongia {
             text-align: right;
+            font-weight: 400;
             color: #555;
             white-space: nowrap;
         }
@@ -328,8 +329,8 @@
                 <tr>
                     <th class="col-tt">TT</th>
                     <th class="col-name">Tên hàng</th>
-                    <th class="col-sl">SL</th>
                     <th class="col-dongia">Đơn giá</th>
+                    <th class="col-sl">SL</th>
                     <th class="col-tt2">Thành tiền</th>
                 </tr>
             </thead>
@@ -338,15 +339,15 @@
                 <tr class="item-row-1">
                     <td class="cell-tt">1</td>
                     <td class="cell-name">Cà phê đen</td>
+                    <td class="cell-dongia">25.000đ</td>
                     <td class="cell-sl">2</td>
-                    <td class="cell-dongia">25.000</td>
                     <td class="cell-sub-total">50,000đ</td>
                 </tr>
                 <tr class="item-row-1">
                     <td class="cell-tt">2</td>
                     <td class="cell-name">Cà phê sữa</td>
+                    <td class="cell-dongia">30.000đ</td>
                     <td class="cell-sl">1</td>
-                    <td class="cell-dongia">30.000</td>
                     <td class="cell-sub-total">30,000đ</td>
                 </tr>
             </tbody>
@@ -541,8 +542,8 @@
                 tr1.innerHTML = `
                     <td class="cell-tt">${stt}</td>
                     <td class="cell-name">${product.tenHang}</td>
+                    <td class="cell-dongia">${fmtTien(product.donGia)}đ</td>
                     <td class="cell-sl">${fmtSL(product.soLuong)}</td>
-                    <td class="cell-dongia">${fmtTien(product.donGia)}</td>
                     <td class="cell-sub-total">${fmtTien(product.thanhTien)}đ</td>
                 `;
                 tableBody.appendChild(tr1);
