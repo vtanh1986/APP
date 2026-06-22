@@ -106,7 +106,7 @@
         .info-label { font-weight: bold; color: #333; }
         .info-value { color: #666; }
         
-        /* ===== TABLE - layout 2 dòng cho mỗi sản phẩm ===== */
+        /* ===== TABLE - mỗi sản phẩm 1 dòng, có cột Đơn giá / SL riêng ===== */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -124,20 +124,22 @@
             white-space: nowrap;
         }
 
-        th.col-tt   { width: 22px;  text-align: center; }
-        th.col-name { text-align: center; }
-        th.col-tt2  { width: 80px;  text-align: center; }
+        th.col-tt     { width: 22px;  text-align: center; }
+        th.col-name   { text-align: center; }
+        th.col-dongia { width: 64px;  text-align: right; }
+        th.col-sl     { width: 40px;  text-align: center; }
+        th.col-tt2    { width: 80px;  text-align: center; }
 
         tr.item-row-1 td {
-            padding: 5px 4px 0px 4px;
+            padding: 5px 4px;
             font-size: 13px;
-            border-bottom: none;
+            border-bottom: 1px solid #e8e8e8;
+            vertical-align: top;
         }
 
         tr.item-row-1 td.cell-tt {
             text-align: center;
             font-weight: bold;
-            vertical-align: top;
             width: 22px;
         }
 
@@ -147,26 +149,19 @@
             font-weight: 500;
         }
 
-        tr.item-row-1 td.cell-sub-total {
+        tr.item-row-1 td.cell-dongia {
             text-align: right;
-            font-weight: 600;
-            color: #222;
-            white-space: nowrap;
-            vertical-align: top;
-        }
-
-        tr.item-row-2 td {
-            padding: 0px 4px 5px 4px;
-            font-size: 13px;
-            border-bottom: 1px solid #e8e8e8;
             color: #555;
+            white-space: nowrap;
         }
 
-        tr.item-row-2 td.cell-sub-sl {
-            text-align: left;
+        tr.item-row-1 td.cell-sl {
+            text-align: center;
+            color: #555;
+            white-space: nowrap;
         }
 
-        tr.item-row-2 td.cell-sub-total {
+        tr.item-row-1 td.cell-sub-total {
             text-align: right;
             font-weight: 600;
             color: #222;
@@ -333,6 +328,8 @@
                 <tr>
                     <th class="col-tt">TT</th>
                     <th class="col-name">Tên hàng</th>
+                    <th class="col-dongia">Đơn giá</th>
+                    <th class="col-sl">SL</th>
                     <th class="col-tt2">Thành tiền</th>
                 </tr>
             </thead>
@@ -341,20 +338,16 @@
                 <tr class="item-row-1">
                     <td class="cell-tt">1</td>
                     <td class="cell-name">Cà phê đen</td>
+                    <td class="cell-dongia">25.000</td>
+                    <td class="cell-sl">2</td>
                     <td class="cell-sub-total">50,000đ</td>
-                </tr>
-                <tr class="item-row-2">
-                    <td></td>
-                    <td class="cell-sub-sl" colspan="2">25,000 x 2.00</td>
                 </tr>
                 <tr class="item-row-1">
                     <td class="cell-tt">2</td>
                     <td class="cell-name">Cà phê sữa</td>
+                    <td class="cell-dongia">30.000</td>
+                    <td class="cell-sl">1</td>
                     <td class="cell-sub-total">30,000đ</td>
-                </tr>
-                <tr class="item-row-2">
-                    <td></td>
-                    <td class="cell-sub-sl" colspan="2">30,000 x 1.00</td>
                 </tr>
             </tbody>
         </table>
@@ -548,17 +541,11 @@
                 tr1.innerHTML = `
                     <td class="cell-tt">${stt}</td>
                     <td class="cell-name">${product.tenHang}</td>
+                    <td class="cell-dongia">${fmtTien(product.donGia)}</td>
+                    <td class="cell-sl">${fmtSL(product.soLuong)}</td>
                     <td class="cell-sub-total">${fmtTien(product.thanhTien)}đ</td>
                 `;
                 tableBody.appendChild(tr1);
-
-                const tr2 = document.createElement('tr');
-                tr2.className = 'item-row-2';
-                tr2.innerHTML = `
-                    <td></td>
-                    <td class="cell-sub-sl" colspan="2">${fmtTien(product.donGia)} x ${fmtSL(product.soLuong)}</td>
-                `;
-                tableBody.appendChild(tr2);
 
                 tongTien += product.thanhTien;
             });
@@ -573,19 +560,19 @@
 
                 const trTongTien = document.createElement('tr');
                 trTongTien.className = 'summary-row first-summary';
-                trTongTien.innerHTML = `<td colspan="2">Tổng tiền</td><td style="text-align:right;white-space:nowrap">${fmtTien(tongTien)}đ</td>`;
+                trTongTien.innerHTML = `<td colspan="4">Tổng tiền</td><td style="text-align:right;white-space:nowrap">${fmtTien(tongTien)}đ</td>`;
                 tableBody.appendChild(trTongTien);
                 
                 if (chiTietChietKhau >= 0) {
                     const trCK = document.createElement('tr');
                     trCK.className = 'summary-row';
-                    trCK.innerHTML = `<td colspan="2">Chiết khấu</td><td style="text-align:right;white-space:nowrap">-${fmtTien(chiTietChietKhau)}đ</td>`;
+                    trCK.innerHTML = `<td colspan="4">Chiết khấu</td><td style="text-align:right;white-space:nowrap">-${fmtTien(chiTietChietKhau)}đ</td>`;
                     tableBody.appendChild(trCK);
                 }
                 
                 const trTT = document.createElement('tr');
                 trTT.className = 'summary-row';
-                trTT.innerHTML = `<td colspan="2">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${fmtTien(chiTietThanhToan)}đ</td>`;
+                trTT.innerHTML = `<td colspan="4">Phải thu khách</td><td style="text-align:right;white-space:nowrap">${fmtTien(chiTietThanhToan)}đ</td>`;
                 tableBody.appendChild(trTT);
 
                 if (khachTrao && khachTrao !== 'null') {
@@ -593,7 +580,7 @@
                     if (kt > 0) {
                         const trKT = document.createElement('tr');
                         trKT.className = 'summary-row';
-                        trKT.innerHTML = `<td colspan="2">Khách trả</td><td style="text-align:right;white-space:nowrap">${fmtTien(kt)}đ</td>`;
+                        trKT.innerHTML = `<td colspan="4">Khách trả</td><td style="text-align:right;white-space:nowrap">${fmtTien(kt)}đ</td>`;
                         tableBody.appendChild(trKT);
                     }
                 }
@@ -603,14 +590,14 @@
                     const trCN = document.createElement('tr');
                     trCN.className = 'summary-row';
                     trCN.style.color = '#e53935';
-                    trCN.innerHTML = `<td colspan="2">Còn nợ</td><td style="text-align:right;white-space:nowrap">${fmtTien(cn)}đ</td>`;
+                    trCN.innerHTML = `<td colspan="4">Còn nợ</td><td style="text-align:right;white-space:nowrap">${fmtTien(cn)}đ</td>`;
                     tableBody.appendChild(trCN);
                 }
 
                 if (noiDungThuc !== "") {
                     const trND = document.createElement('tr');
                     trND.className = 'discount-reason';
-                    trND.innerHTML = `<td colspan="3">${noiDungChiTiet}</td>`;
+                    trND.innerHTML = `<td colspan="5">${noiDungChiTiet}</td>`;
                     tableBody.appendChild(trND);
                 }
             }
