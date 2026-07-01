@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>In tem QR sản phẩm</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
   :root{
     --ink:#1c2431;
@@ -176,16 +176,15 @@
   }
   .label .qr{
     flex:0 0 auto;
-    height:100%;
+    height:85%;
     aspect-ratio:1/1;
     display:flex;
     align-items:center;
     justify-content:center;
   }
-  .label .qr img, .label .qr canvas{
+  .label .qr svg{
     width:100%;
     height:100%;
-    object-fit:contain;
     display:block;
   }
   .label .info{
@@ -389,7 +388,7 @@
     <div id="sheet">
       <div id="labels"></div>
     </div>
-    <p class="hint">Khi bấm "In tem", nhớ chọn đúng khổ giấy trong hộp thoại in của trình duyệt (khớp với khổ đã chọn ở bước 1) và tắt phần "Header/Footer" để không bị lệch tem. Mã QR được tạo trực tiếp trong trình duyệt (thư viện qrcode.js) — chỉ cần tải trang một lần, sau đó có thể tạo/in tem mà không cần mạng.</p>
+    <p class="hint">Khi bấm "In tem", nhớ chọn đúng khổ giấy trong hộp thoại in của trình duyệt (khớp với khổ đã chọn ở bước 1) và tắt phần "Header/Footer" để không bị lệch tem. Mã QR được tạo trực tiếp trong trình duyệt dưới dạng vector (SVG), sắc nét ở mọi kích thước khi in — chỉ cần tải trang một lần, sau đó có thể tạo/in tem mà không cần mạng.</p>
   </div>
 </div>
 
@@ -474,7 +473,27 @@ function collectProducts(){
   return list;
 }
 
-// ---------- Tạo tem (QR code offline bằng qrcode.js) ----------
+// ---------- Tạo tem (QR code offline, đồng bộ, bằng qrcode-generator -> SVG) ----------
+
+// Tự dò typeNumber nhỏ nhất vừa đủ chứa nội dung (tránh lỗi tràn dữ liệu với QR quá nhỏ)
+function buildQrSvg(text){
+  for(let type=1; type<=40; type++){
+    try{
+      const qr = qrcode(type, 'M');
+      qr.addData(String(text));
+      qr.make();
+      return qr.createSvgTag({cellSize:4, margin:4, scalable:true});
+    }catch(e){
+      continue; // chưa đủ chỗ chứa, thử type lớn hơn
+    }
+  }
+  return null;
+}
+
+// Chiều cao QR tính theo % chiều cao tem, tùy bố cục và lựa chọn "Cỡ QR"
+const QR_HEIGHT_ROW = {small:'65%', medium:'85%', large:'100%'};
+const QR_HEIGHT_STACK = {small:'45%', medium:'58%', large:'72%'};
+
 function generateLabels(){
   const products = collectProducts();
   const labelsEl = document.getElementById('labels');
@@ -488,10 +507,7 @@ function generateLabels(){
   const fs = document.getElementById('fontSize').value;
   const layoutMode = document.getElementById('layoutMode').value; // 'row' | 'stack'
   const qrSizeChoice = document.getElementById('qrSize').value; // small|medium|large
-
-  // Kích thước ảnh QR vẽ ra (px), lớn hơn thực tế để in nét khi thu nhỏ theo CSS
-  const qrPxMap = {small:150, medium:220, large:300};
-  const qrPx = qrPxMap[qrSizeChoice] || 220;
+  const qrHeight = (layoutMode==='stack' ? QR_HEIGHT_STACK : QR_HEIGHT_ROW)[qrSizeChoice] || QR_HEIGHT_ROW.medium;
 
   let count = 0;
   products.forEach(prod=>{
@@ -508,7 +524,7 @@ function generateLabels(){
         : '';
 
       lab.innerHTML = `
-        <div class="qr"></div>
+        <div class="qr" style="height:${qrHeight}"></div>
         <div class="info">
           <div class="ten" style="font-size:${fs}pt">${prod.ten}</div>
           ${giaDvBlock}
@@ -517,15 +533,11 @@ function generateLabels(){
       labelsEl.appendChild(lab);
 
       const qrEl = lab.querySelector('.qr');
-      try{
-        new QRCode(qrEl, {
-          text: prod.ma,
-          width: qrPx,
-          height: qrPx,
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      }catch(e){
-        qrEl.innerHTML = `<div style="font-size:8px;color:#b3392f">Lỗi QR</div>`;
+      const svg = buildQrSvg(prod.ma);
+      if(svg){
+        qrEl.innerHTML = svg;
+      } else {
+        qrEl.innerHTML = `<div style="font-size:8px;color:#b3392f;text-align:center;">Lỗi QR<br>(nội dung quá dài)</div>`;
       }
       count++;
     }
