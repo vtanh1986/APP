@@ -337,8 +337,8 @@
         <p>Trang này có thể tự đọc sản phẩm từ tham số trên URL thay vì nhập tay. Có 2 cách:</p>
         <p><b>1) Nhiều sản phẩm</b> — tham số <code>data</code>, mỗi sản phẩm (dòng) cách nhau bởi <code>_b_</code>, mỗi trường (cột) trong sản phẩm cách nhau bởi <code>_a_</code> theo thứ tự <code>Tên_a_Giá_a_Đơn vị_a_Mã vạch_a_Số tem</code>:</p>
         <div class="url-example">tem-ma-vach.html?data=Lọc dầu Vios_a_85000_a_Cái_a_8938501234567_a_2_b_Bugi NGK_a_120000_a_Cái_a__a_4</div>
-        <p><b>2) Một sản phẩm duy nhất</b> — dùng riêng lẻ các tham số <code>ten</code>, <code>gia</code>, <code>dv</code>, <code>ma</code>, <code>sl</code>:</p>
-        <div class="url-example">tem-ma-vach.html?ten=Lọc dầu Vios&amp;gia=85000&amp;dv=Cái&amp;sl=2</div>
+        <p><b>2) Một sản phẩm duy nhất</b> — dùng riêng lẻ các tham số <code>ten</code>, <code>gia</code>, <code>dv</code>, <code>ma</code> (nội dung QR), <code>sl</code>:</p>
+        <div class="url-example">tem-ma-vach.html?ten=Lọc dầu Vios&amp;gia=85000&amp;dv=Cái&amp;ma=8938501234567&amp;sl=2</div>
         <p>Tham số tùy chọn thêm: <code>khogiay</code> = mã khổ giấy (<span id="paperIdList"></span>), <code>autoprint=1</code> để tự mở hộp thoại in ngay khi trang tải xong. Nội dung QR (<code>ma</code>) nếu để trống sẽ tự sinh từ tên + giá; có thể đặt là mã sản phẩm, số điện thoại, link, v.v.</p>
         <div class="toolbar">
           <button class="btn" id="btnMakeUrl">Tạo URL mẫu từ bảng hiện tại</button>
@@ -367,6 +367,7 @@
           <option value="large">Lớn</option>
         </select>
       </label>
+      <label><input type="checkbox" id="showName" checked> Hiện tên sản phẩm</label>
       <label><input type="checkbox" id="showPrice" checked> Hiện giá bán</label>
       <label><input type="checkbox" id="showUnit" checked> Hiện đơn vị</label>
       <label>Cỡ chữ tên SP:
@@ -502,6 +503,7 @@ function generateLabels(){
   const p = currentPaper;
   labelsEl.style.gridTemplateColumns = `repeat(${p.cols}, ${p.mmW}mm)`;
 
+  const showName = document.getElementById('showName').checked;
   const showPrice = document.getElementById('showPrice').checked;
   const showUnit = document.getElementById('showUnit').checked;
   const fs = document.getElementById('fontSize').value;
@@ -522,11 +524,14 @@ function generateLabels(){
       const giaDvBlock = (giaHtml || dvHtml)
         ? `<div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">${giaHtml}${dvHtml}</div>`
         : '';
+      const tenBlock = showName
+        ? `<div class="ten" style="font-size:${fs}pt">${prod.ten}</div>`
+        : '';
 
       lab.innerHTML = `
         <div class="qr" style="height:${qrHeight}"></div>
         <div class="info">
-          <div class="ten" style="font-size:${fs}pt">${prod.ten}</div>
+          ${tenBlock}
           ${giaDvBlock}
         </div>
       `;
