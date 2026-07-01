@@ -2,8 +2,8 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>In tem mã vạch sản phẩm</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
+<title>In tem QR sản phẩm</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
     --ink:#1c2431;
@@ -165,33 +165,65 @@
     border:1px dashed #c3cad3;
     border-radius:2px;
     display:flex;
-    flex-direction:column;
+    flex-direction:row;
     align-items:center;
-    justify-content:center;
-    padding:1.2mm 2mm;
+    justify-content:flex-start;
+    gap:1.5mm;
+    padding:1mm 1.5mm;
     overflow:hidden;
     background:#fff;
   }
+  .label .qr{
+    flex:0 0 auto;
+    height:100%;
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .label .qr img, .label .qr canvas{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+  }
+  .label .info{
+    flex:1 1 auto;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:0.6mm;
+    overflow:hidden;
+  }
   .label .ten{
     font-weight:700;
-    text-align:center;
+    text-align:left;
     line-height:1.15;
     width:100%;
     overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
   }
-  .label .barcode{width:100%; text-align:center;}
-  .label .barcode svg{width:100%; height:auto; max-height:60%;}
   .label .gia-dv{
     display:flex;
     align-items:baseline;
     gap:4px;
-    justify-content:center;
+    justify-content:flex-start;
     width:100%;
+    flex-wrap:wrap;
   }
-  .label .gia{font-weight:800; white-space:nowrap;}
+  .label .gia{font-weight:800; white-space:nowrap; color:var(--good);}
   .label .dv{color:#555; white-space:nowrap;}
+  .label.stack{
+    flex-direction:column;
+    justify-content:center;
+  }
+  .label.stack .qr{width:60%; height:auto; aspect-ratio:1/1;}
+  .label.stack .info{align-items:center; text-align:center;}
+  .label.stack .ten{text-align:center; -webkit-line-clamp:1;}
+  .label.stack .gia-dv{justify-content:center;}
 
   .hint{font-size:12px; color:var(--ink-soft); margin-top:8px;}
 
@@ -259,8 +291,8 @@
 </head>
 <body>
 <div class="app">
-  <h1>In tem mã vạch sản phẩm</h1>
-  <p class="sub">Nhập danh sách sản phẩm, chọn khổ giấy phù hợp với máy in, rồi in trực tiếp từ trình duyệt.</p>
+  <h1>In tem QR sản phẩm</h1>
+  <p class="sub">Nhập danh sách sản phẩm, chọn khổ giấy phù hợp với máy in, rồi in trực tiếp từ trình duyệt. Mã QR được tạo qua QuickChart API.</p>
 
   <div class="panel">
     <h2>1. Chọn khổ giấy / khổ tem</h2>
@@ -275,7 +307,7 @@
           <th style="width:26%">Tên sản phẩm</th>
           <th style="width:16%">Giá bán</th>
           <th style="width:14%">Đơn vị</th>
-          <th style="width:20%">Mã vạch (để trống sẽ tự sinh)</th>
+          <th style="width:20%">Nội dung QR (để trống sẽ tự sinh)</th>
           <th style="width:10%">Số tem</th>
           <th class="col-btn"></th>
         </tr>
@@ -295,7 +327,7 @@
         <div class="url-example">tem-ma-vach.html?data=Lọc dầu Vios_a_85000_a_Cái_a_8938501234567_a_2_b_Bugi NGK_a_120000_a_Cái_a__a_4</div>
         <p><b>2) Một sản phẩm duy nhất</b> — dùng riêng lẻ các tham số <code>ten</code>, <code>gia</code>, <code>dv</code>, <code>ma</code>, <code>sl</code>:</p>
         <div class="url-example">tem-ma-vach.html?ten=Lọc dầu Vios&amp;gia=85000&amp;dv=Cái&amp;sl=2</div>
-        <p>Tham số tùy chọn thêm: <code>khogiay</code> = mã khổ giấy (<span id="paperIdList"></span>), <code>autoprint=1</code> để tự mở hộp thoại in ngay khi trang tải xong. Mã vạch (<code>ma</code>) nếu để trống sẽ tự sinh từ tên + giá.</p>
+        <p>Tham số tùy chọn thêm: <code>khogiay</code> = mã khổ giấy (<span id="paperIdList"></span>), <code>autoprint=1</code> để tự mở hộp thoại in ngay khi trang tải xong. Nội dung QR (<code>ma</code>) nếu để trống sẽ tự sinh từ tên + giá; có thể đặt là mã sản phẩm, số điện thoại, link, v.v.</p>
         <div class="toolbar">
           <button class="btn" id="btnMakeUrl">Tạo URL mẫu từ bảng hiện tại</button>
         </div>
@@ -310,7 +342,19 @@
   <div class="panel">
     <h2>3. Tùy chọn hiển thị tem</h2>
     <div class="opts-row">
-      <label><input type="checkbox" id="showBarcodeNum" checked> Hiện số mã vạch dưới vạch</label>
+      <label>Bố cục:
+        <select id="layoutMode">
+          <option value="row">QR bên trái - chữ bên phải</option>
+          <option value="stack">QR bên trên - chữ bên dưới</option>
+        </select>
+      </label>
+      <label>Cỡ QR:
+        <select id="qrSize">
+          <option value="small">Nhỏ</option>
+          <option value="medium" selected>Vừa</option>
+          <option value="large">Lớn</option>
+        </select>
+      </label>
       <label><input type="checkbox" id="showUnit" checked> Hiện đơn vị</label>
       <label>Cỡ chữ tên SP:
         <select id="fontSize">
@@ -331,7 +375,7 @@
     <div id="sheet">
       <div id="labels"></div>
     </div>
-    <p class="hint">Khi bấm "In tem", nhớ chọn đúng khổ giấy trong hộp thoại in của trình duyệt (khớp với khổ đã chọn ở bước 1) và tắt phần "Header/Footer" để không bị lệch tem.</p>
+    <p class="hint">Khi bấm "In tem", nhớ chọn đúng khổ giấy trong hộp thoại in của trình duyệt (khớp với khổ đã chọn ở bước 1) và tắt phần "Header/Footer" để không bị lệch tem. Mã QR được tạo trực tiếp trong trình duyệt (thư viện qrcode.js) — chỉ cần tải trang một lần, sau đó có thể tạo/in tem mà không cần mạng.</p>
   </div>
 </div>
 
@@ -416,7 +460,7 @@ function collectProducts(){
   return list;
 }
 
-// ---------- Tạo tem ----------
+// ---------- Tạo tem (QR code offline bằng qrcode.js) ----------
 function generateLabels(){
   const products = collectProducts();
   const labelsEl = document.getElementById('labels');
@@ -425,37 +469,44 @@ function generateLabels(){
   const p = currentPaper;
   labelsEl.style.gridTemplateColumns = `repeat(${p.cols}, ${p.mmW}mm)`;
 
-  const showNum = document.getElementById('showBarcodeNum').checked;
   const showUnit = document.getElementById('showUnit').checked;
   const fs = document.getElementById('fontSize').value;
+  const layoutMode = document.getElementById('layoutMode').value; // 'row' | 'stack'
+  const qrSizeChoice = document.getElementById('qrSize').value; // small|medium|large
+
+  // Kích thước ảnh QR vẽ ra (px), lớn hơn thực tế để in nét khi thu nhỏ theo CSS
+  const qrPxMap = {small:150, medium:220, large:300};
+  const qrPx = qrPxMap[qrSizeChoice] || 220;
 
   let count = 0;
   products.forEach(prod=>{
     for(let i=0;i<prod.sl;i++){
       const lab = document.createElement('div');
-      lab.className = 'label';
+      lab.className = 'label' + (layoutMode==='stack' ? ' stack' : '');
       lab.style.width = p.mmW + 'mm';
       lab.style.height = p.mmH + 'mm';
       lab.innerHTML = `
-        <div class="ten" style="font-size:${fs}pt">${prod.ten}</div>
-        <div class="barcode"><svg class="bc-svg"></svg></div>
-        <div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">
-          <span class="gia">${fmtGia(prod.gia)}</span>
-          ${showUnit && prod.dv ? `<span class="dv">/ ${prod.dv}</span>` : ''}
+        <div class="qr"></div>
+        <div class="info">
+          <div class="ten" style="font-size:${fs}pt">${prod.ten}</div>
+          <div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">
+            <span class="gia">${fmtGia(prod.gia)}</span>
+            ${showUnit && prod.dv ? `<span class="dv">/ ${prod.dv}</span>` : ''}
+          </div>
         </div>
       `;
       labelsEl.appendChild(lab);
-      const svg = lab.querySelector('.bc-svg');
+
+      const qrEl = lab.querySelector('.qr');
       try{
-        JsBarcode(svg, prod.ma, {
-          format:'CODE128',
-          displayValue: showNum,
-          fontSize: 10,
-          height: Math.max(24, p.mmH*2.2),
-          margin: 0
+        new QRCode(qrEl, {
+          text: prod.ma,
+          width: qrPx,
+          height: qrPx,
+          correctLevel: QRCode.CorrectLevel.M
         });
       }catch(e){
-        svg.outerHTML = `<div style="font-size:9px;color:#b3392f">Mã lỗi: ${prod.ma}</div>`;
+        qrEl.innerHTML = `<div style="font-size:8px;color:#b3392f">Lỗi QR</div>`;
       }
       count++;
     }
