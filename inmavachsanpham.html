@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>In tem mã vạch sản phẩm</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/JsBarcode/3.11.5/JsBarcode.all.min.js"></script>
+<style>
+  :root{
+    --ink:#1c2431;
+    --ink-soft:#5a6472;
+    --line:#d7dce3;
+    --paper:#f6f7f9;
+    --accent:#1a56db;
+    --accent-soft:#e8effd;
+    --good:#0f7b47;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .app{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 24px 80px;
+  }
+  h1{
+    font-size:22px;
+    font-weight:700;
+    margin:0 0 4px;
+    letter-spacing:.2px;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    margin:0 0 22px;
+  }
+  .panel{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 20px;
+    margin-bottom:18px;
+  }
+  .panel h2{
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--ink-soft);
+    margin:0 0 14px;
+    font-weight:700;
+  }
+  .paper-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:10px;
+  }
+  .paper-opt{
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    cursor:pointer;
+    font-size:13px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    transition:.12s;
+    background:#fff;
+  }
+  .paper-opt:hover{border-color:var(--accent);}
+  .paper-opt.active{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+  }
+  .paper-opt b{font-size:13.5px;}
+  .paper-opt span{color:var(--ink-soft); font-size:12px;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  th{
+    text-align:left;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    color:var(--ink-soft);
+    padding:6px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  td{
+    padding:5px 8px;
+    border-bottom:1px solid #edf0f3;
+  }
+  td input{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:6px 8px;
+    font-size:13.5px;
+    font-family:inherit;
+  }
+  td input:focus{outline:2px solid var(--accent); outline-offset:-1px; border-color:var(--accent);}
+  td.col-sl input, td.col-gia input{text-align:right;}
+  .col-btn{width:36px; text-align:center;}
+  .row-del{
+    border:none;
+    background:none;
+    color:#b3392f;
+    font-size:16px;
+    cursor:pointer;
+    line-height:1;
+  }
+  .toolbar{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+    flex-wrap:wrap;
+  }
+  button.btn{
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    padding:9px 16px;
+    border-radius:7px;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  button.btn:hover{border-color:var(--accent); color:var(--accent);}
+  button.btn.primary{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  button.btn.primary:hover{opacity:.92; color:#fff;}
+  button.btn.ghost{color:var(--ink-soft);}
+
+  .opts-row{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    align-items:center;
+    font-size:13px;
+    margin-top:4px;
+  }
+  .opts-row label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+
+  /* ===== PREVIEW / PRINT AREA ===== */
+  #sheet{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    overflow:auto;
+  }
+  #labels{
+    display:grid;
+    gap:2mm;
+  }
+  .label{
+    border:1px dashed #c3cad3;
+    border-radius:2px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:1.2mm 2mm;
+    overflow:hidden;
+    background:#fff;
+  }
+  .label .ten{
+    font-weight:700;
+    text-align:center;
+    line-height:1.15;
+    width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .label .barcode{width:100%; text-align:center;}
+  .label .barcode svg{width:100%; height:auto; max-height:60%;}
+  .label .gia-dv{
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    justify-content:center;
+    width:100%;
+  }
+  .label .gia{font-weight:800; white-space:nowrap;}
+  .label .dv{color:#555; white-space:nowrap;}
+
+  .hint{font-size:12px; color:var(--ink-soft); margin-top:8px;}
+
+  details.url-box{
+    margin-top:16px;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  details.url-box summary{
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+    color:var(--accent);
+    list-style:none;
+  }
+  details.url-box summary::-webkit-details-marker{display:none;}
+  details.url-box summary::before{content:'▸ '; }
+  details.url-box[open] summary::before{content:'▾ ';}
+  .url-box-body{
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
+  .url-box-body p{margin:6px 0;}
+  .url-box-body code{
+    background:#eef1f5;
+    padding:1px 5px;
+    border-radius:4px;
+    font-size:11.5px;
+    color:var(--ink);
+  }
+  .url-example{
+    background:#0f172a;
+    color:#c9d6e8;
+    font-family:Consolas,Menlo,monospace;
+    font-size:11.5px;
+    padding:8px 10px;
+    border-radius:6px;
+    margin:6px 0 10px;
+    word-break:break-all;
+  }
+  #urlOutput{
+    width:100%;
+    min-height:56px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 10px;
+    font-family:Consolas,Menlo,monospace;
+    font-size:11.5px;
+    color:var(--ink);
+    resize:vertical;
+  }
+
+  @media print{
+    body *{visibility:hidden;}
+    #sheet, #sheet *{visibility:visible;}
+    #sheet{
+      position:absolute; top:0; left:0; border:none; border-radius:0; padding:0; margin:0;
+    }
+    #labels{gap:0mm !important;}
+    .label{border:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>In tem mã vạch sản phẩm</h1>
+  <p class="sub">Nhập danh sách sản phẩm, chọn khổ giấy phù hợp với máy in, rồi in trực tiếp từ trình duyệt.</p>
+
+  <div class="panel">
+    <h2>1. Chọn khổ giấy / khổ tem</h2>
+    <div class="paper-grid" id="paperGrid"></div>
+  </div>
+
+  <div class="panel">
+    <h2>2. Danh sách sản phẩm</h2>
+    <table id="prodTable">
+      <thead>
+        <tr>
+          <th style="width:26%">Tên sản phẩm</th>
+          <th style="width:16%">Giá bán</th>
+          <th style="width:14%">Đơn vị</th>
+          <th style="width:20%">Mã vạch (để trống sẽ tự sinh)</th>
+          <th style="width:10%">Số tem</th>
+          <th class="col-btn"></th>
+        </tr>
+      </thead>
+      <tbody id="prodBody"></tbody>
+    </table>
+    <div class="toolbar">
+      <button class="btn" id="btnAddRow">+ Thêm dòng</button>
+      <button class="btn ghost" id="btnClear">Xóa tất cả</button>
+    </div>
+
+    <details class="url-box">
+      <summary>Truyền dữ liệu qua URL (dùng cho AppSheet / gọi từ hệ thống khác)</summary>
+      <div class="url-box-body">
+        <p>Trang này có thể tự đọc sản phẩm từ tham số trên URL thay vì nhập tay. Có 2 cách:</p>
+        <p><b>1) Nhiều sản phẩm</b> — tham số <code>data</code>, mỗi sản phẩm (dòng) cách nhau bởi <code>_b_</code>, mỗi trường (cột) trong sản phẩm cách nhau bởi <code>_a_</code> theo thứ tự <code>Tên_a_Giá_a_Đơn vị_a_Mã vạch_a_Số tem</code>:</p>
+        <div class="url-example">tem-ma-vach.html?data=Lọc dầu Vios_a_85000_a_Cái_a_8938501234567_a_2_b_Bugi NGK_a_120000_a_Cái_a__a_4</div>
+        <p><b>2) Một sản phẩm duy nhất</b> — dùng riêng lẻ các tham số <code>ten</code>, <code>gia</code>, <code>dv</code>, <code>ma</code>, <code>sl</code>:</p>
+        <div class="url-example">tem-ma-vach.html?ten=Lọc dầu Vios&amp;gia=85000&amp;dv=Cái&amp;sl=2</div>
+        <p>Tham số tùy chọn thêm: <code>khogiay</code> = mã khổ giấy (<span id="paperIdList"></span>), <code>autoprint=1</code> để tự mở hộp thoại in ngay khi trang tải xong. Mã vạch (<code>ma</code>) nếu để trống sẽ tự sinh từ tên + giá.</p>
+        <div class="toolbar">
+          <button class="btn" id="btnMakeUrl">Tạo URL mẫu từ bảng hiện tại</button>
+        </div>
+        <textarea id="urlOutput" readonly placeholder="URL mẫu sẽ hiện ở đây..."></textarea>
+        <div class="toolbar">
+          <button class="btn" id="btnCopyUrl">Sao chép URL</button>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h2>3. Tùy chọn hiển thị tem</h2>
+    <div class="opts-row">
+      <label><input type="checkbox" id="showBarcodeNum" checked> Hiện số mã vạch dưới vạch</label>
+      <label><input type="checkbox" id="showUnit" checked> Hiện đơn vị</label>
+      <label>Cỡ chữ tên SP:
+        <select id="fontSize">
+          <option value="9">Nhỏ</option>
+          <option value="10.5" selected>Vừa</option>
+          <option value="12">Lớn</option>
+        </select>
+      </label>
+    </div>
+    <div class="toolbar">
+      <button class="btn primary" id="btnGenerate">Tạo tem xem trước</button>
+      <button class="btn" id="btnPrint">In tem</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>4. Xem trước &amp; in</h2>
+    <div id="sheet">
+      <div id="labels"></div>
+    </div>
+    <p class="hint">Khi bấm "In tem", nhớ chọn đúng khổ giấy trong hộp thoại in của trình duyệt (khớp với khổ đã chọn ở bước 1) và tắt phần "Header/Footer" để không bị lệch tem.</p>
+  </div>
+</div>
+
+<script>
+// ---------- Khổ giấy / khổ tem thông dụng ----------
+// mmW / mmH = kích thước 1 tem (mm). cols = số cột trên khổ. pageW/pageH = khổ giấy tổng (mm), roll:true nếu là tem cuộn (in liên tục, không giới hạn hàng)
+const PAPERS = [
+  {id:'roll_50x30', name:'Tem cuộn 50 x 30mm', desc:'Máy in nhiệt cầm tay / để bàn', mmW:50, mmH:30, cols:1, roll:true},
+  {id:'roll_40x30', name:'Tem cuộn 40 x 30mm', desc:'Máy in nhiệt phổ biến', mmW:40, mmH:30, cols:1, roll:true},
+  {id:'roll_30x20', name:'Tem cuộn 30 x 20mm', desc:'Tem nhỏ, sản phẩm nhỏ gọn', mmW:30, mmH:20, cols:1, roll:true},
+  {id:'roll_25x15', name:'Tem cuộn 25 x 15mm', desc:'Tem siêu nhỏ', mmW:25, mmH:15, cols:1, roll:true},
+  {id:'a4_21', name:'A4 - 21 tem / tờ', desc:'3 cột x 7 hàng, ~63.5 x 38.1mm', mmW:63.5, mmH:38.1, cols:3, pageW:210, pageH:297},
+  {id:'a4_24', name:'A4 - 24 tem / tờ', desc:'3 cột x 8 hàng, ~63.5 x 33.9mm', mmW:63.5, mmH:33.9, cols:3, pageW:210, pageH:297},
+  {id:'a4_14', name:'A4 - 14 tem / tờ', desc:'2 cột x 7 hàng, ~99.1 x 38.1mm', mmW:99.1, mmH:38.1, cols:2, pageW:210, pageH:297},
+  {id:'a4_65', name:'A4 - 65 tem / tờ', desc:'5 cột x 13 hàng, tem rất nhỏ', mmW:38.1, mmH:21.2, cols:5, pageW:210, pageH:297},
+];
+
+let currentPaper = PAPERS[0];
+
+function renderPaperGrid(){
+  const grid = document.getElementById('paperGrid');
+  grid.innerHTML = '';
+  PAPERS.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'paper-opt' + (p.id===currentPaper.id ? ' active' : '');
+    el.innerHTML = `<b>${p.name}</b><span>${p.desc}</span>`;
+    el.onclick = ()=>{ currentPaper = p; renderPaperGrid(); };
+    grid.appendChild(el);
+  });
+}
+renderPaperGrid();
+
+// ---------- Bảng nhập sản phẩm ----------
+const prodBody = document.getElementById('prodBody');
+
+function addRow(data){
+  const tr = document.createElement('tr');
+  const d = data || {};
+  tr.innerHTML = `
+    <td><input class="f-ten" placeholder="VD: Lọc dầu Toyota Vios" value="${d.ten||''}"></td>
+    <td class="col-gia"><input class="f-gia" placeholder="VD: 85000" value="${d.gia||''}"></td>
+    <td><input class="f-dv" placeholder="VD: Cái, Hộp..." value="${d.dv||''}"></td>
+    <td><input class="f-ma" placeholder="Tự sinh nếu để trống" value="${d.ma||''}"></td>
+    <td class="col-sl"><input class="f-sl" value="${d.sl||1}"></td>
+    <td class="col-btn"><button class="row-del" title="Xóa dòng">✕</button></td>
+  `;
+  tr.querySelector('.row-del').onclick = ()=> tr.remove();
+  prodBody.appendChild(tr);
+}
+addRow({ten:'Lọc dầu Toyota Vios', gia:'85000', dv:'Cái', ma:'', sl:2});
+addRow({ten:'Bugi NGK Iridium', gia:'120000', dv:'Cái', ma:'', sl:4});
+
+document.getElementById('btnAddRow').onclick = ()=>addRow();
+document.getElementById('btnClear').onclick = ()=>{ prodBody.innerHTML=''; };
+
+function fmtGia(v){
+  const n = parseInt(String(v).replace(/[^\d]/g,''),10);
+  if(isNaN(n)) return '';
+  return n.toLocaleString('vi-VN') + 'đ';
+}
+
+function autoCode(seed){
+  // Sinh mã tạm dựa trên chuỗi + thời gian nếu người dùng không nhập mã vạch
+  let h = 0;
+  for(let i=0;i<seed.length;i++){ h = (h*31 + seed.charCodeAt(i)) >>> 0; }
+  return String(h).padStart(12,'0').slice(-12);
+}
+
+function collectProducts(){
+  const rows = [...prodBody.querySelectorAll('tr')];
+  const list = [];
+  rows.forEach(r=>{
+    const ten = r.querySelector('.f-ten').value.trim();
+    if(!ten) return;
+    const gia = r.querySelector('.f-gia').value.trim();
+    const dv = r.querySelector('.f-dv').value.trim();
+    let ma = r.querySelector('.f-ma').value.trim();
+    const sl = parseInt(r.querySelector('.f-sl').value,10) || 1;
+    if(!ma) ma = autoCode(ten+gia);
+    list.push({ten, gia, dv, ma, sl});
+  });
+  return list;
+}
+
+// ---------- Tạo tem ----------
+function generateLabels(){
+  const products = collectProducts();
+  const labelsEl = document.getElementById('labels');
+  labelsEl.innerHTML = '';
+
+  const p = currentPaper;
+  labelsEl.style.gridTemplateColumns = `repeat(${p.cols}, ${p.mmW}mm)`;
+
+  const showNum = document.getElementById('showBarcodeNum').checked;
+  const showUnit = document.getElementById('showUnit').checked;
+  const fs = document.getElementById('fontSize').value;
+
+  let count = 0;
+  products.forEach(prod=>{
+    for(let i=0;i<prod.sl;i++){
+      const lab = document.createElement('div');
+      lab.className = 'label';
+      lab.style.width = p.mmW + 'mm';
+      lab.style.height = p.mmH + 'mm';
+      lab.innerHTML = `
+        <div class="ten" style="font-size:${fs}pt">${prod.ten}</div>
+        <div class="barcode"><svg class="bc-svg"></svg></div>
+        <div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">
+          <span class="gia">${fmtGia(prod.gia)}</span>
+          ${showUnit && prod.dv ? `<span class="dv">/ ${prod.dv}</span>` : ''}
+        </div>
+      `;
+      labelsEl.appendChild(lab);
+      const svg = lab.querySelector('.bc-svg');
+      try{
+        JsBarcode(svg, prod.ma, {
+          format:'CODE128',
+          displayValue: showNum,
+          fontSize: 10,
+          height: Math.max(24, p.mmH*2.2),
+          margin: 0
+        });
+      }catch(e){
+        svg.outerHTML = `<div style="font-size:9px;color:#b3392f">Mã lỗi: ${prod.ma}</div>`;
+      }
+      count++;
+    }
+  });
+
+  // Thiết lập khổ giấy khi in
+  let pageCss = document.getElementById('pageSizeStyle');
+  if(!pageCss){
+    pageCss = document.createElement('style');
+    pageCss.id = 'pageSizeStyle';
+    document.head.appendChild(pageCss);
+  }
+  if(p.roll){
+    pageCss.textContent = `@page{ size: ${p.mmW}mm ${p.mmH}mm; margin:0; }`;
+  } else {
+    pageCss.textContent = `@page{ size: A4; margin:8mm; }`;
+  }
+
+  if(count === 0){
+    labelsEl.innerHTML = '<p style="grid-column:1/-1;color:#8a93a1;font-size:13px;padding:10px;">Chưa có sản phẩm nào — hãy nhập ít nhất tên sản phẩm ở bảng phía trên.</p>';
+  }
+}
+
+document.getElementById('btnGenerate').onclick = generateLabels;
+document.getElementById('btnPrint').onclick = ()=>{
+  generateLabels();
+  setTimeout(()=>window.print(), 150);
+};
+
+// ---------- Truyền dữ liệu qua URL ----------
+document.getElementById('paperIdList').textContent = PAPERS.map(p=>p.id).join(', ');
+
+function fieldOut(v){
+  return (v===undefined || v===null) ? '' : String(v);
+}
+
+function buildDataParam(){
+  const products = collectProducts();
+  return products.map(p=>[p.ten, p.gia, p.dv, p.ma, p.sl].map(fieldOut).join('_a_')).join('_b_');
+}
+
+function buildSampleUrl(){
+  const base = location.origin + location.pathname;
+  const data = buildDataParam();
+  const params = new URLSearchParams();
+  if(data) params.set('data', data);
+  params.set('khogiay', currentPaper.id);
+  return base + '?' + params.toString();
+}
+
+document.getElementById('btnMakeUrl').onclick = ()=>{
+  document.getElementById('urlOutput').value = buildSampleUrl();
+};
+
+document.getElementById('btnCopyUrl').onclick = ()=>{
+  const el = document.getElementById('urlOutput');
+  if(!el.value){ el.value = buildSampleUrl(); }
+  el.select();
+  document.execCommand('copy');
+};
+
+function applyURLParams(){
+  const params = new URLSearchParams(location.search);
+  let items = null;
+
+  const dataParam = params.get('data');
+  if(dataParam){
+    items = dataParam.split('_b_').filter(s=>s.trim()!=='').map(chunk=>{
+      const [ten, gia, dv, ma, sl] = chunk.split('_a_');
+      return {ten:(ten||'').trim(), gia:(gia||'').trim(), dv:(dv||'').trim(), ma:(ma||'').trim(), sl: parseInt(sl,10)||1};
+    });
+  } else if(params.get('ten')){
+    items = [{
+      ten: params.get('ten') || '',
+      gia: params.get('gia') || '',
+      dv: params.get('dv') || '',
+      ma: params.get('ma') || '',
+      sl: parseInt(params.get('sl'),10) || 1
+    }];
+  }
+
+  if(items && items.length){
+    prodBody.innerHTML = '';
+    items.forEach(it=>addRow(it));
+  }
+
+  const khogiay = params.get('khogiay');
+  if(khogiay){
+    const found = PAPERS.find(p=>p.id===khogiay);
+    if(found){ currentPaper = found; renderPaperGrid(); }
+  }
+
+  generateLabels();
+
+  if(params.get('autoprint')==='1'){
+    setTimeout(()=>window.print(), 400);
+  }
+}
+
+applyURLParams();
+
+</script>
+</body>
+</html>
