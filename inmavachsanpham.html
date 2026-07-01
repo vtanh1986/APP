@@ -148,6 +148,7 @@
     margin-top:4px;
   }
   .opts-row label{display:flex; align-items:center; gap:6px; cursor:pointer;}
+  .opts-row label:has(input:disabled){color:#b3bac4; cursor:not-allowed;}
 
   /* ===== PREVIEW / PRINT AREA ===== */
   #sheet{
@@ -220,8 +221,20 @@
     flex-direction:column;
     justify-content:center;
   }
-  .label.stack .qr{width:60%; height:auto; aspect-ratio:1/1;}
-  .label.stack .info{align-items:center; text-align:center;}
+  .label.stack .qr{
+    width:auto;
+    height:58%;
+    max-width:88%;
+    aspect-ratio:1/1;
+    flex:0 0 auto;
+  }
+  .label.stack .info{
+    flex:1 1 auto;
+    width:100%;
+    align-items:center;
+    text-align:center;
+    justify-content:flex-start;
+  }
   .label.stack .ten{text-align:center; -webkit-line-clamp:1;}
   .label.stack .gia-dv{justify-content:center;}
 
@@ -355,6 +368,7 @@
           <option value="large">Lớn</option>
         </select>
       </label>
+      <label><input type="checkbox" id="showPrice" checked> Hiện giá bán</label>
       <label><input type="checkbox" id="showUnit" checked> Hiện đơn vị</label>
       <label>Cỡ chữ tên SP:
         <select id="fontSize">
@@ -469,6 +483,7 @@ function generateLabels(){
   const p = currentPaper;
   labelsEl.style.gridTemplateColumns = `repeat(${p.cols}, ${p.mmW}mm)`;
 
+  const showPrice = document.getElementById('showPrice').checked;
   const showUnit = document.getElementById('showUnit').checked;
   const fs = document.getElementById('fontSize').value;
   const layoutMode = document.getElementById('layoutMode').value; // 'row' | 'stack'
@@ -485,14 +500,18 @@ function generateLabels(){
       lab.className = 'label' + (layoutMode==='stack' ? ' stack' : '');
       lab.style.width = p.mmW + 'mm';
       lab.style.height = p.mmH + 'mm';
+
+      const giaHtml = showPrice ? `<span class="gia">${fmtGia(prod.gia)}</span>` : '';
+      const dvHtml = showUnit && prod.dv ? `<span class="dv">/ ${prod.dv}</span>` : '';
+      const giaDvBlock = (giaHtml || dvHtml)
+        ? `<div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">${giaHtml}${dvHtml}</div>`
+        : '';
+
       lab.innerHTML = `
         <div class="qr"></div>
         <div class="info">
           <div class="ten" style="font-size:${fs}pt">${prod.ten}</div>
-          <div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">
-            <span class="gia">${fmtGia(prod.gia)}</span>
-            ${showUnit && prod.dv ? `<span class="dv">/ ${prod.dv}</span>` : ''}
-          </div>
+          ${giaDvBlock}
         </div>
       `;
       labelsEl.appendChild(lab);
@@ -535,6 +554,20 @@ document.getElementById('btnPrint').onclick = ()=>{
   generateLabels();
   setTimeout(()=>window.print(), 150);
 };
+
+// Đơn vị chỉ hiển thị kèm giá ("/ Cái"), nên khi tắt "Hiện giá bán" thì tắt và khóa luôn "Hiện đơn vị"
+const showPriceEl = document.getElementById('showPrice');
+const showUnitEl = document.getElementById('showUnit');
+function syncPriceUnitToggle(){
+  if(!showPriceEl.checked){
+    showUnitEl.checked = false;
+    showUnitEl.disabled = true;
+  } else {
+    showUnitEl.disabled = false;
+  }
+}
+showPriceEl.addEventListener('change', syncPriceUnitToggle);
+syncPriceUnitToggle();
 
 // ---------- Truyền dữ liệu qua URL ----------
 document.getElementById('paperIdList').textContent = PAPERS.map(p=>p.id).join(', ');
