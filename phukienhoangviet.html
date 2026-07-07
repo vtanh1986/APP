@@ -277,8 +277,8 @@
     <p>Vui lòng chọn máy in và nhấn "In"</p>
 </div>
 
-<div class="toolbar">
-    <button class="btn-print" onclick="printInvoice()">🖨️ In hóa đơn</button>
+<div class="toolbar" id="mainToolbar">
+    <button class="btn-print" id="printBtn" onclick="printInvoice()">🖨️ In hóa đơn</button>
     <button class="btn-jpg"   id="saveJpgBtn" onclick="saveAsJpg()">🖼️ Lưu ảnh JPG</button>
 </div>
 
@@ -393,9 +393,12 @@
 
     /* ── SAVE JPG ── */
     async function saveAsJpg() {
-        const btn = document.getElementById('saveJpgBtn');
+        const toolbar = document.getElementById('mainToolbar');
+        const btn     = document.getElementById('saveJpgBtn');
+
+        // Ẩn cả 2 nút (toolbar) trong lúc lưu ảnh
+        toolbar.style.display = 'none';
         btn.disabled = true;
-        btn.textContent = '⏳ Đang tạo ảnh...';
 
         const qrSection = document.getElementById('qrcodeSection');
         const prevQr    = qrSection.style.display;
@@ -430,6 +433,8 @@
             qrSection.style.display = prevQr;
             btn.disabled = false;
             btn.innerHTML = '🖼️ Lưu ảnh JPG';
+            // Hiện lại toolbar sau khi lưu xong
+            toolbar.style.display = 'flex';
         }
     }
 
