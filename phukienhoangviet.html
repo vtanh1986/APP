@@ -431,10 +431,7 @@
             alert('Không thể tạo ảnh: ' + err.message);
         } finally {
             qrSection.style.display = prevQr;
-            btn.disabled = false;
-            btn.innerHTML = '🖼️ Lưu ảnh JPG';
-            // Hiện lại toolbar sau khi lưu xong
-            toolbar.style.display = 'flex';
+            // Toolbar giữ nguyên trạng thái ẩn, không hiện lại
         }
     }
 
