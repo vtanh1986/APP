@@ -230,13 +230,26 @@ function fmt(n) {
   return n.toLocaleString('vi-VN');
 }
 
-// Parse chuỗi số theo định dạng Việt Nam: dấu "." là phân cách nghìn, dấu "," là phân cách thập phân
-// VD: "222.222,222" -> 222222.222 ; "1.500.000" -> 1500000 ; "50000" -> 50000
+// Parse chuỗi số, tự nhận diện định dạng:
+// - Có dấu ","  -> định dạng VN: "." là phân cách nghìn, "," là phân cách thập phân. VD: "222.222,222" -> 222222.222
+// - Không có "," nhưng có nhiều hơn 1 dấu "." -> "." là phân cách nghìn (không có phần thập phân). VD: "1.500.000" -> 1500000
+// - Không có "," và chỉ có 1 dấu "." -> "." là dấu thập phân chuẩn, giữ nguyên. VD: "222222.222" -> 222222.222
+// - Không có dấu nào -> số nguyên bình thường. VD: "50000" -> 50000
 function parseNum(str) {
   if (str === null || str === undefined) return 0;
   str = String(str).trim();
   if (str === '') return 0;
-  str = str.replace(/\./g, '').replace(',', '.');
+
+  const hasComma = str.includes(',');
+  const dotCount = (str.match(/\./g) || []).length;
+
+  if (hasComma) {
+    str = str.replace(/\./g, '').replace(',', '.');
+  } else if (dotCount > 1) {
+    str = str.replace(/\./g, '');
+  }
+  // else: 0 hoặc 1 dấu "." và không có "," -> giữ nguyên, coi là số thập phân chuẩn
+
   const n = parseFloat(str);
   return isNaN(n) ? 0 : n;
 }
