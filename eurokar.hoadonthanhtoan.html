@@ -230,6 +230,17 @@ function fmt(n) {
   return n.toLocaleString('vi-VN');
 }
 
+// Parse chuỗi số theo định dạng Việt Nam: dấu "." là phân cách nghìn, dấu "," là phân cách thập phân
+// VD: "222.222,222" -> 222222.222 ; "1.500.000" -> 1500000 ; "50000" -> 50000
+function parseNum(str) {
+  if (str === null || str === undefined) return 0;
+  str = String(str).trim();
+  if (str === '') return 0;
+  str = str.replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(str);
+  return isNaN(n) ? 0 : n;
+}
+
 // ── Số tiền bằng chữ ─────────────────────────────────────────────────────────
 const CH_0_9  = ['không','một','hai','ba','bốn','năm','sáu','bảy','tám','chín'];
 const CH_UNIT = ['','nghìn','triệu','tỷ'];
@@ -261,6 +272,7 @@ function docNhom(n, hasTram) {
 }
 
 function soThanhChu(n) {
+  n = Math.round(n); // số tiền đọc chữ theo đơn vị đồng, không lấy phần thập phân
   if (n === 0) return 'Không đồng chẵn';
   let groups = [];
   let tmp = n;
@@ -295,11 +307,11 @@ function renderTable(dataStr) {
     const maHang    = (cols[0] || '').trim();
     const tenHang   = (cols[1] || '').trim();
     const dvt       = (cols[2] || '').trim();
-    const soLuong   = parseInt((cols[3] || '0').replace(/[^0-9]/g,'')) || 0;
-    const donGia    = parseInt((cols[4] || '0').replace(/[^0-9]/g,'')) || 0;
-    const thanhTien = parseInt((cols[5] || '0').replace(/[^0-9]/g,'')) || 0;
+    const soLuong   = parseNum(cols[3]);
+    const donGia    = parseNum(cols[4]);
+    const thanhTien = parseNum(cols[5]);
     const pctVat    = (cols[6] || '').trim();
-    const tienThue  = parseInt((cols[7] || '0').replace(/[^0-9]/g,'')) || 0;
+    const tienThue  = parseNum(cols[7]);
 
     if (mergedMap.has(maHang)) {
       const existing = mergedMap.get(maHang);
@@ -324,7 +336,7 @@ function renderTable(dataStr) {
       <td class="center">${d.maHang}</td>
       <td><div class="product-name">${d.tenHang}</div></td>
       <td class="center">${d.dvt}</td>
-      <td class="center">${d.soLuong}</td>
+      <td class="center">${fmt(d.soLuong)}</td>
       <td class="right">${fmt(d.donGia)}</td>
       <td class="right">${fmt(d.thanhTien)}</td>
       <td class="center">${d.pctVat}</td>
@@ -365,16 +377,16 @@ window.addEventListener('DOMContentLoaded', function () {
   const { totalQty, totalAmt } = renderTable(dataStr);
 
   // Tổng cộng (tự tính)
-  document.getElementById('el-tong-label').textContent = `Tổng cộng (${totalQty} sp):`;
+  document.getElementById('el-tong-label').textContent = `Tổng cộng (${fmt(totalQty)} sp):`;
   document.getElementById('el-tong-value').textContent = fmt(totalAmt) + ' ₫';
 
   // Chiết khấu
-  const chietKhau = parseInt((p.get('chiet_khau') || '0').replace(/[^0-9]/g,'')) || 0;
+  const chietKhau = parseNum(p.get('chiet_khau'));
   document.getElementById('el-chiet-khau').textContent = chietKhau > 0 ? fmt(chietKhau) + ' ₫' : '0';
 
   // VAT (tên dòng + thành tiền)
   const vatLabel = p.get('vat_label') || 'VAT:';
-  const vatValue = parseInt((p.get('vat_value') || '0').replace(/[^0-9]/g,'')) || 0;
+  const vatValue = parseNum(p.get('vat_value'));
   document.getElementById('el-vat-label').textContent = vatLabel;
   document.getElementById('el-vat-value').textContent = vatValue > 0 ? fmt(vatValue) + ' ₫' : '0';
 
