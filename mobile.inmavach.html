@@ -149,6 +149,14 @@
   }
   .opts-row label{display:flex; align-items:center; gap:6px; cursor:pointer;}
   .opts-row label:has(input:disabled){color:#b3bac4; cursor:not-allowed;}
+  .opts-row input[type=number]{
+    width:60px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:5px 7px;
+    font-size:13px;
+    font-family:inherit;
+  }
 
   /* ===== PREVIEW / PRINT AREA ===== */
   #sheet{
@@ -304,10 +312,10 @@
 <body>
 <div class="app">
   <h1>In tem QR sản phẩm</h1>
-  <p class="sub">Nhập danh sách sản phẩm, chọn khổ giấy phù hợp với máy in, rồi in trực tiếp từ trình duyệt. Mã QR được tạo qua QuickChart API.</p>
+  <p class="sub">Nhập danh sách sản phẩm, chọn khổ tem phù hợp, rồi in trực tiếp từ trình duyệt. Mã QR được tạo offline ngay trong trình duyệt (không cần mạng khi in).</p>
 
   <div class="panel">
-    <h2>1. Chọn khổ giấy / khổ tem</h2>
+    <h2>1. Chọn khổ tem decal</h2>
     <div class="paper-grid" id="paperGrid"></div>
   </div>
 
@@ -339,7 +347,7 @@
         <div class="url-example">tem-ma-vach.html?data=Lọc dầu Vios_a_85000_a_Cái_a_8938501234567_a_2_b_Bugi NGK_a_120000_a_Cái_a__a_4</div>
         <p><b>2) Một sản phẩm duy nhất</b> — dùng riêng lẻ các tham số <code>ten</code>, <code>gia</code>, <code>dv</code>, <code>ma</code> (nội dung QR), <code>sl</code>:</p>
         <div class="url-example">tem-ma-vach.html?ten=Lọc dầu Vios&amp;gia=85000&amp;dv=Cái&amp;ma=8938501234567&amp;sl=2</div>
-        <p>Tham số tùy chọn thêm: <code>khogiay</code> = mã khổ giấy (<span id="paperIdList"></span>), <code>autoprint=1</code> để tự mở hộp thoại in ngay khi trang tải xong. Nội dung QR (<code>ma</code>) nếu để trống sẽ tự sinh từ tên + giá; có thể đặt là mã sản phẩm, số điện thoại, link, v.v.</p>
+        <p>Tham số tùy chọn thêm: <code>khogiay</code> = mã khổ tem (<span id="paperIdList"></span>) — khi truyền, cỡ chữ và cỡ QR sẽ tự set về mức khuyến nghị cho khổ đó. <code>autoprint=1</code> để tự mở hộp thoại in ngay khi trang tải xong. Nội dung QR (<code>ma</code>) nếu để trống sẽ tự sinh từ tên + giá; có thể đặt là mã sản phẩm, số điện thoại, link, v.v.</p>
         <div class="toolbar">
           <button class="btn" id="btnMakeUrl">Tạo URL mẫu từ bảng hiện tại</button>
         </div>
@@ -363,21 +371,18 @@
       <label>Cỡ QR:
         <select id="qrSize">
           <option value="small">Nhỏ</option>
-          <option value="medium" selected>Vừa</option>
+          <option value="medium">Vừa</option>
           <option value="large">Lớn</option>
         </select>
       </label>
       <label><input type="checkbox" id="showName" checked> Hiện tên sản phẩm</label>
       <label><input type="checkbox" id="showPrice" checked> Hiện giá bán</label>
       <label><input type="checkbox" id="showUnit" checked> Hiện đơn vị</label>
-      <label>Cỡ chữ tên SP:
-        <select id="fontSize">
-          <option value="9">Nhỏ</option>
-          <option value="10.5" selected>Vừa</option>
-          <option value="12">Lớn</option>
-        </select>
+      <label>Cỡ chữ tên SP (pt):
+        <input type="number" id="fontSize" min="5" max="24" step="0.5" value="8">
       </label>
     </div>
+    <p class="hint" id="autoHint">Cỡ chữ và cỡ QR tự động đề xuất theo khổ tem đã chọn ở bước 1 — bạn có thể chỉnh tay lại bất cứ lúc nào.</p>
     <div class="toolbar">
       <button class="btn primary" id="btnGenerate">Tạo tem xem trước</button>
       <button class="btn" id="btnPrint">In tem</button>
@@ -394,20 +399,25 @@
 </div>
 
 <script>
-// ---------- Khổ giấy / khổ tem thông dụng ----------
-// mmW / mmH = kích thước 1 tem (mm). cols = số cột trên khổ. pageW/pageH = khổ giấy tổng (mm), roll:true nếu là tem cuộn (in liên tục, không giới hạn hàng)
+// ---------- Khổ tem decal thông dụng (theo bảng giá in tem decal giấy chữ nhật) ----------
+// mmW / mmH = kích thước 1 tem (mm). cols = số cột (roll luôn =1).
+// defFont = cỡ chữ tên SP khuyến nghị (pt). defQr = cỡ QR khuyến nghị (small/medium/large).
 const PAPERS = [
-  {id:'roll_50x30', name:'Tem cuộn 50 x 30mm', desc:'Máy in nhiệt cầm tay / để bàn', mmW:50, mmH:30, cols:1, roll:true},
-  {id:'roll_40x30', name:'Tem cuộn 40 x 30mm', desc:'Máy in nhiệt phổ biến', mmW:40, mmH:30, cols:1, roll:true},
-  {id:'roll_30x20', name:'Tem cuộn 30 x 20mm', desc:'Tem nhỏ, sản phẩm nhỏ gọn', mmW:30, mmH:20, cols:1, roll:true},
-  {id:'roll_25x15', name:'Tem cuộn 25 x 15mm', desc:'Tem siêu nhỏ', mmW:25, mmH:15, cols:1, roll:true},
-  {id:'a4_21', name:'A4 - 21 tem / tờ', desc:'3 cột x 7 hàng, ~63.5 x 38.1mm', mmW:63.5, mmH:38.1, cols:3, pageW:210, pageH:297},
-  {id:'a4_24', name:'A4 - 24 tem / tờ', desc:'3 cột x 8 hàng, ~63.5 x 33.9mm', mmW:63.5, mmH:33.9, cols:3, pageW:210, pageH:297},
-  {id:'a4_14', name:'A4 - 14 tem / tờ', desc:'2 cột x 7 hàng, ~99.1 x 38.1mm', mmW:99.1, mmH:38.1, cols:2, pageW:210, pageH:297},
-  {id:'a4_65', name:'A4 - 65 tem / tờ', desc:'5 cột x 13 hàng, tem rất nhỏ', mmW:38.1, mmH:21.2, cols:5, pageW:210, pageH:297},
+  {id:'2x3',   name:'Tem 2 x 3cm',   desc:'20 x 30mm', mmW:20, mmH:30, cols:1, roll:true, defFont:6.5, defQr:'small'},
+  {id:'2.5x3', name:'Tem 2,5 x 3cm', desc:'25 x 30mm', mmW:25, mmH:30, cols:1, roll:true, defFont:7,   defQr:'small'},
+  {id:'3x4',   name:'Tem 3 x 4cm',   desc:'30 x 40mm', mmW:30, mmH:40, cols:1, roll:true, defFont:8,   defQr:'small'},
+  {id:'3.5x5', name:'Tem 3,5 x 5cm', desc:'35 x 50mm', mmW:35, mmH:50, cols:1, roll:true, defFont:9,   defQr:'medium'},
+  {id:'4x6',   name:'Tem 4 x 6cm',   desc:'40 x 60mm', mmW:40, mmH:60, cols:1, roll:true, defFont:10.5,defQr:'medium'},
+  {id:'5x8',   name:'Tem 5 x 8cm',   desc:'50 x 80mm', mmW:50, mmH:80, cols:1, roll:true, defFont:12.5,defQr:'medium'},
+  {id:'5.5x9', name:'Tem 5,5 x 9cm', desc:'55 x 90mm', mmW:55, mmH:90, cols:1, roll:true, defFont:14,  defQr:'large'},
 ];
 
-let currentPaper = PAPERS[0];
+let currentPaper = PAPERS[2]; // mặc định 3x4cm — khổ phổ biến nhất
+
+function applyPaperDefaults(p){
+  document.getElementById('fontSize').value = p.defFont;
+  document.getElementById('qrSize').value = p.defQr;
+}
 
 function renderPaperGrid(){
   const grid = document.getElementById('paperGrid');
@@ -416,11 +426,16 @@ function renderPaperGrid(){
     const el = document.createElement('div');
     el.className = 'paper-opt' + (p.id===currentPaper.id ? ' active' : '');
     el.innerHTML = `<b>${p.name}</b><span>${p.desc}</span>`;
-    el.onclick = ()=>{ currentPaper = p; renderPaperGrid(); };
+    el.onclick = ()=>{
+      currentPaper = p;
+      renderPaperGrid();
+      applyPaperDefaults(p);
+    };
     grid.appendChild(el);
   });
 }
 renderPaperGrid();
+applyPaperDefaults(currentPaper);
 
 // ---------- Bảng nhập sản phẩm ----------
 const prodBody = document.getElementById('prodBody');
@@ -506,7 +521,7 @@ function generateLabels(){
   const showName = document.getElementById('showName').checked;
   const showPrice = document.getElementById('showPrice').checked;
   const showUnit = document.getElementById('showUnit').checked;
-  const fs = document.getElementById('fontSize').value;
+  const fs = parseFloat(document.getElementById('fontSize').value) || currentPaper.defFont;
   const layoutMode = document.getElementById('layoutMode').value; // 'row' | 'stack'
   const qrSizeChoice = document.getElementById('qrSize').value; // small|medium|large
   const qrHeight = (layoutMode==='stack' ? QR_HEIGHT_STACK : QR_HEIGHT_ROW)[qrSizeChoice] || QR_HEIGHT_ROW.medium;
@@ -522,7 +537,7 @@ function generateLabels(){
       const giaHtml = showPrice ? `<span class="gia">${fmtGia(prod.gia)}</span>` : '';
       const dvHtml = showUnit && prod.dv ? `<span class="dv">/ ${prod.dv}</span>` : '';
       const giaDvBlock = (giaHtml || dvHtml)
-        ? `<div class="gia-dv" style="font-size:${Math.max(9, fs-1)}pt">${giaHtml}${dvHtml}</div>`
+        ? `<div class="gia-dv" style="font-size:${Math.max(5, fs-1)}pt">${giaHtml}${dvHtml}</div>`
         : '';
       const tenBlock = showName
         ? `<div class="ten" style="font-size:${fs}pt">${prod.ten}</div>`
@@ -555,11 +570,7 @@ function generateLabels(){
     pageCss.id = 'pageSizeStyle';
     document.head.appendChild(pageCss);
   }
-  if(p.roll){
-    pageCss.textContent = `@page{ size: ${p.mmW}mm ${p.mmH}mm; margin:0; }`;
-  } else {
-    pageCss.textContent = `@page{ size: A4; margin:8mm; }`;
-  }
+  pageCss.textContent = `@page{ size: ${p.mmW}mm ${p.mmH}mm; margin:0; }`;
 
   if(count === 0){
     labelsEl.innerHTML = '<p style="grid-column:1/-1;color:#8a93a1;font-size:13px;padding:10px;">Chưa có sản phẩm nào — hãy nhập ít nhất tên sản phẩm ở bảng phía trên.</p>';
@@ -646,7 +657,11 @@ function applyURLParams(){
   const khogiay = params.get('khogiay');
   if(khogiay){
     const found = PAPERS.find(p=>p.id===khogiay);
-    if(found){ currentPaper = found; renderPaperGrid(); }
+    if(found){
+      currentPaper = found;
+      renderPaperGrid();
+      applyPaperDefaults(found);
+    }
   }
 
   generateLabels();
