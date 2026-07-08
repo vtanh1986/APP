@@ -403,13 +403,13 @@
 // mmW / mmH = kích thước 1 tem (mm). cols = số cột (roll luôn =1).
 // defFont = cỡ chữ tên SP khuyến nghị (pt). defQr = cỡ QR khuyến nghị (small/medium/large).
 const PAPERS = [
-  {id:'2x3',   name:'Tem 2 x 3cm',   desc:'20 x 30mm', mmW:20, mmH:30, cols:1, roll:true, defFont:6.5, defQr:'small'},
-  {id:'2.5x3', name:'Tem 2,5 x 3cm', desc:'25 x 30mm', mmW:25, mmH:30, cols:1, roll:true, defFont:7,   defQr:'small'},
-  {id:'3x4',   name:'Tem 3 x 4cm',   desc:'30 x 40mm', mmW:30, mmH:40, cols:1, roll:true, defFont:8,   defQr:'small'},
-  {id:'3.5x5', name:'Tem 3,5 x 5cm', desc:'35 x 50mm', mmW:35, mmH:50, cols:1, roll:true, defFont:9,   defQr:'medium'},
-  {id:'4x6',   name:'Tem 4 x 6cm',   desc:'40 x 60mm', mmW:40, mmH:60, cols:1, roll:true, defFont:10.5,defQr:'medium'},
-  {id:'5x8',   name:'Tem 5 x 8cm',   desc:'50 x 80mm', mmW:50, mmH:80, cols:1, roll:true, defFont:12.5,defQr:'medium'},
-  {id:'5.5x9', name:'Tem 5,5 x 9cm', desc:'55 x 90mm', mmW:55, mmH:90, cols:1, roll:true, defFont:14,  defQr:'large'},
+  {id:'2x3',   name:'Tem 2 x 3cm',   desc:'30 x 20mm (ngang)', mmW:30, mmH:20, cols:1, roll:true, defFont:6,   defQr:'small'},
+  {id:'2.5x3', name:'Tem 2,5 x 3cm', desc:'30 x 25mm (ngang)', mmW:30, mmH:25, cols:1, roll:true, defFont:6.5, defQr:'small'},
+  {id:'3x4',   name:'Tem 3 x 4cm',   desc:'40 x 30mm (ngang)', mmW:40, mmH:30, cols:1, roll:true, defFont:7.5, defQr:'small'},
+  {id:'3.5x5', name:'Tem 3,5 x 5cm', desc:'50 x 35mm (ngang)', mmW:50, mmH:35, cols:1, roll:true, defFont:8.5, defQr:'medium'},
+  {id:'4x6',   name:'Tem 4 x 6cm',   desc:'60 x 40mm (ngang)', mmW:60, mmH:40, cols:1, roll:true, defFont:10,  defQr:'medium'},
+  {id:'5x8',   name:'Tem 5 x 8cm',   desc:'80 x 50mm (ngang)', mmW:80, mmH:50, cols:1, roll:true, defFont:12,  defQr:'medium'},
+  {id:'5.5x9', name:'Tem 5,5 x 9cm', desc:'90 x 55mm (ngang)', mmW:90, mmH:55, cols:1, roll:true, defFont:13,  defQr:'large'},
 ];
 
 let currentPaper = PAPERS[2]; // mặc định 3x4cm — khổ phổ biến nhất
@@ -507,8 +507,8 @@ function buildQrSvg(text){
 }
 
 // Chiều cao QR tính theo % chiều cao tem, tùy bố cục và lựa chọn "Cỡ QR"
-const QR_HEIGHT_ROW = {small:'65%', medium:'85%', large:'100%'};
-const QR_HEIGHT_STACK = {small:'45%', medium:'58%', large:'72%'};
+const QR_HEIGHT_ROW = {small:'55%', medium:'70%', large:'85%'};
+const QR_HEIGHT_STACK = {small:'38%', medium:'48%', large:'60%'};
 
 function generateLabels(){
   const products = collectProducts();
