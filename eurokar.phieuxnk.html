@@ -134,7 +134,7 @@
   </div>
 
   <div class="title-band">
-    <h2>Phiếu Xuất Kho Bán Hàng</h2>
+    <h2 id="el-tieu-de">Phiếu Xuất Kho Bán Hàng</h2>
     <div class="invoice-meta">
       <span>Số hóa đơn: <strong id="el-so-hd"></strong></span>
       <span id="el-ngay-title"></span>
@@ -370,6 +370,9 @@ window.addEventListener('DOMContentLoaded', function () {
 
   // 2. Khách hàng
   document.getElementById('el-khach-hang').textContent = p.get('khach_hang') || '';
+
+  // Tiêu đề phiếu (tùy chỉnh qua URL)
+document.getElementById('el-tieu-de').textContent = p.get('tieu_de') || 'Phiếu Xuất Kho Bán Hàng';
 
   // 3. Địa chỉ
   document.getElementById('el-dia-chi').textContent = p.get('dia_chi') || '';
