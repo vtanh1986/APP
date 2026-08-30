@@ -397,13 +397,13 @@ window.addEventListener('DOMContentLoaded', function () {
   const chietKhau = parseNum(p.get('chiet_khau'));
   document.getElementById('el-chiet-khau').textContent = chietKhau > 0 ? fmt(chietKhau) + ' ₫' : '0';
 
-  // VAT (tên dòng + thành tiền)
+  // VAT (tên dòng + thành tiền) — làm tròn về số nguyên, không lấy phần thập phân
   const vatLabel = p.get('vat_label') || 'VAT:';
-  const vatValue = parseNum(p.get('vat_value'));
+  const vatValue = Math.round(parseNum(p.get('vat_value')));
   document.getElementById('el-vat-label').textContent = vatLabel;
   document.getElementById('el-vat-value').textContent = vatValue > 0 ? fmt(vatValue) + ' ₫' : '0';
 
-  // Tổng thanh toán = tổng cộng - chiết khấu + VAT
+  // Tổng thanh toán = tổng cộng - chiết khấu + VAT (VAT đã làm tròn ở trên nên tổng cũng theo số nguyên)
   const tongTT = totalAmt - chietKhau + vatValue;
   document.getElementById('el-tong-tt').textContent = fmt(tongTT) + ' ₫';
 
