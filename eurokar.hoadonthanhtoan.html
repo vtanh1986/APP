@@ -371,9 +371,10 @@ window.addEventListener('DOMContentLoaded', function () {
   const dataStr = p.get('data') || '';
   const { totalQty, totalAmt } = renderTable(dataStr);
 
-  // Tổng cộng (tự tính)
+  // Tổng cộng (tự tính) — làm tròn về số nguyên, không lấy phần thập phân
+  const totalAmtRounded = Math.round(totalAmt);
   document.getElementById('el-tong-label').textContent = `Tổng cộng (${fmt(totalQty)} sp):`;
-  document.getElementById('el-tong-value').textContent = fmt(totalAmt) + ' ₫';
+  document.getElementById('el-tong-value').textContent = fmt(totalAmtRounded) + ' ₫';
 
   // Chiết khấu
   const chietKhau = parseNum(p.get('chiet_khau'));
@@ -385,8 +386,8 @@ window.addEventListener('DOMContentLoaded', function () {
   document.getElementById('el-vat-label').textContent = vatLabel;
   document.getElementById('el-vat-value').textContent = vatValue > 0 ? fmt(vatValue) + ' ₫' : '0';
 
-  // Tổng thanh toán = tổng cộng - chiết khấu + VAT (VAT đã làm tròn ở trên nên tổng cũng theo số nguyên)
-  const tongTT = totalAmt - chietKhau + vatValue;
+  // Tổng thanh toán = tổng cộng (đã làm tròn) - chiết khấu + VAT (đã làm tròn)
+  const tongTT = totalAmtRounded - chietKhau + vatValue;
   document.getElementById('el-tong-tt').textContent = fmt(tongTT) + ' ₫';
 
   // Số tiền bằng chữ
