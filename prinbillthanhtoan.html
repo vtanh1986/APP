@@ -134,11 +134,13 @@
             width: 22px;
         }
 
-        tr.item-row-1 td.cell-name {
-            text-align: left;
-            word-break: break-word;
-            font-weight: 500;
-        }
+            tr.item-row-1 td.cell-name {
+                text-align: left;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+                font-weight: 500;
+            }
 
         tr.item-row-1 td.cell-sub-total {
             text-align: right;
@@ -449,8 +451,7 @@
                 tr1.className = 'item-row-1';
                 tr1.innerHTML = `
                     <td class="cell-tt">${stt}</td>
-                    <td class="cell-name">${product.tenHang}</td>
-                    <td class="cell-sub-total">${product.thanhTien.toLocaleString('vi-VN')}đ</td>
+                    <td class="cell-name" colspan="2">${product.tenHang}</td>
                 `;
                 tableBody.appendChild(tr1);
 
@@ -458,7 +459,8 @@
                 tr2.className = 'item-row-2';
                 tr2.innerHTML = `
                     <td></td>
-                    <td class="cell-sub-sl" colspan="2">${product.soLuong.toLocaleString('vi-VN')} x ${product.donGia.toLocaleString('vi-VN')}</td>
+                    <td class="cell-sub-sl">${product.soLuong.toLocaleString('vi-VN')} x ${product.donGia.toLocaleString('vi-VN')}</td>
+                    <td class="cell-sub-total">${product.thanhTien.toLocaleString('vi-VN')}đ</td>
                 `;
                 tableBody.appendChild(tr2);
 
