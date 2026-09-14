@@ -351,14 +351,6 @@
             }, 500);
         }
         
-        function autoPrint() {
-            setTimeout(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('noautoprint') !== 'true') printInvoice();
-            }, 1000);
-        }
-        
-        window.addEventListener('load', autoPrint);
         
         const urlParams = new URLSearchParams(window.location.search);
         
@@ -466,7 +458,7 @@
                 tr2.className = 'item-row-2';
                 tr2.innerHTML = `
                     <td></td>
-                    <td class="cell-sub-sl" colspan="2">${product.donGia.toLocaleString('vi-VN')} x ${product.soLuong}</td>
+                    <td class="cell-sub-sl" colspan="2">${product.soLuong.toLocaleString('vi-VN')} x ${product.donGia.toLocaleString('vi-VN')}</td>
                 `;
                 tableBody.appendChild(tr2);
 
