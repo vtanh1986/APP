@@ -62,13 +62,17 @@
       padding-bottom: 0;
     }
     .customer-left .row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 9px; }
-    .customer-left .warehouse-row {
+    .customer-section > .warehouse-row {
       display: grid;
+      grid-column: 1 / -1;
       grid-template-columns: auto minmax(0, 1.5fr) auto minmax(0, 0.85fr);
       align-items: baseline;
       gap: 6px;
+      margin-bottom: 9px;
     }
-    .customer-left .warehouse-value {
+    .warehouse-row .label { font-size: 13.5px; color: #000; white-space: nowrap; font-weight: 600; }
+    .warehouse-row .value { font-size: 14px; color: #000; }
+    .warehouse-row .warehouse-value {
       min-width: 0;
       min-height: 1em;
       font-weight: 500;
@@ -76,11 +80,11 @@
     }
     .customer-left .label { font-size: 13.5px; color: #000; white-space: nowrap; font-weight: 600; }
     .customer-left .value { font-size: 14px; font-weight: 700; color: #000; }
-    .customer-left .value.warehouse-value { font-weight: 400; }
-    .customer-left #el-kho { display: block; white-space: nowrap; overflow: hidden; }
-    .customer-left #el-kho::after { content: " ................................................................................................................................................................................................"; }
-    .customer-left .location-dots { display: block; white-space: nowrap; overflow: hidden; }
-    .customer-left .location-dots::after { content: "................................................................................................................................................................................................"; }
+    .warehouse-row .value.warehouse-value { font-weight: 400; }
+    .warehouse-row #el-kho { display: block; white-space: nowrap; overflow: hidden; }
+    .warehouse-row #el-kho::after { content: " ................................................................................................................................................................................................"; }
+    .warehouse-row .location-dots { display: block; white-space: nowrap; overflow: hidden; }
+    .warehouse-row .location-dots::after { content: "................................................................................................................................................................................................"; }
     .customer-right { font-size: 13.5px; color: #000; }
     .customer-right .cr-row { display: grid; grid-template-columns: auto 1fr; gap: 6px; margin-bottom: 9px; align-items: baseline; }
     .customer-right .cr-label { font-weight: 600; white-space: nowrap; text-align: right; }
@@ -127,7 +131,7 @@
     @media (max-width: 600px) {
       .header { flex-direction: column; text-align: center; }
       .customer-section { grid-template-columns: 1fr; }
-      .customer-left .warehouse-row { grid-template-columns: auto minmax(0, 1fr); }
+      .customer-section > .warehouse-row { grid-column: 1; grid-template-columns: auto minmax(0, 1fr); }
       .signature-section { grid-template-columns: repeat(2, 1fr); }
       .totals-section { justify-content: stretch; }
       .totals-box { width: 100%; }
@@ -170,12 +174,6 @@
           <span class="label">Địa chỉ:</span>
           <span class="value" style="font-weight:500;" id="el-dia-chi"></span>
         </div>
-        <div class="row warehouse-row">
-          <span class="label" id="el-kho-label">Xuất tại kho:</span>
-          <span class="value warehouse-value" id="el-kho"></span>
-          <span class="label">Địa điểm:</span>
-          <span class="value warehouse-value location-dots"></span>
-        </div>
       </div>
       <div class="customer-right">
         <div class="cr-row">
@@ -186,6 +184,12 @@
           <span class="cr-label"></span>
           <span class="cr-value" id="el-nvbh"></span>
         </div>
+      </div>
+      <div class="row warehouse-row">
+        <span class="label" id="el-kho-label">Xuất tại kho:</span>
+        <span class="value warehouse-value" id="el-kho"></span>
+        <span class="label">Địa điểm:</span>
+        <span class="value warehouse-value location-dots"></span>
       </div>
     </div>
 
