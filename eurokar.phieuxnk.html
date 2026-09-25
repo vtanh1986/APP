@@ -63,17 +63,10 @@
     }
     .customer-left .row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 9px; }
     .customer-left .warehouse-row {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-    .customer-left .warehouse-row .warehouse-value { flex: 1; }
-    .customer-left .location-row {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-columns: auto minmax(0, 1.5fr) auto minmax(0, 0.85fr);
       align-items: baseline;
       gap: 6px;
-      margin-bottom: 9px;
     }
     .customer-left .warehouse-value {
       min-width: 0;
@@ -84,6 +77,8 @@
     .customer-left .label { font-size: 13.5px; color: #000; white-space: nowrap; font-weight: 600; }
     .customer-left .value { font-size: 14px; font-weight: 700; color: #000; }
     .customer-left .value.warehouse-value { font-weight: 400; }
+    .customer-left .location-dots { display: block; white-space: nowrap; overflow: hidden; }
+    .customer-left .location-dots::after { content: "................................................................................................................................................................................................"; }
     .customer-right { font-size: 13.5px; color: #000; }
     .customer-right .cr-row { display: grid; grid-template-columns: auto 1fr; gap: 6px; margin-bottom: 9px; align-items: baseline; }
     .customer-right .cr-label { font-weight: 600; white-space: nowrap; text-align: right; }
@@ -130,8 +125,7 @@
     @media (max-width: 600px) {
       .header { flex-direction: column; text-align: center; }
       .customer-section { grid-template-columns: 1fr; }
-      .customer-left .warehouse-row { display: flex; }
-      .customer-left .location-row { grid-template-columns: auto minmax(0, 1fr); }
+      .customer-left .warehouse-row { grid-template-columns: auto minmax(0, 1fr); }
       .signature-section { grid-template-columns: repeat(2, 1fr); }
       .totals-section { justify-content: stretch; }
       .totals-box { width: 100%; }
@@ -177,10 +171,8 @@
         <div class="row warehouse-row">
           <span class="label" id="el-kho-label">Xuất tại kho:</span>
           <span class="value warehouse-value" id="el-kho"></span>
-        </div>
-        <div class="row location-row">
           <span class="label">Địa điểm:</span>
-          <span class="value warehouse-value" id="el-dia-diem"></span>
+          <span class="value warehouse-value location-dots"></span>
         </div>
       </div>
       <div class="customer-right">
@@ -390,12 +382,11 @@ document.getElementById('el-tieu-de').textContent = p.get('tieu_de') || 'Phiếu
   // 3. Địa chỉ
   document.getElementById('el-dia-chi').textContent = p.get('dia_chi') || '';
 
-  // 3a. Thông tin kho: loai_phieu=nhap/xuat, kho=..., dia_diem=...
+  // 3a. Thông tin kho: loai_phieu=nhap/xuat, kho=...
   const loaiPhieuRaw = (p.get('loai_phieu') || 'xuat').trim().toLowerCase();
   const loaiPhieu = (loaiPhieuRaw === 'nhap' || loaiPhieuRaw === 'nhập') ? 'Nhập' : 'Xuất';
   document.getElementById('el-kho-label').textContent = `${loaiPhieu} tại kho:`;
   document.getElementById('el-kho').textContent = p.get('kho') || '';
-  document.getElementById('el-dia-diem').textContent = p.get('dia_diem') || '';
 
   // 4. SĐT
   document.getElementById('el-sdt').textContent = p.get('sdt') || '';
