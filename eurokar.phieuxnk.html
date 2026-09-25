@@ -63,10 +63,17 @@
     }
     .customer-left .row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 9px; }
     .customer-left .warehouse-row {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1.5fr) auto minmax(0, 0.85fr);
+      display: flex;
       align-items: baseline;
       gap: 6px;
+    }
+    .customer-left .warehouse-row .warehouse-value { flex: 1; }
+    .customer-left .location-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 9px;
     }
     .customer-left .warehouse-value {
       min-width: 0;
@@ -122,7 +129,8 @@
     @media (max-width: 600px) {
       .header { flex-direction: column; text-align: center; }
       .customer-section { grid-template-columns: 1fr; }
-      .customer-left .warehouse-row { grid-template-columns: auto minmax(70px, 1fr); }
+      .customer-left .warehouse-row { display: flex; }
+      .customer-left .location-row { grid-template-columns: auto minmax(0, 1fr); }
       .signature-section { grid-template-columns: repeat(2, 1fr); }
       .totals-section { justify-content: stretch; }
       .totals-box { width: 100%; }
@@ -168,6 +176,8 @@
         <div class="row warehouse-row">
           <span class="label" id="el-kho-label">Xuất tại kho:</span>
           <span class="value warehouse-value" id="el-kho"></span>
+        </div>
+        <div class="row location-row">
           <span class="label">Địa điểm:</span>
           <span class="value warehouse-value" id="el-dia-diem"></span>
         </div>
