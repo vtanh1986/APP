@@ -102,11 +102,10 @@
   }
 
   .col-stt    { width: 6%;  text-align: center; }
-  .col-ten    { width: 36%; }
-  .col-dvt    { width: 11%; text-align: center; }
-  .col-sl     { width: 11%; text-align: center; }
-  .col-ton    { width: 16%; text-align: center; }
-  .col-ghichu { width: 20%; }
+  .col-ten    { width: 40%; }
+  .col-dvt    { width: 12%; text-align: center; }
+  .col-sl     { width: 12%; text-align: center; }
+  .col-ghichu { width: 30%; }
 
   /* Signatures */
   .signatures {
@@ -157,34 +156,10 @@
 
   .print-btn:hover { background: #005500; }
 
-  .print-btn2 {
-    position: fixed;
-    bottom: 72px;
-    right: 24px;
-    background: #1565c0;
-    color: #fff;
-    border: none;
-    padding: 12px 28px;
-    font-size: 11pt;
-    font-family: 'Times New Roman', Times, serif;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    z-index: 999;
-    display: none; /* chỉ hiện khi tieude = PHIẾU NHẬP KHO */
-  }
-
-  .print-btn2:hover { background: #0d47a1; }
-
-  /* Ẩn cột Tồn thời điểm khi in "Nhập thành phẩm" */
-  body.hide-ton .col-ton { display: none; }
-
   @media print {
     body { background: #fff; }
     .page { margin: 0; padding: 10mm 15mm; width: 210mm; }
     .print-btn { display: none; }
-    .print-btn2 { display: none; }
   }
 </style>
 <script>
@@ -194,7 +169,7 @@
       tieude:   p.get('tieude')   || 'Phiếu Nhập Kho',
       ngay:     p.get('ngay')     || '',
       donvi:    p.get('donvi')    || '',
-      data:     p.get('data')     || '',  // "TenHang_a_DVT_a_SoLuong_a_TonThoiDiem_a_GhiChu_b_..."
+      data:     p.get('data')     || '',  // "TenHang_a_DVT_a_SoLuong_a_GhiChu_b_..."
       nguoigiao: p.get('nguoigiao') || '',  // Tên người giao hàng
       thukho:    p.get('thukho')    || '',  // Tên thủ kho
       ketoan:    p.get('ketoan')    || '',  // Tên kế toán
@@ -202,26 +177,11 @@
     };
   }
 
-  function printNhapThanhPham() {
-    document.body.classList.add('hide-ton');
-    window.print();
-  }
-
-  window.addEventListener('afterprint', function () {
-    document.body.classList.remove('hide-ton');
-  });
-
   window.addEventListener('DOMContentLoaded', function () {
     const { tieude, ngay, donvi, data, nguoigiao, thukho, ketoan, giamdoc } = getParams();
 
     document.getElementById('txt-tieude').textContent = tieude;
     document.title = tieude;
-
-    // --- Hiện nút "In nhập thành phẩm" nếu tieude = PHIẾU NHẬP KHO ---
-    const tieudeChuan = tieude.trim().toUpperCase();
-    if (tieudeChuan === 'PHIẾU NHẬP KHO') {
-      document.getElementById('print-btn-2').style.display = 'inline-block';
-    }
 
     // --- Ngày ---
     let ngayHienThi = ngay;
@@ -254,8 +214,7 @@
         const tenHang = cols[0] || '';
         const dvt     = cols[1] || '';
         const soLuong = cols[2] || '';
-        const ton     = cols[3] || '';
-        const ghiChu  = cols[4] || '';
+        const ghiChu  = cols[3] || '';
 
         const tr = document.createElement('tr');
         tr.innerHTML =
@@ -263,7 +222,6 @@
           '<td class="col-ten">' + tenHang + '</td>' +
           '<td class="col-dvt">' + dvt + '</td>' +
           '<td class="col-sl">'  + soLuong + '</td>' +
-          '<td class="col-ton">' + ton + '</td>' +
           '<td class="col-ghichu">' + ghiChu + '</td>';
         tbody.appendChild(tr);
       });
@@ -296,7 +254,6 @@
         <th class="col-ten">Tên hàng</th>
         <th class="col-dvt">ĐVT</th>
         <th class="col-sl">Số lượng</th>
-        <th class="col-ton">Tồn thời điểm</th>
         <th class="col-ghichu">Ghi chú</th>
       </tr>
     </thead>
@@ -332,7 +289,6 @@
 </div>
 
 <button class="print-btn" onclick="window.print()">🖨 In phiếu</button>
-<button class="print-btn2" id="print-btn-2" onclick="printNhapThanhPham()">🖨 In nhập thành phẩm</button>
 
 </body>
 </html>
