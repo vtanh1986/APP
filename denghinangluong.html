@@ -26,7 +26,7 @@
     .header { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; text-align: center; }
     .agency, .national { font-weight: bold; }
     .agency { text-transform: uppercase; }
-    .national { text-transform: uppercase; }
+    .national { text-transform: uppercase; display: inline-block; border-bottom: 1px solid #111; padding-bottom: 3px; }
     .star { margin: 3px 0; }
     .docno { text-align: left; margin-top: 12px; }
     .date { font-style: italic; margin-top: 16px; }
@@ -97,7 +97,7 @@
 <body>
   <button class="print-button" type="button" onclick="window.print()" aria-label="In quyết định khổ A4 dọc">In quyết định</button>
   <button class="export-button" type="button" onclick="exportWord()">Xuất Word (.docx)</button>
-  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.js"></script>
   <main class="page">
     <header class="header">
       <div>
@@ -119,8 +119,11 @@
 
     <section class="grounds">
       <textarea class="editable-grounds" aria-label="Nội dung căn cứ" spellcheck="false">- Căn cứ Nghị định số 204/2004/NĐ-CP, ngày 14/12/2004 của Chính phủ về chế độ tiền lương đối với cán bộ, công chức, viên chức và lực lượng vũ trang đã được sửa đổi, bổ sung tại Nghị định số 76/2009/NĐ-CP, ngày 15/9/2009; Nghị định số 14/2012/NĐ-CP, ngày 07/3/2012; Nghị định số 17/2013/NĐ-CP, ngày 19/02/2013; Nghị định số 117/2016/NĐ-CP, ngày 21/7/2016 của Chính phủ;
+
 - Căn cứ Thông tư số 08/2013/TT-BNV, ngày 31/7/2013 của Bộ Nội vụ về hướng dẫn thực hiện chế độ nâng bậc lương thường xuyên và nâng bậc lương trước thời hạn đối với cán bộ, công chức, viên chức và người lao động; Thông tư số 03/2021/TT-BNV, ngày 29/6/2021 của Bộ Nội vụ về sửa đổi, bổ sung chế độ nâng bậc lương thường xuyên, nâng bậc lương trước thời hạn và chế độ phụ cấp thâm niên vượt khung đối với cán bộ, công chức, viên chức và người lao động;
+
 - Căn cứ Quy định số 295-QĐ/TU, ngày 17/12/2025 của Ban Thường vụ Tỉnh ủy về Quy định phân cấp quản lý tiền lương đối với cán bộ, công chức, viên chức cơ quan Đảng, Mặt trận Tổ quốc, các tổ chức chính trị - xã hội và các đơn vị sự nghiệp trực thuộc Tỉnh ủy; cán bộ khối nhà nước diện Ban Thường vụ Tỉnh ủy quản lý;
+
 - Căn cứ kết quả cuộc họp Hội đồng xét nâng bậc lương thường xuyên, PCVK của Báo và phát thanh, truyền hình Nghệ An ngày ...;
 - Xét đề nghị của Chánh Văn phòng.</textarea>
       <div class="grounds-print" aria-hidden="true"></div>
@@ -172,77 +175,69 @@
     })();
 
     function exportWord() {
-      if (!window.docx || !window.docx.Packer) {
-        alert('Không tải được thư viện tạo Word. Vui lòng kiểm tra kết nối Internet rồi thử lại.');
+      if (!window.htmlDocx || typeof window.htmlDocx.asBlob !== 'function') {
+        alert('Không tải được thư viện chuyển đổi Word. Vui lòng kiểm tra kết nối Internet rồi thử lại.');
         return;
       }
-      const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
-      const font = 'Times New Roman';
-      const centered = AlignmentType.CENTER;
-      const justified = AlignmentType.JUSTIFIED;
-      const left = AlignmentType.LEFT;
-      const p = (text, options = {}) => new Paragraph({
-        alignment: options.alignment || justified,
-        spacing: { before: options.before || 0, after: options.after ?? 100, line: 300 },
-        indent: options.indent ? { firstLine: 680 } : undefined,
-        children: [new TextRun({ text: text || ' ', font, size: options.size || 26, bold: !!options.bold, italics: !!options.italics })]
-      });
-      const inlineText = (node) => {
-        let out = '';
-        node.childNodes.forEach((child) => {
-          if (child.nodeType === Node.TEXT_NODE) out += child.nodeValue;
-          else if (child.nodeName === 'BR') out += '\n';
-          else out += inlineText(child);
-        });
-        return out;
-      };
-      const paras = [];
-      paras.push(p('TỈNH ỦY NGHỆ AN', {alignment:centered, bold:true, size:24, after:0}));
-      paras.push(p('BÁO VÀ PHÁT THANH, TRUYỀN HÌNH', {alignment:centered, bold:true, size:24, after:0}));
-      paras.push(p('*', {alignment:centered, after:0}));
-      paras.push(p(document.querySelector('.docno').innerText, {alignment:left, size:24, after:100}));
-      paras.push(p('ĐẢNG CỘNG SẢN VIỆT NAM', {alignment:centered, bold:true, size:24, after:0}));
-      paras.push(p(document.querySelector('.date').innerText, {alignment:centered, italics:true, size:24, after:220}));
-      paras.push(p('QUYẾT ĐỊNH', {alignment:centered, bold:true, size:32, after:0}));
-      paras.push(p('nâng bậc lương thường xuyên', {alignment:centered, bold:true, size:28, after:0}));
-      paras.push(p('---', {alignment:centered, after:180}));
-      const grounds = document.querySelector('.editable-grounds').value;
-      grounds.split(/\n\s*\n/).forEach((item) => {
-        if (item.trim()) paras.push(p(item.trim(), {indent:true, after:120}));
-      });
-      paras.push(p(document.querySelector('.authority').innerText, {alignment:centered, bold:true, after:50}));
-      paras.push(p(document.querySelector('.decides').innerText.toUpperCase(), {alignment:centered, bold:true, after:150}));
-      document.querySelectorAll('.article').forEach((el) => {
-        inlineText(el).split('\n').forEach((line) => {
-          if (line.trim()) paras.push(p(line.trim(), {indent:true, after:100}));
-        });
-      });
-      paras.push(p('Nơi nhận:', {alignment:left, bold:true, italics:true, size:24, before:220, after:0}));
-      document.querySelectorAll('.recipients').forEach((el) => {
-        el.innerText.split('\n').slice(1).forEach((line) => { if (line.trim()) paras.push(p(line.trim(), {alignment:left, size:24, after:0})); });
-      });
-      paras.push(p('GIÁM ĐỐC', {alignment:centered, bold:true, size:24, before:0, after:900}));
-      paras.push(p(document.querySelector('.sign .name').value, {alignment:centered, bold:true, size:26, after:0}));
+      const sourcePage = document.querySelector('.page');
+      const page = sourcePage.cloneNode(true);
+      page.classList.add('word-export');
+      page.querySelectorAll('.print-button, .export-button, .grounds-print').forEach((node) => node.remove());
 
-      const doc = new Document({
-        styles: { default: { document: { run: { font, size: 26 }, paragraph: { spacing: { line: 300 } } } } },
-        sections: [{
-          properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, right: 1417, bottom: 1020, left: 1417 } } },
-          children: paras
-        }]
+      // DOCX cần văn bản thực thay cho các trường nhập HTML.
+      page.querySelectorAll('textarea').forEach((field) => {
+        const text = document.createElement('div');
+        text.className = field.classList.contains('editable-grounds') ? 'editable-grounds' : field.className;
+        text.textContent = field.value;
+        field.replaceWith(text);
       });
-      Packer.toBlob(doc).then((blob) => {
+
+      // Dùng bảng HTML hai cột để Word giữ bố cục đầu trang và phần ký.
+      const makeTwoColumnTable = (container, tableClass) => {
+        if (!container || container.children.length < 2) return;
+        const table = document.createElement('table');
+        table.className = tableClass;
+        const row = table.insertRow();
+        Array.from(container.children).forEach((child) => {
+          const cell = row.insertCell();
+          cell.appendChild(child.cloneNode(true));
+        });
+        container.replaceWith(table);
+      };
+      makeTwoColumnTable(page.querySelector('.header'), 'word-table word-header-table');
+      makeTwoColumnTable(page.querySelector('.signature-row'), 'word-table word-sign-table');
+
+      const css = document.querySelector('style').textContent + `
+        body { margin: 0; background: #fff; color: #111; font-family: "Times New Roman", serif; font-size: 13.5pt; line-height: 1.35; }
+        .page.word-export { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+        .word-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .word-table td { width: 50%; vertical-align: top; padding: 0; }
+        .word-header-table td { text-align: center; }
+        .word-sign-table { margin-top: 24px; }
+        .word-export .editable-grounds { display: block !important; height: auto; min-height: 0; padding: 0; border: 0; background: transparent; white-space: pre-line; resize: none; overflow: visible; }
+        .word-export .name { border: 0; background: transparent; resize: none; }
+        .word-export .authority { white-space: nowrap; }
+        .word-export .national { border-bottom: 1px solid #111; }
+      `;
+      const html = '<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><style>' + css +
+        '</style></head><body>' + page.outerHTML + '</body></html>';
+      try {
+        const blob = window.htmlDocx.asBlob(html, {
+          orientation: 'portrait',
+          margins: { top: 1134, right: 1417, bottom: 1020, left: 1417 }
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = 'Quyet_dinh_nang_bac_luong_thuong_xuyen.docx';
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }).catch((error) => {
+      } catch (error) {
         console.error(error);
         alert('Không thể tạo file Word. Vui lòng thử lại.');
-      });
+      }
     }
+
   </script>
 </body>
 </html>
