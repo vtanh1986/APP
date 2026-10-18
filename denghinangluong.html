@@ -45,6 +45,13 @@
     .authority { text-align: center; font-weight: bold; text-transform: uppercase; margin: 15px 0 4px; }
     .decides { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; }
     .article { text-align: justify; margin: 0 0 9px; text-indent: 12mm; }
+    .url-var {
+      display: inline-block; min-width: 2.5em; max-width: 100%;
+      padding: 0 2px; border: 1px dashed #9aa8b5; border-radius: 2px;
+      background: #fff; color: inherit; font: inherit; line-height: inherit;
+      vertical-align: baseline;
+    }
+    .url-var:focus { outline: 1px solid #174a7e; }
     .signature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; margin-top: 24px; }
     .recipients { font-size: 12pt; }
     .recipients strong { font-style: italic; }
@@ -66,6 +73,7 @@
       body { background: white; font-size: 13pt; }
       .print-button { display: none !important; }
       .editable-grounds, .sign .name { border: 0; border-radius: 0; background: transparent; }
+      .url-var { border: 0; border-radius: 0; background: transparent; }
       .editable-grounds { min-height: 0; resize: none; }
       .sign .name { font-size: 13pt; }
       .page { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
@@ -112,11 +120,11 @@
     <div class="decides">Quyết định</div>
 
     <section>
-      <p class="article"><strong>Điều 1.</strong> Nâng bậc lương thường xuyên đối với ...,<br>
-        Sinh ngày: ..<br>
-        Chức danh: .., đơn vị, Báo và phát thanh, truyền hình Nghệ An, như sau:<br>
-        Lương hiện hưởng: Ngạch .., mã số ..; bậc ..; hệ số ... (ngày hiện hưởng). Nay nâng lên bậc ...; hệ số .... Mức lương mới thực hiện từ ngày ....</p>
-      <p class="article"><strong>Điều 2.</strong> Chánh Văn phòng, Trưởng các phòng chuyên môn liên quan và … chịu trách nhiệm thực hiện Quyết định này./.</p>
+      <p class="article"><strong>Điều 1.</strong> Nâng bậc lương thường xuyên đối với <input class="url-var" data-param="doi_tuong" value="..." aria-label="Đối tượng được nâng lương">,<br>
+        Sinh ngày: <input class="url-var" data-param="ngay_sinh" value=".." aria-label="Ngày sinh"><br>
+        Chức danh: <input class="url-var" data-param="chuc_danh" value=".." aria-label="Chức danh">, đơn vị <input class="url-var" data-param="don_vi" value=".." aria-label="Đơn vị">, Báo và phát thanh, truyền hình Nghệ An, như sau:<br>
+        Lương hiện hưởng: Ngạch <input class="url-var" data-param="ngach" value=".." aria-label="Ngạch">, mã số <input class="url-var" data-param="ma_so_ngach" value=".." aria-label="Mã số ngạch">; bậc <input class="url-var" data-param="bac_hien_tai" value=".." aria-label="Bậc lương hiện tại">; hệ số <input class="url-var" data-param="he_so_hien_tai" value="..." aria-label="Hệ số hiện tại"> (ngày <input class="url-var" data-param="ngay_huong" value=".." aria-label="Ngày hưởng hiện tại">). Nay nâng lên bậc <input class="url-var" data-param="bac_moi" value="..." aria-label="Bậc lương mới">; hệ số <input class="url-var" data-param="he_so_moi" value="...." aria-label="Hệ số mới">. Mức lương mới thực hiện từ ngày <input class="url-var" data-param="ngay_hieu_luc" value="...." aria-label="Ngày hiệu lực">.</p>
+      <p class="article"><strong>Điều 2.</strong> Chánh Văn phòng, Trưởng các phòng chuyên môn liên quan và <input class="url-var" data-param="don_vi_chiu_trach_nhiem" value="…" aria-label="Đơn vị chịu trách nhiệm"> chịu trách nhiệm thực hiện Quyết định này./.</p>
     </section>
 
     <footer class="signature-row">
@@ -129,5 +137,21 @@
       <div class="sign">Giám đốc<br><textarea class="name" aria-label="Tên người ký" rows="1" spellcheck="false">Trần Minh Ngọc</textarea></div>
     </footer>
   </main>
+  <script>
+    // Truyền các biến qua query string, ví dụ: ?doi_tuong=Nguyen%20Van%20A&ngay_sinh=01%2F01%2F1990
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      document.querySelectorAll('.url-var[data-param]').forEach((field) => {
+        const key = field.dataset.param;
+        if (params.has(key)) field.value = params.get(key);
+        const fit = () => {
+          const length = Math.max(field.value.length, 2);
+          field.style.width = Math.min(Math.max(length + 1, 4), 48) + 'ch';
+        };
+        fit();
+        field.addEventListener('input', fit);
+      });
+    })();
+  </script>
 </body>
 </html>
