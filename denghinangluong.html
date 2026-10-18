@@ -37,30 +37,21 @@
     .grounds { text-align: justify; }
     .grounds p { margin: 0 0 8px; text-indent: 12mm; }
     .editable-grounds {
-      display: block; width: 100%; min-height: 255px; padding: 0;
-      border: 1px dashed #9aa8b5; border-radius: 3px; background: #fff;
-      color: inherit; font: inherit; line-height: inherit; text-align: justify;
-      white-space: pre-wrap; resize: vertical;
+      display: block; width: 100%; color: inherit; font: inherit;
+      line-height: inherit; text-align: justify; white-space: pre-line;
     }
     .authority { text-align: center; font-weight: bold; text-transform: uppercase; margin: 15px 0 4px; }
     .decides { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; }
     .article { text-align: justify; margin: 0 0 9px; text-indent: 12mm; }
-    .url-var {
-      display: inline-block; min-width: 2.5em; max-width: 100%;
-      padding: 0 2px; border: 1px dashed #9aa8b5; border-radius: 2px;
-      background: #fff; color: inherit; font: inherit; line-height: inherit;
-      vertical-align: baseline;
-    }
-    .url-var:focus { outline: 1px solid #174a7e; }
+    .url-var { display: inline; color: inherit; font: inherit; }
     .signature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; margin-top: 24px; }
     .recipients { font-size: 12pt; }
     .recipients strong { font-style: italic; }
     .sign { text-align: center; font-weight: bold; text-transform: uppercase; }
     .sign .name {
-      display: block; width: 100%; height: 30px; margin-top: 48px; padding: 0;
-      border: 1px dashed #9aa8b5; border-radius: 3px; background: #fff;
-      color: inherit; font: bold 13.5pt "Times New Roman", "Liberation Serif", serif;
-      text-align: center; text-transform: none; resize: none;
+      display: block; margin-top: 48px; color: inherit;
+      font: bold 13.5pt "Times New Roman", "Liberation Serif", serif;
+      text-align: center; text-transform: none;
     }
     .print-button {
       position: fixed; top: 18px; right: 18px; z-index: 10;
@@ -69,13 +60,17 @@
       cursor: pointer; box-shadow: 0 2px 8px #0003;
     }
     .print-button:hover { background: #10365d; }
+    .export-button {
+      position: fixed; top: 64px; right: 18px; z-index: 10;
+      padding: 10px 18px; border: 0; border-radius: 5px;
+      background: #287443; color: #fff; font: 600 15px Arial, sans-serif;
+      cursor: pointer; box-shadow: 0 2px 8px #0003;
+    }
+    .export-button:hover { background: #1c5932; }
     @media print {
       body { background: white; font-size: 13pt; }
-      .print-button { display: none !important; }
-      .editable-grounds, .sign .name { border: 0; border-radius: 0; background: transparent; }
-      .url-var { border: 0; border-radius: 0; background: transparent; }
-      .editable-grounds { min-height: 0; resize: none; }
-      .sign .name { font-size: 13pt; }
+      .print-button, .export-button { display: none !important; }
+            .sign .name { font-size: 13pt; }
       .page { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
     }
     @media screen and (max-width: 750px) {
@@ -86,6 +81,8 @@
 </head>
 <body>
   <button class="print-button" type="button" onclick="window.print()" aria-label="In quyết định khổ A4 dọc">In quyết định</button>
+  <button class="export-button" type="button" onclick="exportWord()">Xuất Word (.docx)</button>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
   <main class="page">
     <header class="header">
       <div>
@@ -106,25 +103,25 @@
     </section>
 
     <section class="grounds">
-      <textarea class="editable-grounds" aria-label="Nội dung căn cứ" spellcheck="false">- Căn cứ Nghị định số 204/2004/NĐ-CP, ngày 14/12/2004 của Chính phủ về chế độ tiền lương đối với cán bộ, công chức, viên chức và lực lượng vũ trang đã được sửa đổi, bổ sung tại Nghị định số 76/2009/NĐ-CP, ngày 15/9/2009; Nghị định số 14/2012/NĐ-CP, ngày 07/3/2012; Nghị định số 17/2013/NĐ-CP, ngày 19/02/2013; Nghị định số 117/2016/NĐ-CP, ngày 21/7/2016 của Chính phủ;
+      <div class="editable-grounds" aria-label="Nội dung căn cứ">- Căn cứ Nghị định số 204/2004/NĐ-CP, ngày 14/12/2004 của Chính phủ về chế độ tiền lương đối với cán bộ, công chức, viên chức và lực lượng vũ trang đã được sửa đổi, bổ sung tại Nghị định số 76/2009/NĐ-CP, ngày 15/9/2009; Nghị định số 14/2012/NĐ-CP, ngày 07/3/2012; Nghị định số 17/2013/NĐ-CP, ngày 19/02/2013; Nghị định số 117/2016/NĐ-CP, ngày 21/7/2016 của Chính phủ;
 
 - Căn cứ Thông tư số 08/2013/TT-BNV, ngày 31/7/2013 của Bộ Nội vụ về hướng dẫn thực hiện chế độ nâng bậc lương thường xuyên và nâng bậc lương trước thời hạn đối với cán bộ, công chức, viên chức và người lao động; Thông tư số 03/2021/TT-BNV, ngày 29/6/2021 của Bộ Nội vụ về sửa đổi, bổ sung chế độ nâng bậc lương thường xuyên, nâng bậc lương trước thời hạn và chế độ phụ cấp thâm niên vượt khung đối với cán bộ, công chức, viên chức và người lao động;
 
 - Căn cứ Quy định số 295-QĐ/TU, ngày 17/12/2025 của Ban Thường vụ Tỉnh ủy về Quy định phân cấp quản lý tiền lương đối với cán bộ, công chức, viên chức cơ quan Đảng, Mặt trận Tổ quốc, các tổ chức chính trị - xã hội và các đơn vị sự nghiệp trực thuộc Tỉnh ủy; cán bộ khối nhà nước diện Ban Thường vụ Tỉnh ủy quản lý;
 
 - Căn cứ kết quả cuộc họp Hội đồng xét nâng bậc lương thường xuyên, PCVK của Báo và phát thanh, truyền hình Nghệ An ngày ...;
-- Xét đề nghị của Chánh Văn phòng.</textarea>
+- Xét đề nghị của Chánh Văn phòng.</div>
     </section>
 
     <div class="authority">Giám đốc Báo và Phát thanh, Truyền hình Nghệ An</div>
     <div class="decides">Quyết định</div>
 
     <section>
-      <p class="article"><strong>Điều 1.</strong> Nâng bậc lương thường xuyên đối với <input class="url-var" data-param="doi_tuong" value="..." aria-label="Đối tượng được nâng lương">,<br>
-        Sinh ngày: <input class="url-var" data-param="ngay_sinh" value=".." aria-label="Ngày sinh"><br>
-        Chức danh: <input class="url-var" data-param="chuc_danh" value=".." aria-label="Chức danh">, đơn vị <input class="url-var" data-param="don_vi" value=".." aria-label="Đơn vị">, Báo và phát thanh, truyền hình Nghệ An, như sau:<br>
-        Lương hiện hưởng: Ngạch <input class="url-var" data-param="ngach" value=".." aria-label="Ngạch">, mã số <input class="url-var" data-param="ma_so_ngach" value=".." aria-label="Mã số ngạch">; bậc <input class="url-var" data-param="bac_hien_tai" value=".." aria-label="Bậc lương hiện tại">; hệ số <input class="url-var" data-param="he_so_hien_tai" value="..." aria-label="Hệ số hiện tại"> (ngày <input class="url-var" data-param="ngay_huong" value=".." aria-label="Ngày hưởng hiện tại">). Nay nâng lên bậc <input class="url-var" data-param="bac_moi" value="..." aria-label="Bậc lương mới">; hệ số <input class="url-var" data-param="he_so_moi" value="...." aria-label="Hệ số mới">. Mức lương mới thực hiện từ ngày <input class="url-var" data-param="ngay_hieu_luc" value="...." aria-label="Ngày hiệu lực">.</p>
-      <p class="article"><strong>Điều 2.</strong> Chánh Văn phòng, Trưởng các phòng chuyên môn liên quan và <input class="url-var" data-param="don_vi_chiu_trach_nhiem" value="…" aria-label="Đơn vị chịu trách nhiệm"> chịu trách nhiệm thực hiện Quyết định này./.</p>
+      <p class="article"><strong>Điều 1.</strong> Nâng bậc lương thường xuyên đối với <span class="url-var" data-param="doi_tuong">...</span>,<br>
+        Sinh ngày: <span class="url-var" data-param="ngay_sinh">..</span><br>
+        Chức danh: <span class="url-var" data-param="chuc_danh">..</span>, đơn vị <span class="url-var" data-param="don_vi">..</span>, Báo và phát thanh, truyền hình Nghệ An, như sau:<br>
+        Lương hiện hưởng: Ngạch <span class="url-var" data-param="ngach">..</span>, mã số <span class="url-var" data-param="ma_so_ngach">..</span>; bậc <span class="url-var" data-param="bac_hien_tai">..</span>; hệ số <span class="url-var" data-param="he_so_hien_tai">...</span> (ngày <span class="url-var" data-param="ngay_huong">..</span>). Nay nâng lên bậc <span class="url-var" data-param="bac_moi">...</span>; hệ số <span class="url-var" data-param="he_so_moi">....</span>. Mức lương mới thực hiện từ ngày <span class="url-var" data-param="ngay_hieu_luc">....</span>.</p>
+      <p class="article"><strong>Điều 2.</strong> Chánh Văn phòng, Trưởng các phòng chuyên môn liên quan và <span class="url-var" data-param="don_vi_chiu_trach_nhiem">…</span> chịu trách nhiệm thực hiện Quyết định này./.</p>
     </section>
 
     <footer class="signature-row">
@@ -134,24 +131,92 @@
         - Giám đốc, các Phó Giám đốc (B/c),<br>
         - Lưu VT.
       </div>
-      <div class="sign">Giám đốc<br><textarea class="name" aria-label="Tên người ký" rows="1" spellcheck="false">Trần Minh Ngọc</textarea></div>
+      <div class="sign">Giám đốc<br><div class="name">Trần Minh Ngọc</div></div>
     </footer>
   </main>
+
   <script>
     // Truyền các biến qua query string, ví dụ: ?doi_tuong=Nguyen%20Van%20A&ngay_sinh=01%2F01%2F1990
     (function () {
       const params = new URLSearchParams(window.location.search);
       document.querySelectorAll('.url-var[data-param]').forEach((field) => {
         const key = field.dataset.param;
-        if (params.has(key)) field.value = params.get(key);
-        const fit = () => {
-          const length = Math.max(field.value.length, 2);
-          field.style.width = Math.min(Math.max(length + 1, 4), 48) + 'ch';
-        };
-        fit();
-        field.addEventListener('input', fit);
+        if (params.has(key)) field.textContent = params.get(key);
       });
     })();
+
+    function exportWord() {
+      if (!window.docx || !window.docx.Packer) {
+        alert('Không tải được thư viện tạo Word. Vui lòng kiểm tra kết nối Internet rồi thử lại.');
+        return;
+      }
+      const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
+      const font = 'Times New Roman';
+      const centered = AlignmentType.CENTER;
+      const justified = AlignmentType.JUSTIFIED;
+      const left = AlignmentType.LEFT;
+      const p = (text, options = {}) => new Paragraph({
+        alignment: options.alignment || justified,
+        spacing: { before: options.before || 0, after: options.after ?? 100, line: 300 },
+        indent: options.indent ? { firstLine: 680 } : undefined,
+        children: [new TextRun({ text: text || ' ', font, size: options.size || 26, bold: !!options.bold, italics: !!options.italics })]
+      });
+      const inlineText = (node) => {
+        let out = '';
+        node.childNodes.forEach((child) => {
+          if (child.nodeType === Node.TEXT_NODE) out += child.nodeValue;
+          else if (child.nodeName === 'BR') out += '\n';
+          else out += inlineText(child);
+        });
+        return out;
+      };
+      const paras = [];
+      paras.push(p('TỈNH ỦY NGHỆ AN', {alignment:centered, bold:true, size:24, after:0}));
+      paras.push(p('BÁO VÀ PHÁT THANH, TRUYỀN HÌNH', {alignment:centered, bold:true, size:24, after:0}));
+      paras.push(p('*', {alignment:centered, after:0}));
+      paras.push(p(document.querySelector('.docno').innerText, {alignment:left, size:24, after:100}));
+      paras.push(p('ĐẢNG CỘNG SẢN VIỆT NAM', {alignment:centered, bold:true, size:24, after:0}));
+      paras.push(p(document.querySelector('.date').innerText, {alignment:centered, italics:true, size:24, after:220}));
+      paras.push(p('QUYẾT ĐỊNH', {alignment:centered, bold:true, size:32, after:0}));
+      paras.push(p('nâng bậc lương thường xuyên', {alignment:centered, bold:true, size:28, after:0}));
+      paras.push(p('---', {alignment:centered, after:180}));
+      const grounds = document.querySelector('.editable-grounds').innerText;
+      grounds.split(/\n\s*\n/).forEach((item) => {
+        if (item.trim()) paras.push(p(item.trim(), {indent:true, after:120}));
+      });
+      paras.push(p(document.querySelector('.authority').innerText, {alignment:centered, bold:true, after:50}));
+      paras.push(p(document.querySelector('.decides').innerText.toUpperCase(), {alignment:centered, bold:true, after:150}));
+      document.querySelectorAll('.article').forEach((el) => {
+        inlineText(el).split('\n').forEach((line) => {
+          if (line.trim()) paras.push(p(line.trim(), {indent:true, after:100}));
+        });
+      });
+      paras.push(p('Nơi nhận:', {alignment:left, bold:true, italics:true, size:24, before:220, after:0}));
+      document.querySelectorAll('.recipients').forEach((el) => {
+        el.innerText.split('\n').slice(1).forEach((line) => { if (line.trim()) paras.push(p(line.trim(), {alignment:left, size:24, after:0})); });
+      });
+      paras.push(p('GIÁM ĐỐC', {alignment:centered, bold:true, size:24, before:0, after:900}));
+      paras.push(p(document.querySelector('.sign .name').innerText, {alignment:centered, bold:true, size:26, after:0}));
+
+      const doc = new Document({
+        styles: { default: { document: { run: { font, size: 26 }, paragraph: { spacing: { line: 300 } } } } },
+        sections: [{
+          properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1134, right: 1417, bottom: 1020, left: 1417 } } },
+          children: paras
+        }]
+      });
+      Packer.toBlob(doc).then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Quyet_dinh_nang_bac_luong_thuong_xuyen.docx';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }).catch((error) => {
+        console.error(error);
+        alert('Không thể tạo file Word. Vui lòng thử lại.');
+      });
+    }
   </script>
 </body>
 </html>
