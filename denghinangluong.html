@@ -37,12 +37,16 @@
     .grounds { text-align: justify; }
     .grounds p { margin: 0 0 8px; text-indent: 12mm; }
     .editable-grounds {
-      display: block; width: 100%; min-height: 255px; padding: 0;
+      display: block; width: 100%; height: auto; min-height: 0; padding: 0;
       border: 1px dashed #9aa8b5; border-radius: 3px; background: #fff;
       color: inherit; font: inherit; line-height: inherit; text-align: justify;
-      white-space: pre-wrap; resize: vertical;
+      white-space: pre-wrap; resize: vertical; overflow: hidden;
     }
-    .authority { text-align: center; font-weight: bold; text-transform: uppercase; margin: 15px 0 4px; }
+    .grounds-print { display: none; }
+    .authority {
+      text-align: center; font-weight: bold; text-transform: uppercase;
+      white-space: nowrap; margin: 16px 0 4px;
+    }
     .decides { text-align: center; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; }
     .article { text-align: justify; margin: 0 0 9px; text-indent: 12mm; }
     .url-var { display: inline; color: inherit; font: inherit; }
@@ -74,7 +78,13 @@
       body { background: white; font-size: 13pt; }
       .print-button, .export-button { display: none !important; }
       .editable-grounds, .sign .name { border: 0; border-radius: 0; background: transparent; }
-      .editable-grounds { min-height: 0; resize: none; }
+      .editable-grounds { display: none !important; }
+      .grounds-print {
+        display: block; margin: 0 0 -8px; color: inherit;
+        font: inherit; line-height: inherit; text-align: justify;
+        white-space: pre-line;
+      }
+      .authority { margin-top: 16px; }
       .sign .name { font-size: 13pt; }
       .page { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
     }
@@ -109,13 +119,11 @@
 
     <section class="grounds">
       <textarea class="editable-grounds" aria-label="Nội dung căn cứ" spellcheck="false">- Căn cứ Nghị định số 204/2004/NĐ-CP, ngày 14/12/2004 của Chính phủ về chế độ tiền lương đối với cán bộ, công chức, viên chức và lực lượng vũ trang đã được sửa đổi, bổ sung tại Nghị định số 76/2009/NĐ-CP, ngày 15/9/2009; Nghị định số 14/2012/NĐ-CP, ngày 07/3/2012; Nghị định số 17/2013/NĐ-CP, ngày 19/02/2013; Nghị định số 117/2016/NĐ-CP, ngày 21/7/2016 của Chính phủ;
-
 - Căn cứ Thông tư số 08/2013/TT-BNV, ngày 31/7/2013 của Bộ Nội vụ về hướng dẫn thực hiện chế độ nâng bậc lương thường xuyên và nâng bậc lương trước thời hạn đối với cán bộ, công chức, viên chức và người lao động; Thông tư số 03/2021/TT-BNV, ngày 29/6/2021 của Bộ Nội vụ về sửa đổi, bổ sung chế độ nâng bậc lương thường xuyên, nâng bậc lương trước thời hạn và chế độ phụ cấp thâm niên vượt khung đối với cán bộ, công chức, viên chức và người lao động;
-
 - Căn cứ Quy định số 295-QĐ/TU, ngày 17/12/2025 của Ban Thường vụ Tỉnh ủy về Quy định phân cấp quản lý tiền lương đối với cán bộ, công chức, viên chức cơ quan Đảng, Mặt trận Tổ quốc, các tổ chức chính trị - xã hội và các đơn vị sự nghiệp trực thuộc Tỉnh ủy; cán bộ khối nhà nước diện Ban Thường vụ Tỉnh ủy quản lý;
-
 - Căn cứ kết quả cuộc họp Hội đồng xét nâng bậc lương thường xuyên, PCVK của Báo và phát thanh, truyền hình Nghệ An ngày ...;
 - Xét đề nghị của Chánh Văn phòng.</textarea>
+      <div class="grounds-print" aria-hidden="true"></div>
     </section>
 
     <div class="authority">Giám đốc Báo và Phát thanh, Truyền hình Nghệ An</div>
@@ -148,6 +156,19 @@
         const key = field.dataset.param;
         if (params.has(key)) field.textContent = params.get(key);
       });
+      const grounds = document.querySelector('.editable-grounds');
+      const printGrounds = document.querySelector('.grounds-print');
+      const syncPrintGrounds = () => { printGrounds.textContent = grounds.value; };
+      const fitGrounds = () => {
+        grounds.style.height = 'auto';
+        grounds.style.height = grounds.scrollHeight + 'px';
+      };
+      fitGrounds();
+      syncPrintGrounds();
+      grounds.addEventListener('input', fitGrounds);
+      grounds.addEventListener('input', syncPrintGrounds);
+      window.addEventListener('resize', fitGrounds);
+      window.addEventListener('beforeprint', syncPrintGrounds);
     })();
 
     function exportWord() {
