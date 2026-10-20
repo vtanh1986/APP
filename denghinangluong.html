@@ -26,7 +26,7 @@
     .header { display: grid; grid-template-columns: 1fr 1fr; gap: 12mm; text-align: center; }
     .agency, .national { font-weight: bold; }
     .agency { text-transform: uppercase; }
-    .national { text-transform: uppercase; display: inline-block; border-bottom: 1px solid #111; padding-bottom: 3px; }
+    .national { font-size: 14.5pt; text-transform: uppercase; display: inline-block; border-bottom: 1px solid #111; padding-bottom: 3px; }
     .star { margin: 3px 0; }
     .docno { text-align: left; margin-top: 12px; }
     .date { font-style: italic; margin-top: 16px; }
@@ -210,6 +210,16 @@
         .word-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .word-table td { width: 50%; vertical-align: top; padding: 0; }
         .word-header-table td { text-align: center; }
+        .word-export, .word-export p, .word-export div, .word-export span { font-family: "Times New Roman", serif; color: #111; }
+        .word-export { font-size: 13.5pt; line-height: 1.35; }
+        .word-export .agency { font-weight: bold; text-transform: uppercase; text-align: center; }
+        .word-export .agency span { font-weight: normal; }
+        .word-export .national { font-size: 14.5pt; font-weight: bold; text-transform: uppercase; text-align: center; border-bottom: 1px solid #111; }
+        .word-export .title { text-align: center; margin: 22px 0 16px; }
+        .word-export .title h1 { font-size: 16pt; font-weight: bold; text-transform: uppercase; margin: 0; }
+        .word-export .subtitle, .word-export .authority, .word-export .decides, .word-export .sign { font-weight: bold; }
+        .word-export .article { text-align: justify; text-indent: 12mm; margin: 0 0 9px; }
+        .word-export .grounds { text-align: justify; }
         .word-sign-table { margin-top: 24px; }
         .word-export .editable-grounds { display: block !important; height: auto; min-height: 0; padding: 0; border: 0; background: transparent; white-space: pre-line; resize: none; overflow: visible; }
         .word-export .name { border: 0; background: transparent; resize: none; }
