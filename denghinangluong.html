@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quyết định nâng bậc lương thường xuyên</title>
   <style>
-    @page { size: A4 portrait; margin: 20mm 25mm 18mm; }
+    @page { size: A4 portrait; margin: 20mm 20mm 20mm 30mm; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -19,7 +19,7 @@
       width: 210mm;
       min-height: 297mm;
       margin: 18px auto;
-      padding: 20mm 25mm 18mm;
+      padding: 20mm 20mm 20mm 30mm;
       background: white;
       box-shadow: 0 2px 14px #0002;
     }
@@ -101,7 +101,7 @@
   <main class="page">
     <header class="header">
       <div>
-        <div class="agency">TỈNH ỦY NGHỆ AN<br>BÁO VÀ PHÁT THANH, TRUYỀN HÌNH</div>
+        <div class="agency"><span style="font-weight: normal;">TỈNH ỦY NGHỆ AN</span><br>BÁO VÀ PHÁT THANH, TRUYỀN HÌNH</div>
         <div class="star">*</div>
         <div class="docno">Số ... -QĐ/CQBPTTH</div>
       </div>
@@ -221,7 +221,7 @@
       try {
         const blob = window.htmlDocx.asBlob(html, {
           orientation: 'portrait',
-          margins: { top: 1134, right: 1417, bottom: 1020, left: 1417 }
+          margins: { top: 1134, right: 1134, bottom: 1134, left: 1701 }
         });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
