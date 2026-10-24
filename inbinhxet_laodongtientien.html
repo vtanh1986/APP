@@ -101,8 +101,8 @@
   const tableData = params.get('table');
   if (tableData !== null) {
     const body = document.getElementById('rosterBody'); body.replaceChildren();
-    tableData.split('_b_').filter(line => line.length).forEach(line => {
-      const cells = line.split('_a_');
+    tableData.split('_b_').filter(line => line.length).forEach((line, index) => {
+      const cells = [String(index + 1), ...line.split('_a_').slice(0, 6)];
       const tr = document.createElement('tr');
       for (let i = 0; i < 7; i++) { const td = document.createElement('td'); td.textContent = cells[i] ?? ''; tr.appendChild(td); }
       body.appendChild(tr);
