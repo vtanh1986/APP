@@ -108,6 +108,13 @@
       body.appendChild(tr);
     });
   }
+  const noteData = params.get('note');
+  if (noteData !== null) {
+    const notes = noteData.split('_b_');
+    document.querySelectorAll('#rosterBody tr').forEach((tr, i) => {
+      if (notes[i] !== undefined && tr.cells[6]) tr.cells[6].textContent = notes[i];
+    });
+  }
   [titleInput, criteriaInput].forEach(el => {
     const resize = () => { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; };
     el.addEventListener('input', resize); requestAnimationFrame(resize);
