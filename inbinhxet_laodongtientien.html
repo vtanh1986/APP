@@ -115,6 +115,15 @@
       if (notes[i] !== undefined && tr.cells[6]) tr.cells[6].textContent = notes[i];
     });
   }
+  const colsData = params.get('cols');
+  if (colsData !== null) {
+    const cols = document.querySelectorAll('.roster col');
+    const w = colsData.split(',').map(Number);
+    if (w.length === cols.length && w.every(n => n > 0)) {
+      const sum = w.reduce((a, b) => a + b, 0);
+      cols.forEach((c, i) => { c.style.width = `${(w[i] / sum * 100).toFixed(2)}%`; });
+    }
+  }
   [titleInput, criteriaInput].forEach(el => {
     const resize = () => { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; };
     el.addEventListener('input', resize); requestAnimationFrame(resize);
