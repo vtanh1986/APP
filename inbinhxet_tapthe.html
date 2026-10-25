@@ -26,7 +26,10 @@
   .roster col:nth-child(6) { width: 6%; }
   .roster th, .roster td { border: 0.25mm solid #222; padding: 2mm 1.25mm; }
   .roster thead { display: table-header-group; }
-  .roster thead th { height: 11mm; text-align: center; vertical-align: middle; font-size: 10.5pt; line-height: 1.15; }
+  .roster thead th { position: relative; height: 11mm; text-align: center; vertical-align: middle; font-size: 10.5pt; line-height: 1.15; }
+  .col-del { position: absolute; top: 0.3mm; right: 0.3mm; width: 4mm; height: 4mm; padding: 0; border: 0; border-radius: 50%; background: #e5484d; color: #fff; font: bold 9pt/4mm Arial, sans-serif; text-align: center; cursor: pointer; opacity: 0; z-index: 6; user-select: none; -webkit-user-select: none; }
+  .roster thead th:hover .col-del, .col-del:focus { opacity: 1; }
+  @media (hover: none) { .col-del { opacity: .55; } }
   .roster tbody tr { break-inside: avoid; page-break-inside: avoid; }
   .roster tbody td { height: 9mm; vertical-align: middle; font-size: 11.5pt; line-height: 1.15; overflow-wrap: anywhere; }
   .roster tbody td:first-child { text-align: center; font-size: 11pt; }
@@ -48,6 +51,7 @@
     body { background: #fff; }
     .inline-edit { display: none !important; }
     .resize-layer { display: none !important; }
+    .col-del { display: none !important; }
     .print-copy { display: block !important; }
     .page { width: auto; min-height: 0; margin: 0; box-shadow: none; }
     .org, h1, .table-wrap, .roster, .date, .sign, .sign-space, .criteria { break-inside: avoid; page-break-inside: avoid; }
@@ -78,7 +82,7 @@
     </table>
     <div class="resize-layer" id="resizeLayer"></div>
   </div>
-  <div class="date">Nghệ An, ngày&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tháng 12 năm 20...</div>
+  <div class="date">Nghệ An, ngày&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tháng 12 năm 2025</div>
   <div class="sign">THÀNH VIÊN HĐTKĐKT</div>
   <div class="sign-space"></div>
   <div class="criteria"><textarea class="inline-edit criteria-edit" id="criteriaInput" aria-label="Sửa tiêu chí"></textarea><span class="print-copy" id="criteriaText" style="display:none"></span></div>
@@ -86,8 +90,8 @@
 <script>
 (() => {
   const defaults = {
-    title: 'PHIẾU BÌNH XÉT CÁC TẬP THỂ ĐỀ NGHỊ CÔNG NHẬN DANH HIỆU\n... NĂM 20...',
-    criteria: 'Ghi chú:'
+    title: 'PHIẾU BÌNH XÉT CÁ NHÂN ĐỀ NGHỊ CÔNG NHẬN DANH HIỆU\nLAO ĐỘNG TIÊN TIẾN NĂM 20...',
+    criteria: 'Tiêu chí: - Hoàn thành tốt nhiệm vụ được giao, đạt năng suất và chất lượng cao; Chấp hành tốt chủ trương của Đảng, pháp luật của nhà nước, có tinh thần tự lực, tự cường, đoàn kết, tương trợ, tích cực tham gia phong trào thi đua, có đạo đức, lối sống lành mạnh.'
   };
   const params = new URLSearchParams(location.search);
   const titleInput = document.getElementById('titleInput');
@@ -123,26 +127,27 @@
       if (notes[i] !== undefined && tr.cells[5]) tr.cells[5].textContent = notes[i];
     });
   }
-  const colsData = params.get('cols');
-  if (colsData !== null) {
-    const cols = document.querySelectorAll('.roster col');
-    const w = colsData.split(',').map(Number);
-    if (w.length === cols.length && w.every(n => n > 0)) {
-      const sum = w.reduce((a, b) => a + b, 0);
-      cols.forEach((c, i) => { c.style.width = `${(w[i] / sum * 100).toFixed(2)}%`; });
-    }
-  }
-  // Kéo chuột để chỉnh độ rộng cột
+
+  // Xóa cột + kéo chuột chỉnh độ rộng cột
   (() => {
     const table = document.querySelector('.roster');
     const layer = document.getElementById('resizeLayer');
-    const cols = [...table.querySelectorAll('col')];
-    const heads = [...table.querySelectorAll('thead th')];
+    const getCols = () => [...table.querySelectorAll('col')];
+    const getHeads = () => [...table.querySelectorAll('thead th')];
     const MIN = 3;
-    const handles = [];
+    const TOTAL = getCols().length;
+    const removed = new Set();
+    let handles = [];
+
+    getHeads().forEach((th, i) => { th.dataset.i = i; });
+
     const widthsPct = () => {
       const tw = table.getBoundingClientRect().width || 1;
-      return heads.map(h => h.getBoundingClientRect().width / tw * 100);
+      return getHeads().map(h => h.getBoundingClientRect().width / tw * 100);
+    };
+    const applyWidths = w => {
+      const sum = w.reduce((a, b) => a + b, 0) || 1;
+      getCols().forEach((c, i) => { c.style.width = `${(w[i] / sum * 100).toFixed(2)}%`; });
     };
     const place = () => {
       let acc = 0;
@@ -153,48 +158,111 @@
       try {
         const url = new URL(location.href);
         url.searchParams.set('cols', widthsPct().map(n => n.toFixed(1)).join(','));
+        if (removed.size) url.searchParams.set('hide', [...removed].sort((a, b) => a - b).join(','));
+        else url.searchParams.delete('hide');
         history.replaceState(null, '', url);
       } catch (e) {}
     };
-    for (let i = 0; i < cols.length - 1; i++) {
-      const handle = document.createElement('div');
-      handle.className = 'col-resizer';
-      handle.setAttribute('aria-hidden', 'true');
-      layer.appendChild(handle);
-      handles.push(handle);
-      handle.addEventListener('pointerdown', e => {
-        e.preventDefault();
-        try { handle.setPointerCapture(e.pointerId); } catch (err) {}
-        handle.classList.add('active');
-        document.body.style.cursor = 'col-resize';
-        const tw = table.getBoundingClientRect().width || 1;
-        const widths = widthsPct();
-        const startX = e.clientX;
-        const move = ev => {
-          let dx = (ev.clientX - startX) / tw * 100;
-          dx = Math.max(MIN - widths[i], Math.min(widths[i + 1] - MIN, dx));
-          cols[i].style.width = `${(widths[i] + dx).toFixed(2)}%`;
-          cols[i + 1].style.width = `${(widths[i + 1] - dx).toFixed(2)}%`;
-          place();
-        };
-        const up = () => {
-          handle.classList.remove('active');
-          document.body.style.cursor = '';
-          window.removeEventListener('pointermove', move);
-          window.removeEventListener('pointerup', up);
-          window.removeEventListener('pointercancel', up);
+
+    const removeColumn = idx => {
+      const heads = getHeads();
+      if (heads.length <= 1 || !heads[idx]) return;
+      const w = widthsPct();
+      applyWidths(w); // cố định độ rộng hiện tại trước khi bỏ cột
+      removed.add(Number(heads[idx].dataset.i));
+      heads[idx].remove();
+      getCols()[idx].remove();
+      table.querySelectorAll('tbody tr').forEach(tr => { if (tr.cells[idx]) tr.cells[idx].remove(); });
+      w.splice(idx, 1);
+      applyWidths(w); // chia lại cho đủ 100%
+    };
+
+    const addDeleteButtons = () => {
+      getHeads().forEach(th => {
+        if (th.querySelector('.col-del')) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'col-del';
+        btn.title = 'Xóa cột này';
+        btn.setAttribute('aria-label', 'Xóa cột');
+        btn.textContent = '×';
+        btn.addEventListener('pointerdown', e => e.stopPropagation());
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          removeColumn(th.cellIndex);
+          build();
           saveToUrl();
-        };
-        window.addEventListener('pointermove', move);
-        window.addEventListener('pointerup', up);
-        window.addEventListener('pointercancel', up);
+        });
+        th.appendChild(btn);
+      });
+    };
+
+    const build = () => {
+      layer.replaceChildren();
+      handles = [];
+      const n = getCols().length;
+      for (let i = 0; i < n - 1; i++) {
+        const handle = document.createElement('div');
+        handle.className = 'col-resizer';
+        handle.setAttribute('aria-hidden', 'true');
+        layer.appendChild(handle);
+        handles.push(handle);
+        handle.addEventListener('pointerdown', e => {
+          e.preventDefault();
+          try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+          handle.classList.add('active');
+          document.body.style.cursor = 'col-resize';
+          const cols = getCols();
+          const tw = table.getBoundingClientRect().width || 1;
+          const widths = widthsPct();
+          const startX = e.clientX;
+          const move = ev => {
+            let dx = (ev.clientX - startX) / tw * 100;
+            dx = Math.max(MIN - widths[i], Math.min(widths[i + 1] - MIN, dx));
+            cols[i].style.width = `${(widths[i] + dx).toFixed(2)}%`;
+            cols[i + 1].style.width = `${(widths[i + 1] - dx).toFixed(2)}%`;
+            place();
+          };
+          const up = () => {
+            handle.classList.remove('active');
+            document.body.style.cursor = '';
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            window.removeEventListener('pointercancel', up);
+            saveToUrl();
+          };
+          window.addEventListener('pointermove', move);
+          window.addEventListener('pointerup', up);
+          window.addEventListener('pointercancel', up);
+        });
+      }
+      place();
+    };
+
+    // Áp dụng tham số hide (cột đã xóa), rồi cols (độ rộng)
+    const hideData = params.get('hide');
+    if (hideData) {
+      const idxs = [...new Set(hideData.split(',').map(Number))]
+        .filter(n => Number.isInteger(n) && n >= 0 && n < TOTAL)
+        .sort((a, b) => b - a);
+      idxs.forEach(orig => {
+        const pos = getHeads().findIndex(h => Number(h.dataset.i) === orig);
+        if (pos >= 0) removeColumn(pos);
       });
     }
-    place();
+    const colsData = params.get('cols');
+    if (colsData !== null) {
+      const w = colsData.split(',').map(Number);
+      if (w.length === getCols().length && w.every(n => n > 0)) applyWidths(w);
+    }
+
+    addDeleteButtons();
+    build();
     requestAnimationFrame(place);
     window.addEventListener('load', place);
     window.addEventListener('resize', place);
   })();
+
   [titleInput, criteriaInput].forEach(el => {
     const resize = () => { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; };
     el.addEventListener('input', resize); requestAnimationFrame(resize);
