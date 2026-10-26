@@ -11,19 +11,16 @@
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { margin: 0; color: #111; background: #eef0f2; font-family: "Times New Roman", Times, serif; font-size: 12pt; }
   .page { width: 180mm; min-height: 267mm; margin: 12mm auto; padding: 0; background: #fff; }
-  .org { display: grid; grid-template-columns: 1fr 1fr; width: 100%; font-size: 11pt; font-weight: bold; }
+  .org { display: grid; grid-template-columns: 1fr 1fr; width: 100%; font-size: 13.5pt; font-weight: bold; }
   .org-left { grid-column: 1; text-align: center; line-height: 1.35; padding: 0 2mm; }
   .org-left div + div { margin-top: 1mm; }
   .org-rule { display: block; width: 100%; height: 3mm; overflow: visible; }
   h1 { margin: 8mm 0 6mm; text-align: center; font-size: 13pt; line-height: 1.3; font-weight: bold; }
   .table-wrap { position: relative; }
   table.roster { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  .roster col:nth-child(1) { width: 5.1%; }
-  .roster col:nth-child(2) { width: 35.5%; }
-  .roster col:nth-child(3) { width: 38.8%; }
-  .roster col:nth-child(4) { width: 7.3%; }
-  .roster col:nth-child(5) { width: 7.3%; }
-  .roster col:nth-child(6) { width: 6%; }
+  .roster col:nth-child(1) { width: 6%; }
+  .roster col:nth-child(2) { width: 60%; }
+  .roster col:nth-child(3) { width: 34%; }
   .roster th, .roster td { border: 0.25mm solid #222; padding: 2mm 1.25mm; }
   .roster thead { display: table-header-group; }
   .roster thead th { position: relative; height: 11mm; text-align: center; vertical-align: middle; font-size: 10.5pt; line-height: 1.15; }
@@ -54,7 +51,8 @@
     .col-del { display: none !important; }
     .print-copy { display: block !important; }
     .page { width: auto; min-height: 0; margin: 0; box-shadow: none; }
-    .org, h1, .table-wrap, .roster, .date, .sign, .sign-space, .criteria { break-inside: avoid; page-break-inside: avoid; }
+    .org, h1, .date, .sign, .sign-space, .criteria { break-inside: avoid; page-break-inside: avoid; }
+    .table-wrap, .roster { break-inside: auto; page-break-inside: auto; }
   }
 </style>
 </head>
@@ -70,14 +68,14 @@
   <h1><textarea class="inline-edit title-edit" id="titleInput" aria-label="Sửa tiêu đề"></textarea><span class="print-copy" id="formTitle" style="display:none"></span></h1>
   <div class="table-wrap">
     <table class="roster" aria-label="Danh sách bình xét">
-      <colgroup><col><col><col><col><col><col></colgroup>
-      <thead><tr><th>TT</th><th>Tên đơn vị</th><th>Thành tích nổi bật</th><th>Đồng ý</th><th>Không<br>đồng ý</th><th>Ghi chú</th></tr></thead>
+      <colgroup><col><col><col></colgroup>
+      <thead><tr><th>TT</th><th>Tên đơn vị</th><th>Ghi chú</th></tr></thead>
       <tbody id="rosterBody">
-        <tr><td>1</td><td>Trần Minh Ngọc</td><td>Tổng biên tập</td><td></td><td></td><td></td></tr>
-        <tr><td>2</td><td>Trần Thị Huyền (PTBT)</td><td>Phó Tổng biên tập</td><td></td><td></td><td></td></tr>
-        <tr><td>3</td><td>Trần Văn Hùng</td><td>Phó Tổng biên tập</td><td></td><td></td><td></td></tr>
-        <tr><td>4</td><td>Nguyễn Trung Thảo</td><td>Phó Tổng biên tập</td><td></td><td></td><td></td></tr>
-        <tr><td>5</td><td>Trần Hữu Nghĩa</td><td>Phó Tổng biên tập</td><td></td><td></td><td></td></tr>
+        <tr><td>1</td><td>Trần Minh Ngọc</td><td></td></tr>
+        <tr><td>2</td><td>Trần Thị Huyền (PTBT)</td><td></td></tr>
+        <tr><td>3</td><td>Trần Văn Hùng</td><td></td></tr>
+        <tr><td>4</td><td>Nguyễn Trung Thảo</td><td></td></tr>
+        <tr><td>5</td><td>Trần Hữu Nghĩa</td><td></td></tr>
       </tbody>
     </table>
     <div class="resize-layer" id="resizeLayer"></div>
@@ -113,10 +111,12 @@
   const tableData = params.get('table');
   if (tableData !== null) {
     const body = document.getElementById('rosterBody'); body.replaceChildren();
+    // Dữ liệu URL vẫn theo định dạng cũ (6 ô); chỉ lấy TT, Tên đơn vị, Ghi chú
+    const KEEP = [0, 1, 5];
     tableData.split('_b_').filter(line => line.length).forEach((line, index) => {
       const cells = [String(index + 1), ...line.split('_a_').slice(0, 5)];
       const tr = document.createElement('tr');
-      for (let i = 0; i < 6; i++) { const td = document.createElement('td'); td.textContent = cells[i] ?? ''; tr.appendChild(td); }
+      KEEP.forEach(k => { const td = document.createElement('td'); td.textContent = cells[k] ?? ''; tr.appendChild(td); });
       body.appendChild(tr);
     });
   }
@@ -124,7 +124,7 @@
   if (noteData !== null) {
     const notes = noteData.split('_b_');
     document.querySelectorAll('#rosterBody tr').forEach((tr, i) => {
-      if (notes[i] !== undefined && tr.cells[5]) tr.cells[5].textContent = notes[i];
+      if (notes[i] !== undefined && tr.cells[2]) tr.cells[2].textContent = notes[i];
     });
   }
 
